@@ -6,6 +6,7 @@ use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'nama_lengkap',
@@ -57,6 +58,14 @@ class Customer extends Model
         self::SEGMENT_B,
         self::SEGMENT_C,
     ];
+
+    /**
+     * The orders placed by this customer.
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
 
     /**
      * Get the attributes that should be cast.

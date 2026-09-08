@@ -13,6 +13,7 @@
         <div class="navbar-nav">
             <a class="nav-link" href="{{ route('products.index') }}">Produk</a>
             <a class="nav-link" href="{{ route('customers.index') }}">Pelanggan</a>
+            <a class="nav-link" href="{{ route('orders.index') }}">Log Order</a>
         </div>
     </div>
 </nav>

@@ -55,17 +55,57 @@
             overflow: hidden;
             background: var(--panel);
         }
-        .visual-bg {
+        .slides {
             position: absolute;
             inset: 0;
             z-index: 0;
-            background-color: #11131a;
-            background-image:
-                linear-gradient(135deg, rgba(225, 29, 72, 0.16) 0%, rgba(8, 9, 11, 0) 45%),
-                url('/images/hijab.jpg');
+            background: #11131a;
+            animation: fadeIn 1s ease both;
+        }
+        .slide {
+            position: absolute;
+            inset: 0;
             background-size: cover;
             background-position: center;
-            animation: fadeIn 1s ease both;
+            opacity: 0;
+            transform: scale(1.04);
+            transition: opacity 800ms ease, transform 6000ms ease;
+            will-change: opacity;
+        }
+        .slide.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .slide-dots {
+            position: absolute;
+            left: clamp(24px, 4vw, 56px);
+            bottom: clamp(18px, 3vw, 34px);
+            z-index: 5;
+            display: flex;
+            gap: 8px;
+        }
+        .slide-dot {
+            width: 26px;
+            height: 4px;
+            padding: 0;
+            border: 0;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.28);
+            cursor: pointer;
+            transition: background 200ms ease, width 200ms ease;
+        }
+        .slide-dot:hover {
+            background: rgba(255, 255, 255, 0.45);
+        }
+        .slide-dot.active {
+            background: var(--accent);
+            width: 34px;
+        }
+        .visual-content {
+            transition: opacity 350ms ease;
+        }
+        .visual-content.is-fading {
+            opacity: 0.55;
         }
         .visual-overlay {
             position: absolute;
@@ -532,12 +572,16 @@
     <div class="app">
 
         <!-- ===== LEFT: VISUAL HERO ===== -->
-        <aside class="visual" aria-hidden="true">
-            <div class="visual-bg"></div>
+        <aside class="visual">
+            <div class="slides" aria-hidden="true">
+                <div class="slide active" style="background-image:url('{{ asset('images/hijab.jpg') }}')"></div>
+                <div class="slide" style="background-image:url('{{ asset('images/hijab3.jpg') }}')"></div>
+                <div class="slide" style="background-image:url('{{ asset('images/Gemini_Generated_Image_m7ee54m7ee54m7ee.jpg') }}')"></div>
+            </div>
             <div class="visual-overlay"></div>
             <div class="visual-glow"></div>
             <div class="visual-grain"></div>
-            <div class="visual-content">
+            <div class="visual-content" id="visualContent">
                 <div class="brand">
                     <div class="brand-mark">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -580,6 +624,11 @@
                         </li>
                     </ul>
                 </div>
+            </div>
+            <div class="slide-dots" role="tablist" aria-label="Slide showcase">
+                <button type="button" class="slide-dot active" data-slide="0" aria-label="Slide 1"></button>
+                <button type="button" class="slide-dot" data-slide="1" aria-label="Slide 2"></button>
+                <button type="button" class="slide-dot" data-slide="2" aria-label="Slide 3"></button>
             </div>
         </aside>
 
@@ -692,6 +741,50 @@
     </div>
     <script>
         (function () {
+            /* ===== Slider (vanilla JS) ===== */
+            var slides = document.querySelectorAll('.slide');
+            var dots = document.querySelectorAll('.slide-dot');
+            var visualContent = document.getElementById('visualContent');
+            var current = 0;
+            var timer = null;
+            var INTERVAL = 5000;
+
+            function goTo(index) {
+                slides[current].classList.remove('active');
+                dots[current].classList.remove('active');
+                current = (index + slides.length) % slides.length;
+                slides[current].classList.add('active');
+                dots[current].classList.add('active');
+
+                if (visualContent) {
+                    visualContent.classList.add('is-fading');
+                    setTimeout(function () {
+                        visualContent.classList.remove('is-fading');
+                    }, 350);
+                }
+            }
+
+            function startAutoplay() {
+                if (timer) {
+                    clearInterval(timer);
+                }
+                timer = setInterval(function () {
+                    goTo(current + 1);
+                }, INTERVAL);
+            }
+
+            dots.forEach(function (dot) {
+                dot.addEventListener('click', function () {
+                    goTo(parseInt(dot.getAttribute('data-slide'), 10));
+                    startAutoplay(); /* autoplay tetap berjalan setelah klik */
+                });
+            });
+
+            if (slides.length > 1) {
+                startAutoplay();
+            }
+
+            /* ===== Show/Hide password ===== */
             var eyeToggle = document.getElementById('eyeToggle');
             var passwordField = document.getElementById('password');
             var eyeOpen = document.querySelector('.eye-open');

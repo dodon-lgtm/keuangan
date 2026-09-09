@@ -9,11 +9,20 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
-        <a class="navbar-brand" href="/">Keuangan Hijab</a>
+        <a class="navbar-brand" href="{{ route('dashboard') }}">Keuangan Hijab</a>
         <div class="navbar-nav">
+            <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
             <a class="nav-link" href="{{ route('products.index') }}">Produk</a>
             <a class="nav-link" href="{{ route('customers.index') }}">Pelanggan</a>
             <a class="nav-link" href="{{ route('orders.index') }}">Log Order</a>
+            <a class="nav-link" href="{{ route('marketing-spends.index') }}">Marketing Spends</a>
+            <div class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Laporan</a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="{{ route('reports.mer-roi') }}">MER &amp; ROI</a>
+                    <a class="dropdown-item" href="{{ route('reports.hpp-profit') }}">HPP &amp; Profit</a>
+                </div>
+            </div>
         </div>
     </div>
 </nav>

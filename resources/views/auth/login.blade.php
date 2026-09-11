@@ -551,19 +551,129 @@
                 font-size: 12px;
             }
         }
-        @media (max-width: 820px) {
-            .visual {
-                display: none;
+        /* ===== MOBILE (<=768px): HERO slideshow di ATAS, login form di BAWAH =====
+           Layout vertikal, bukan desktop yang diperkecil.
+           Hero/slideshow TETAP tampil (gambar tidak disembunyikan). */
+        @media (max-width: 768px) {
+            /* Aktifkan scroll vertikal di mobile (desktop tetap overflow: hidden) */
+            html,
+            body {
+                height: auto;
             }
+            body {
+                overflow-x: hidden;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Grid 2 kolom -> 1 kolom vertikal */
             .app {
                 grid-template-columns: 1fr;
-                justify-content: center;
+                overflow: visible;
             }
+
+            /* --- HERO: TETAP tampil, tidak disembunyikan --- */
+            .visual {
+                width: 100%;
+                height: 38vh;
+                min-height: 280px;
+                max-height: 360px;
+            }
+
+            /* Gambar tetap penuh memenuhi panel.
+               Slide berbasis div: background-size: cover + background-position: center
+               adalah padanan dari object-fit: cover untuk gambar biasa. */
+            .slide {
+                background-size: cover;
+                background-position: center;
+            }
+
+            /* --- Teks hero diringkas agar pas di atas foto --- */
+            .visual-content {
+                padding: 16px 18px 0;
+            }
+            .brand-mark {
+                width: 32px;
+                height: 32px;
+                border-radius: 9px;
+            }
+            .brand-mark svg {
+                width: 16px;
+                height: 16px;
+            }
+            .brand-name {
+                font-size: 15px;
+            }
+            .brand-name span {
+                margin-top: 1px;
+                font-size: 10.5px;
+            }
+            .visual-body {
+                max-width: 100%;
+                padding-bottom: 20px;
+            }
+            .visual-eyebrow {
+                margin-bottom: 10px;
+                padding: 5px 10px;
+                font-size: 10.5px;
+            }
+            .visual-headline {
+                font-size: clamp(28px, 9vw, 33px);
+                line-height: 1.14;
+                margin-bottom: 10px;
+            }
+            .visual-desc {
+                font-size: 13.5px;
+                line-height: 1.55;
+                margin-bottom: 0;
+            }
+
+            /* Pills cukup panjang disembunyikan pada mobile.
+               Foto & headline utama tetap tampil. */
+            .feature-badges {
+                display: none;
+            }
+
+            /* Indikator slide tetap tampil */
+            .slide-dots {
+                left: 18px;
+                bottom: 12px;
+            }
+
+            /* --- LOGIN PANEL: mengalir di bawah hero --- */
             .form-panel {
-                padding: clamp(20px, 7vw, 48px) clamp(14px, 4vw, 32px);
+                min-height: auto;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 20px 16px;
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
             }
             .login-card {
+                width: 100%;
+                max-width: 460px;
+                padding: 24px 20px;
                 box-shadow: 0 20px 44px rgba(0, 0, 0, 0.5);
+            }
+            .card-head {
+                margin-bottom: 22px;
+            }
+            .card-mark {
+                width: 44px;
+                height: 44px;
+                margin-bottom: 14px;
+            }
+            .card-title {
+                font-size: 20px;
+            }
+            /* 16px mencegah iOS auto-zoom saat input difokuskan */
+            .input-field {
+                font-size: 16px;
+            }
+            .panel-foot {
+                position: static;
+                margin-top: 18px;
             }
         }
     </style>

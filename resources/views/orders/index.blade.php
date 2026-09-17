@@ -31,7 +31,7 @@
                 <td>{{ $order->customer->nama_lengkap }}</td>
                 <td>{{ $order->product->nama_produk }}</td>
                 <td>{{ $order->tanggal?->format('d M Y') }}</td>
-                <td>Rp {{ $order->nominal }}</td>
+                <td>@include('partials.rupiah', ['value' => $order->nominal])</td>
                 <td>{{ $order->tipe_bayar }}</td>
                 <td>{{ $order->jenis_order }}</td>
                 <td>{{ $order->metode_bayar }}</td>

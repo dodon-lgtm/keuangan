@@ -34,7 +34,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title text-muted">Total Omset</h5>
-                    <p class="card-text fs-4">Rp {{ $totalOmset }}</p>
+                    <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalOmset])</p>
                 </div>
             </div>
         </div>
@@ -42,7 +42,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title text-muted">Total Operasional</h5>
-                    <p class="card-text fs-4">Rp {{ $totalOperasional }}</p>
+                    <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalOperasional])</p>
                 </div>
             </div>
         </div>
@@ -50,7 +50,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title text-muted">Net Profit</h5>
-                    <p class="card-text fs-4">Rp {{ $netProfit }}</p>
+                    <p class="card-text fs-4">@include('partials.rupiah', ['value' => $netProfit])</p>
                 </div>
             </div>
         </div>
@@ -72,9 +72,9 @@
             <tr>
                 <td>{{ $product['nama_produk'] }}</td>
                 <td>{{ $product['total_pcs'] }}</td>
-                <td>Rp {{ $product['total_omset'] }}</td>
-                <td>Rp {{ $product['total_hpp'] }}</td>
-                <td>Rp {{ $product['margin'] }}</td>
+                <td>@include('partials.rupiah', ['value' => $product['total_omset']])</td>
+                <td>@include('partials.rupiah', ['value' => $product['total_hpp']])</td>
+                <td>@include('partials.rupiah', ['value' => $product['margin']])</td>
                 <td>{{ $product['margin_pct'] }}%</td>
             </tr>
         @endforeach

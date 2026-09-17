@@ -24,7 +24,7 @@
                 <td>{{ $marketingSpend->id }}</td>
                 <td>{{ $months[$marketingSpend->bulan] ?? $marketingSpend->bulan }}</td>
                 <td>{{ $marketingSpend->tahun }}</td>
-                <td>Rp {{ $marketingSpend->nominal }}</td>
+                <td>@include('partials.rupiah', ['value' => $marketingSpend->nominal])</td>
                 <td class="text-end">
                     <a href="{{ route('marketing-spends.edit', $marketingSpend) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                     <form action="{{ route('marketing-spends.destroy', $marketingSpend) }}" method="post" class="d-inline" onsubmit="return confirm('Hapus marketing spend ini?')">

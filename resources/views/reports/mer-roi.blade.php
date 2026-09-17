@@ -34,7 +34,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title text-muted">Total Omset</h5>
-                    <p class="card-text fs-4">Rp {{ $totalOmset }}</p>
+                    <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalOmset])</p>
                 </div>
             </div>
         </div>
@@ -42,7 +42,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title text-muted">Operasional</h5>
-                    <p class="card-text fs-4">Rp {{ $totalOperasional }}</p>
+                    <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalOperasional])</p>
                 </div>
             </div>
         </div>
@@ -50,7 +50,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title text-muted">Net Profit</h5>
-                    <p class="card-text fs-4">Rp {{ $netProfit }}</p>
+                    <p class="card-text fs-4">@include('partials.rupiah', ['value' => $netProfit])</p>
                 </div>
             </div>
         </div>
@@ -58,7 +58,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title text-muted">Marketing Spend</h5>
-                    <p class="card-text fs-4">Rp {{ $marketingSpend }}</p>
+                    <p class="card-text fs-4">@include('partials.rupiah', ['value' => $marketingSpend])</p>
                 </div>
             </div>
         </div>
@@ -99,12 +99,12 @@
                 <tr>
                     <td>A Roni</td>
                     <td>60%</td>
-                    <td>Rp {{ $profitSplit['roni'] }}</td>
+                    <td>@include('partials.rupiah', ['value' => $profitSplit['roni']])</td>
                 </tr>
                 <tr>
                     <td>Rizky</td>
                     <td>40%</td>
-                    <td>Rp {{ $profitSplit['rizky'] }}</td>
+                    <td>@include('partials.rupiah', ['value' => $profitSplit['rizky']])</td>
                 </tr>
             </tbody>
         </table>

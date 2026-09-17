@@ -33,7 +33,7 @@
                             <option value="">-- Kies produk --</option>
                             @foreach ($products as $product)
                                 <option value="{{ $product->id }}" @selected(old('product_id', $order->product_id) == $product->id)>
-                                    {{ $product->nama_produk }} — Rp {{ $product->harga_jual }}
+                                    {{ $product->nama_produk }} — @include('partials.rupiah', ['value' => $product->harga_jual])
                                 </option>
                             @endforeach
                         </select>

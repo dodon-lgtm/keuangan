@@ -23,8 +23,8 @@
             <tr>
                 <td>{{ $product->id }}</td>
                 <td>{{ $product->nama_produk }}</td>
-                <td>Rp {{ $product->harga_jual }}</td>
-                <td>Rp {{ $product->hpp }}</td>
+                <td>@include('partials.rupiah', ['value' => $product->harga_jual])</td>
+                <td>@include('partials.rupiah', ['value' => $product->hpp])</td>
                 <td class="text-end">
                     <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                     <form action="{{ route('products.destroy', $product) }}" method="post" class="d-inline" onsubmit="return confirm('Hapus produk ini?')">

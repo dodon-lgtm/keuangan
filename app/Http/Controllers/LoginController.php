@@ -50,7 +50,7 @@ class LoginController extends Controller
         if (auth()->attempt($credentials, $request->get('remember') === 'on')) {
             $request->session()->regenerate();
 
-            return redirect()->intended('/');
+            return redirect()->intended('/dashboard');
         }
 
         return redirect()

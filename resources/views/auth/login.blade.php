@@ -261,19 +261,158 @@
             pointer-events: none;
             background: radial-gradient(42% 30% at 8% 0%, rgba(225, 29, 72, 0.07), transparent 70%);
         }
+
+        /* ================= RIGHT: BACKGROUND DECORATION =================
+           Subtle "texture & atmosphere" behind the login panel (Dark Luxury SaaS).
+           Everything sits behind the content (z-index: 0) and has pointer-events: none,
+           so the working login form always stays the interactive focus.
+           Vanilla CSS, no libraries. When in doubt, kept more subtle. */
+        .panel-deco {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .login-card,
+        .panel-foot {
+            z-index: 1; /* above the decoration */
+        }
+        .login-card {
+            position: relative;
+        }
+
+        /* Layer 1 : red radial glows + soft radial lights (top/mid/right-bottom).
+           Strong enough to feel the depth, soft enough to never look "red". */
+        .deco-glow {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(62% 50% at 82% 14%, rgba(225, 29, 72, 0.14), transparent 60%),
+                radial-gradient(20% 16% at 96% 48%, rgba(255, 255, 255, 0.05), transparent 66%),
+                radial-gradient(34% 26% at 64% 46%, rgba(225, 29, 72, 0.05), transparent 70%),
+                radial-gradient(46% 36% at 84% 86%, rgba(225, 29, 72, 0.09), transparent 64%);
+        }
+
+        /* Layer 2 : subtle grid, barely-there texture, faded toward the edges */
+        .deco-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 56px 56px;
+            -webkit-mask-image: radial-gradient(74% 62% at 52% 44%, #000 0%, #000 66%, transparent 88%);
+            mask-image: radial-gradient(74% 62% at 52% 44%, #000 0%, #000 66%, transparent 88%);
+        }
+
+        /* Layer 3 : abstract orbits for depth (partly outside the viewport) */
+        .deco-ring {
+            position: absolute;
+            border: 1px solid rgba(255, 255, 255, 0.075);
+            border-radius: 50%;
+        }
+        .deco-ring-1 {
+            width: 560px;
+            height: 560px;
+            top: -170px;
+            left: -250px;
+            box-shadow: 0 0 0 60px rgba(225, 29, 72, 0.03), 0 0 0 120px rgba(225, 29, 72, 0.018);
+        }
+        .deco-ring-2 {
+            width: 460px;
+            height: 460px;
+            bottom: -130px;
+            right: -190px;
+        }
+        .deco-ring-3 {
+            width: 320px;
+            height: 320px;
+            top: -110px;
+            right: -130px;
+            border-color: rgba(225, 29, 72, 0.14);
+        }
+
+        /* Layer 4 : small dot pattern, bottom-right corner only, very faint */
+        .deco-dots {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 380px;
+            height: 380px;
+            opacity: 0.10;
+            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0.55px, transparent 1.05px);
+            background-size: 13px 13px;
+            -webkit-mask-image: radial-gradient(circle at 100% 100%, #000 0%, transparent 84%);
+            mask-image: radial-gradient(circle at 100% 100%, #000 0%, transparent 84%);
+        }
         .login-card {
             width: 100%;
             max-width: 460px;
-            background: var(--card);
-            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(150deg, #15171B 0%, #0E1013 55%, #151017 100%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-top-color: rgba(255, 255, 255, 0.12);
+            border-right-color: rgba(255, 255, 255, 0.05);
+            border-bottom-color: rgba(225, 29, 72, 0.12);
+            border-left-color: rgba(255, 255, 255, 0.05);
             border-radius: var(--radius);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 14px 34px rgba(0, 0, 0, 0.36);
+            box-shadow:
+                0 25px 80px rgba(0, 0, 0, 0.45),
+                0 14px 34px rgba(0, 0, 0, 0.30),
+                0 0 0 1px rgba(255, 255, 255, 0.02),
+                0 16px 46px rgba(225, 29, 72, 0.05);
             padding: clamp(28px, 4vw, 44px);
             animation: cardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
+
+        /* Subtle ambient glow + blurred red shapes INSIDE the card (behind the content) */
+        .login-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(80% 60% at 88% 6%, rgba(225, 29, 72, 0.07), transparent 60%),
+                radial-gradient(130% 85% at 50% -12%, rgba(225, 29, 72, 0.05), transparent 58%);
+        }
+
+        /* Ultra-thin grain/texture inside the card (matches the left panel noise) */
+        .login-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* Keep every card element above the inner decoration */
+        .login-card > * {
+            position: relative;
+            z-index: 1;
+        }
         .card-head {
+            position: relative;
             text-align: center;
             margin-bottom: 30px;
+        }
+        /* Subtle curved red accent line under the headline */
+        .card-head::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            transform: translate(-50%, 16px);
+            width: 46px;
+            height: 2px;
+            border-radius: 999px;
+            pointer-events: none;
+            background: linear-gradient(90deg, rgba(225, 29, 72, 0.04), rgba(225, 29, 72, 0.38), rgba(225, 29, 72, 0.04));
         }
         .card-mark {
             width: 52px;
@@ -550,6 +689,9 @@
                 padding: 7px 11px;
                 font-size: 12px;
             }
+            .panel-deco {
+                opacity: 0.6; /* tablet: decoration extra dimmed */
+            }
         }
         /* ===== MOBILE (<=768px): HERO slideshow di ATAS, login form di BAWAH =====
            Layout vertikal, bukan desktop yang diperkecil.
@@ -570,6 +712,13 @@
             .app {
                 grid-template-columns: 1fr;
                 overflow: visible;
+            }
+
+            /* Mobile: decoration stays but stays subtle */
+            .panel-deco {
+                opacity: 0.5;
+                position: absolute;
+                inset: 0;
             }
 
             /* --- HERO: TETAP tampil, tidak disembunyikan --- */
@@ -744,6 +893,15 @@
 
         <!-- ===== RIGHT: FORM ===== -->
         <main class="form-panel">
+            <!-- ===== BACKGROUND DECORATION (kanan) — subtiel, achter de card ===== -->
+            <div class="panel-deco" aria-hidden="true">
+                <div class="deco-glow"></div>
+                <div class="deco-grid"></div>
+                <div class="deco-ring deco-ring-1"></div>
+                <div class="deco-ring deco-ring-2"></div>
+                <div class="deco-ring deco-ring-3"></div>
+                <div class="deco-dots"></div>
+            </div>
             <div class="login-card">
                 <div class="card-head">
                     <div class="card-mark">

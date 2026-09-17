@@ -43,4 +43,35 @@
             </form>
         </div>
     </div>
+<script>
+        (function () {
+            var SEL = 'input[name="harga_jual"], input[name="hpp"]';
+            var fields = Array.prototype.slice.call(document.querySelectorAll(SEL));
+            if (!fields.length) return;
+
+            function digits(v) { return String(v).replace(/[^\d]/g, ''); }
+            function fmt(v) { return digits(v).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+
+            fields.forEach(function (field) {
+                // Switch to a text field so the dot-formatted value can be displayed while typing.
+                field.type = 'text';
+                field.setAttribute('inputmode', 'numeric');
+                field.setAttribute('autocomplete', 'off');
+                field.style.fontVariantNumeric = 'tabular-nums';
+                if (field.value) field.value = fmt(field.value);
+                field.addEventListener('input', function () {
+                    field.value = fmt(field.value);
+                });
+            });
+
+            var form = fields[0].closest('form');
+            if (form) {
+                form.addEventListener('submit', function () {
+                    fields.forEach(function (field) {
+                        field.value = digits(field.value);
+                    });
+                });
+            }
+        })();
+    </script>
 @endsection

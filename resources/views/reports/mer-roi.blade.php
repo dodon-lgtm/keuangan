@@ -3,6 +3,23 @@
 @section('title', 'Laporan MER & ROI')
 
 @section('content')
+    <style>
+        h1 { color: #FFFFFF; }
+        .form-label { color: #C9CED6; }
+
+        .card-title,
+        .card-title.text-muted,
+        .card-text { color: #FFFFFF; }
+        .card-title.text-muted { color: #FFFFFF !important; }
+
+        .card-header h2,
+        .card-header .h5 { color: #FFFFFF; }
+
+        .table thead th,
+        .table tbody td { color: #FFFFFF; }
+        .table thead th { font-weight: 600; }
+    </style>
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Laporan MER &amp; ROI</h1>
     </div>

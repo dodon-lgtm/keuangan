@@ -3,6 +3,10 @@
 @section('title', 'Laporan HPP & Profit')
 
 @section('content')
+    <style>
+        .card-title.text-muted { color: #FFFFFF !important; }
+    </style>
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Laporan HPP &amp; Profit</h1>
     </div>

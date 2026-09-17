@@ -95,6 +95,7 @@
             border: 1px solid rgba(225, 29, 72, 0.35);
         }
         .brand-mark svg { width: 21px; height: 21px; }
+        .brand-mark img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
         .brand-name { font-size: 16px; font-weight: 700; letter-spacing: 0.2px; line-height: 1.2; }
         .brand-name span { display: block; margin-top: 1px; font-size: 10.8px; color: var(--muted); font-weight: 500; letter-spacing: 0.4px; }
 
@@ -419,10 +420,8 @@
     <header class="app-header">
         <div class="inner">
             <a class="brand" href="{{ route('dashboard') }}">
-                <span class="brand-mark" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M6 3.5 C 6.5 8 8 12.5 10 17.5 8.5 18.5 7 19.5 M5 4.5 7.5 12 10 19 7.5 20 5 20 M6 14 8.5 17.5 12 18.5 15 17 17 13.5" />
-                    </svg>
+                <span class="brand-mark">
+                    <img src="{{ asset('images/logohijab.png') }}" alt="Logo Vendor Hijab Bandung">
                 </span>
                 <span class="brand-name">Keuangan Hijab<span>Vendor Hijab Bandung</span></span>
             </a>
@@ -454,7 +453,7 @@
                 <form action="{{ route('logout') }}" method="post" class="logout-form">
                     @csrf
                     <button type="submit" class="logout-btn">
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.4 C 8 4 7.6 5.6 8.2 7 8.6 8.4 C 8.4 9.8 7.8 11 6.4 11.4 C 5.6 12.2 4.6 12.6 3 12.6 C 2.6 11.8 2.4 11 2.6 9.8 2.6 8.4 3.2 7.4 M1.8 7 2.8 5.6 3.6 4.4" /></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                         Logout
                     </button>
                 </form>

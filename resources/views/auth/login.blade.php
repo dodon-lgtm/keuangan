@@ -158,6 +158,12 @@
             width: 20px;
             height: 20px;
         }
+        .brand-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: inherit;
+        }
         .brand-name {
             font-size: 16px;
             font-weight: 700;
@@ -428,6 +434,12 @@
         .card-mark svg {
             width: 26px;
             height: 26px;
+        }
+        .card-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: inherit;
         }
         .card-title {
             margin: 0 0 8px;
@@ -746,10 +758,6 @@
                 height: 32px;
                 border-radius: 9px;
             }
-            .brand-mark svg {
-                width: 16px;
-                height: 16px;
-            }
             .brand-name {
                 font-size: 15px;
             }
@@ -843,9 +851,7 @@
             <div class="visual-content" id="visualContent">
                 <div class="brand">
                     <div class="brand-mark">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M6 3.5 C 6.5 8 8 12.5 10 17.5 8.5 18.5 7 19.5 M5 4.5 7.5 12 10 19 7.5 20 5 20 M6 14 8.5 17.5 12 18.5 15 17 17 13.5" />
-                        </svg>
+                        <img src="{{ asset('images/logohijab.png') }}" alt="Logo Vendor Hijab Bandung">
                     </div>
                     <div class="brand-name">Vendor Hijab Bandung
                         <span>Business Management Platform</span>
@@ -858,26 +864,31 @@
                     <p class="visual-desc">Pantau riset, produk, iklan, penjualan, dan profit bisnis dalam satu platform.</p>
                     <ul class="feature-badges">
                         <li>
-                            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-                                <path d="M2.4 11 2.4 6 2.4 3.5 M4.6 11 4.6 6.6 4.6 3.5 M6.8 11 6.8 9.5 6.8 5 6.8 3.5 M7.8 11 7.8 8 7.8 5.5 7.8 3.5 M9.6 11 9.6 8.8 9.6 4.2 9.6 3.5 M11.6 11 11.6 6.2 11.6 3.5" />
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                             </svg>
                             Riset Bisnis
                         </li>
                         <li>
-                            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 3.4 3 10.6 M3 3.4 10.8 3.4 M10.8 3.4 10.8 10.6 M3 10.6 10.8 10.6 M5.8 5.2 5.8 8.6 8 8.6 8 5.2" />
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                                <line x1="12" y1="22.08" x2="12" y2="12"/>
                             </svg>
                             Kelola Produk
                         </li>
                         <li>
-                            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 6.4 C 4 4 5.4 2.6 6.2 2.4 6.2 2.4 C 6.8 2.8 8 4.2 10.6 6.4 C 10.8 7.2 10.2 8.4 8.8 9.4 7.4 9.4 5 8 3.4 8 2.8 9.2 3.4 10.8 4 10.8 4.6 11.6 4.6" />
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m3 11 18-5v12L3 14v-3z"/>
+                                <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>
                             </svg>
                             Optimasi Iklan
                         </li>
                         <li>
-                            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M2.6 2.6 3.4 4.8 5 7 6.4 8.6 5.4 8.6 5.4 C 5.8 9.6 8 11.4 10 11.7 M6 9 10 9 10 9.6 11.4" />
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                                <polyline points="17 6 23 6 23 12"/>
                             </svg>
                             Pantau Profit
                         </li>
@@ -905,9 +916,7 @@
             <div class="login-card">
                 <div class="card-head">
                     <div class="card-mark">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M6 3.5 C 6.5 8 8 12.5 10 17.5 8.5 18.5 7 19.5 M5 4.5 7.5 12 10 19 7.5 20 5 20 M6 14 8.5 17.5 12 18.5 15 17 17 13.5" />
-                        </svg>
+                        <img src="{{ asset('images/logohijab.png') }}" alt="Logo Vendor Hijab Bandung">
                     </div>
                     <h2 class="card-title">Selamat Datang Kembali</h2>
                     <p class="card-sub">Masuk untuk melanjutkan ke akun Anda.</p>
@@ -930,9 +939,9 @@
                         <label class="field-label" for="login">Email / Username</label>
                         <div class="input-wrap">
                             <span class="icon" aria-hidden="true">
-                                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M5.6 3.4 4 4.2 4 7.4 5.6 8.4 7.4 4.2 M5.2 8.8 5.2 10.8 7.6 10.8" />
-                                    <rect x="4" y="8" width="9" height="5" rx="1.2" />
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                                    <path d="m22 7-10 6L2 7"/>
                                 </svg>
                             </span>
                             <input class="input-field {{ $errors->has('login') ? 'is-error' : '' }}" type="text"
@@ -955,8 +964,9 @@
                         <label class="field-label" for="password">Password</label>
                         <div class="password-wrap">
                             <span class="icon" aria-hidden="true">
-                                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M5.6 3.4 4.6 4.4 5.2 5.8 5.2 9.2 4.4 10.2 C 4.4 10 7.4 13.8 11.4 13.8 M10.4 10.4 10.8 8.8 M11.4 10.8 12.6 10.2 14.3 10.4" />
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                                 </svg>
                             </span>
                             <input class="input-field {{ $errors->has('password') ? 'is-error' : '' }}" type="password"
@@ -964,14 +974,14 @@
                                    placeholder="Masukkan password"
                                    autocomplete="current-password" required>
                             <button type="button" class="eye-toggle" id="eyeToggle" aria-label="Toon / verberg password" aria-pressed="false">
-                                <svg class="eye-open" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M2.6 5.8 4.8 2 8 5.2 9.4 5.2 10.6 4.2 12.2 5.6 10.2 6 14.4 5.6 16.6 5 M5.4 6.4 5.2 9.4 5.4 10.4 5.4 13.2 3.8 4.6 2.4 4.6" />
-                                    <circle cx="10" cy="5.4" r="0.9" />
-                                    <circle cx="12.6" cy="5.4" r="0.9" />
+                                <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
                                 </svg>
-                                <svg class="eye-slash" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M2.6 5.8 4.8 2 8 5.2 9.4 5.2 10.6 4.2 12.2 5.6 10.2 6 14.4 5.6 16.6 5 M5.4 6.4 5.2 9.4 5.4 10.4 5.4 13.2 3.8 4.6 2.4 4.6" />
-                                    <path d="M2.4 12.2 14.6 4.8" />
+                                <svg class="eye-slash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                                    <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
                                 </svg>
                             </button>
                         </div>

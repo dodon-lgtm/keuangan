@@ -2,9 +2,8 @@
 
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\LoginController;
-use App\Http\Controllers\MarketingSpendController;
-use App\Http\Controllers\OperationalExpenseController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReportController;
@@ -36,8 +35,24 @@ Route::middleware('auth')->group(function () {
     Route::resource('products', ProductController::class);
     Route::resource('customers', CustomerController::class);
     Route::resource('orders', OrderController::class);
-    Route::resource('marketing-spends', MarketingSpendController::class);
-    Route::resource('operational-expenses', OperationalExpenseController::class);
+
+    // Pengeluaran (satu halaman: Budget Iklan + Pengeluaran Operasional)
+    Route::get('expenses', [ExpenseController::class, 'index'])
+        ->name('expenses.index');
+
+    Route::post('expenses/marketing', [ExpenseController::class, 'storeSpend'])
+        ->name('expenses.marketing.store');
+    Route::put('expenses/marketing/{marketingSpend}', [ExpenseController::class, 'updateSpend'])
+        ->name('expenses.marketing.update');
+    Route::delete('expenses/marketing/{marketingSpend}', [ExpenseController::class, 'destroySpend'])
+        ->name('expenses.marketing.destroy');
+
+    Route::post('expenses/operational', [ExpenseController::class, 'storeOperational'])
+        ->name('expenses.operational.store');
+    Route::put('expenses/operational/{operationalExpense}', [ExpenseController::class, 'updateOperational'])
+        ->name('expenses.operational.update');
+    Route::delete('expenses/operational/{operationalExpense}', [ExpenseController::class, 'destroyOperational'])
+        ->name('expenses.operational.destroy');
 
     // Laporan
     Route::get('/reports/mer-roi', [ReportController::class, 'merRoi'])

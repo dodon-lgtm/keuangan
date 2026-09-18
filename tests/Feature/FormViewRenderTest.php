@@ -3,8 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
-use App\Models\MarketingSpend;
-use App\Models\OperationalExpense;
 use App\Models\Order;
 use App\Models\Product;
 
@@ -19,7 +17,7 @@ class FormViewRenderTest extends AuthenticatedTestCase
     {
         $this->get('/products/create')
             ->assertStatus(200)
-            ->assertSee('Produk Jaubah');
+            ->assertSee('Produk Hijab');
     }
 
     public function test_product_edit_view_renders(): void
@@ -39,7 +37,7 @@ class FormViewRenderTest extends AuthenticatedTestCase
     {
         $this->get('/customers/create')
             ->assertStatus(200)
-            ->assertSee('Pelanggan Jaubah');
+            ->assertSee('Pelanggan Hijab');
     }
 
     public function test_customer_edit_view_renders(): void
@@ -57,7 +55,7 @@ class FormViewRenderTest extends AuthenticatedTestCase
 
         $this->get('/orders/create')
             ->assertStatus(200)
-            ->assertSee('Order Jaubah')
+            ->assertSee('Order Hijab')
             ->assertSee('+ Tambah Produk')
             ->assertSee('Total Nominal Transaksi');
     }
@@ -72,46 +70,13 @@ class FormViewRenderTest extends AuthenticatedTestCase
             ->assertSee('+ Tambah Produk');
     }
 
-    public function test_marketing_spend_create_view_renders(): void
+    public function test_expenses_index_renders_both_sections(): void
     {
-        $this->get('/marketing-spends/create')
+        $this->get('/expenses')
             ->assertStatus(200)
-            ->assertSee('Marketing Spend Jaubah');
-    }
-
-    public function test_marketing_spend_edit_view_renders(): void
-    {
-        $spend = MarketingSpend::create([
-            'bulan' => 9,
-            'tahun' => 2026,
-            'nominal' => 100000,
-        ]);
-
-        $this->get("/marketing-spends/{$spend->id}/edit")
-            ->assertStatus(200)
-            ->assertSee('Marketing Spend Edit');
-    }
-
-    public function test_operational_expense_create_view_renders(): void
-    {
-        $this->get('/operational-expenses/create')
-            ->assertStatus(200)
-            ->assertSee('Pengeluaran Operasional Jaubah');
-    }
-
-    public function test_operational_expense_edit_view_renders(): void
-    {
-        $expense = OperationalExpense::create([
-            'nama_pengeluaran' => 'Listrik',
-            'kategori' => OperationalExpense::KATEGORI_FIX_COST,
-            'nominal' => 400000,
-            'bulan' => 9,
-            'tahun' => 2026,
-        ]);
-
-        $this->get("/operational-expenses/{$expense->id}/edit")
-            ->assertStatus(200)
-            ->assertSee('Pengeluaran Operasional Edit');
+            ->assertSee('Pengeluaran')
+            ->assertSee('Pengeluaran Marketing')
+            ->assertSee('Pengeluaran Operasional');
     }
 
     public function test_forms_render_validation_errors_without_parse_failures(): void
@@ -120,13 +85,12 @@ class FormViewRenderTest extends AuthenticatedTestCase
         // with the error bags populated (the regression scenario).
         $this->from('/products/create')->post('/products', ['nama_produk' => ''])->assertRedirectBackWithErrors(['nama_produk']);
         $this->from('/customers/create')->post('/customers', ['nama_lengkap' => ''])->assertRedirectBackWithErrors(['nama_lengkap']);
-        $this->from('/marketing-spends/create')->post('/marketing-spends', ['bulan' => ''])->assertRedirectBackWithErrors(['bulan']);
-        $this->from('/operational-expenses/create')->post('/operational-expenses', ['nama_pengeluaran' => ''])->assertRedirectBackWithErrors(['nama_pengeluaran']);
+        $this->from('/expenses')->post('/expenses/marketing', ['bulan' => ''])->assertRedirectBackWithErrors(['bulan']);
+        $this->from('/expenses')->post('/expenses/operational', ['nama_pengeluaran' => ''])->assertRedirectBackWithErrors(['nama_pengeluaran']);
 
         $this->get('/products/create')->assertStatus(200);
         $this->get('/customers/create')->assertStatus(200);
-        $this->get('/marketing-spends/create')->assertStatus(200);
-        $this->get('/operational-expenses/create')->assertStatus(200);
+        $this->get('/expenses')->assertStatus(200);
     }
 
     /**

@@ -5,13 +5,12 @@ namespace Tests\Feature;
 use App\Models\Product;
 use Database\Seeders\ProductSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class ProductMasterDataTest extends TestCase
+class ProductMasterDataTest extends AuthenticatedTestCase
 {
     use RefreshDatabase;
 
-    public function test_products_index_lists_seeded_products(): void
+    public function test_products_index_lists_seeded_products_with_summary(): void
     {
         $this->seed(ProductSeeder::class);
 
@@ -20,6 +19,25 @@ class ProductMasterDataTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Voal Latte Premium');
         $response->assertSee('Hijab Polos');
+        // Revisi: kolom & ringkasan keuntungan tersedia.
+        $response->assertSee('Keuntungan');
+        $response->assertSee('Total Jenis Produk');
+        $response->assertSee('Rata-rata Harga Jual');
+        $response->assertSee('Rata-rata Keuntungan');
+    }
+
+    public function test_products_index_shows_profit_footer_summary(): void
+    {
+        Product::create(['nama_produk' => 'Produk A', 'harga_jual' => 30000, 'hpp' => 10000]);
+        Product::create(['nama_produk' => 'Produk B', 'harga_jual' => 50000, 'hpp' => 20000]);
+
+        $response = $this->get('/products');
+
+        $response->assertStatus(200);
+        // AVG(harga_jual) = 40000, AVG(hpp) = 15000, AVG(harga_jual - hpp) = 25000
+        $response->assertSee('Rp 40.000');
+        $response->assertSee('Rp 15.000');
+        $response->assertSee('Rp 25.000');
     }
 
     public function test_product_can_be_created(): void

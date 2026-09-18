@@ -28,10 +28,10 @@ class Product extends Model
     }
 
     /**
-     * The orders placed for this product.
+     * The order line items for this product.
      */
-    public function orders(): HasMany
+    public function orderItems(): HasMany
     {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(OrderItem::class);
     }
 }

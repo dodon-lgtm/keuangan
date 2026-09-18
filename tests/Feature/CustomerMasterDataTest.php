@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Customer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Illuminate\Support\Facades\Schema;
 
-class CustomerMasterDataTest extends TestCase
+class CustomerMasterDataTest extends AuthenticatedTestCase
 {
     use RefreshDatabase;
 
@@ -18,18 +18,14 @@ class CustomerMasterDataTest extends TestCase
         $response->assertSee('Pelanggan');
     }
 
-    public function test_customer_can_be_created(): void
+    public function test_customer_can_be_created_without_removed_fields(): void
     {
         $response = $this->post('/customers', [
             'nama_lengkap' => 'Fatimah Zahra',
             'nama_brand' => 'Hijab Co',
             'no_whatsapp' => '08123456789',
-            'domisili' => 'Amsterdam',
             'sumber' => Customer::SUMBER_META_ADS,
             'tanggal_masuk_chat' => '2026-09-01',
-            'tanggal_order_pertama' => '2026-09-05',
-            'status_pelanggan' => Customer::STATUS_NEW,
-            'segment' => Customer::SEGMENT_A,
             'catatan' => 'Nieuwe klant via ads.',
             'email' => 'fatimah@example.com',
         ]);
@@ -39,8 +35,12 @@ class CustomerMasterDataTest extends TestCase
         $customer = Customer::query()->where('nama_lengkap', 'Fatimah Zahra')->sole();
 
         $this->assertSame(Customer::SUMBER_META_ADS, $customer->sumber);
-        $this->assertSame(Customer::SEGMENT_A, $customer->segment);
-        $this->assertSame(Customer::STATUS_NEW, $customer->status_pelanggan);
+        $this->assertSame('08123456789', $customer->no_whatsapp);
+        // Kolom lama sudah tidak ada di skema.
+        $this->assertFalse(Schema::hasColumn('customers', 'domisili'));
+        $this->assertFalse(Schema::hasColumn('customers', 'segment'));
+        $this->assertFalse(Schema::hasColumn('customers', 'status_pelanggan'));
+        $this->assertFalse(Schema::hasColumn('customers', 'tanggal_order_pertama'));
     }
 
     public function test_customer_validation_rejects_unknown_sumber(): void
@@ -49,11 +49,8 @@ class CustomerMasterDataTest extends TestCase
             'nama_lengkap' => 'Amina Bint',
             'nama_brand' => 'Hijab Co',
             'no_whatsapp' => '08123456789',
-            'domisili' => 'Rotterdam',
             'sumber' => 'TikTok',
             'tanggal_masuk_chat' => '2026-09-01',
-            'status_pelanggan' => Customer::STATUS_NEW,
-            'segment' => Customer::SEGMENT_B,
         ]);
 
         $response->assertRedirectBackWithErrors(['sumber']);
@@ -70,11 +67,8 @@ class CustomerMasterDataTest extends TestCase
             'nama_lengkap' => 'Zaynab Ali',
             'nama_brand' => 'Hijab Co',
             'no_whatsapp' => '08129876543',
-            'domisili' => 'Den Haag',
             'sumber' => Customer::SUMBER_INSTAGRAM_ORGANIK,
             'tanggal_masuk_chat' => '2026-09-02',
-            'status_pelanggan' => Customer::STATUS_NEW,
-            'segment' => Customer::SEGMENT_C,
         ]);
 
         $uri = "/customers/{$customer->id}/edit";
@@ -83,11 +77,8 @@ class CustomerMasterDataTest extends TestCase
             'nama_lengkap' => 'Zaynab Ali',
             'nama_brand' => 'Hijab Co',
             'no_whatsapp' => '08129876543',
-            'domisili' => 'Den Haag',
             'sumber' => Customer::SUMBER_CRM_WHATSAPP,
             'tanggal_masuk_chat' => '2026-09-02',
-            'status_pelanggan' => Customer::STATUS_REPEAT,
-            'segment' => Customer::SEGMENT_C,
         ]);
 
         $response->assertRedirectToRoute('customers.index');
@@ -95,7 +86,6 @@ class CustomerMasterDataTest extends TestCase
         $customer->refresh();
 
         $this->assertSame(Customer::SUMBER_CRM_WHATSAPP, $customer->sumber);
-        $this->assertSame(Customer::STATUS_REPEAT, $customer->status_pelanggan);
     }
 
     public function test_customer_can_be_deleted(): void
@@ -104,11 +94,8 @@ class CustomerMasterDataTest extends TestCase
             'nama_lengkap' => 'Khadija Omar',
             'nama_brand' => 'Hijab Co',
             'no_whatsapp' => '08126543210',
-            'domisili' => 'Utrecht',
             'sumber' => Customer::SUMBER_INSTAGRAM_ORGANIK,
             'tanggal_masuk_chat' => '2026-09-03',
-            'status_pelanggan' => Customer::STATUS_NEW,
-            'segment' => Customer::SEGMENT_A,
         ]);
 
         $response = $this->from('/customers')->delete("/customers/{$customer->id}");

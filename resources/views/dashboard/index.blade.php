@@ -86,39 +86,5 @@
             </div>
             <div class="kpi-value">{{ $pelangganAktif }}</div>
         </div>
-
-        <div class="kpi">
-            <div class="kpi-label">Segment A</div>
-            <div class="kpi-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="20" x2="18" y2="10" />
-                    <line x1="12" y1="20" x2="12" y2="4" />
-                    <line x1="6" y1="20" x2="6" y2="14" />
-                </svg>
-            </div>
-            <div class="kpi-value">{{ $segmentA }}</div>
-        </div>
-
-        <div class="kpi">
-            <div class="kpi-label">Segment B</div>
-            <div class="kpi-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
-                    <path d="M22 12A10 10 0 0 0 12 2v10z" />
-                </svg>
-            </div>
-            <div class="kpi-value">{{ $segmentB }}</div>
-        </div>
-
-        <div class="kpi">
-            <div class="kpi-label">Segment C</div>
-            <div class="kpi-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="8" r="7" />
-                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
-                </svg>
-            </div>
-            <div class="kpi-value">{{ $segmentC }}</div>
-        </div>
     </div>
 @endsection

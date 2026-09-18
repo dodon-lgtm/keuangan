@@ -5,14 +5,11 @@ namespace Tests\Feature;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Illuminate\Support\Carbon;
 
-class OrderAutomationTest extends TestCase
+class OrderAutomationTest extends AuthenticatedTestCase
 {
-    use RefreshDatabase;
-
-    public function test_nominal_is_auto_calculated_when_left_blank(): void
+    public function test_nominal_is_auto_calculated_from_items_when_created(): void
     {
         $data = $this->prepare();
         $customer = $data['customer'];
@@ -25,120 +22,98 @@ class OrderAutomationTest extends TestCase
         $order = Order::query()->sole();
 
         $this->assertSame($product->harga_jual * 2, $order->nominal);
+        $this->assertSame(1, $order->orderItems()->count());
     }
 
-    public function test_manual_nominal_overrides_auto_calculation(): void
+    public function test_multi_product_order_sums_all_item_subtotals(): void
     {
         $data = $this->prepare();
         $customer = $data['customer'];
         $product = $data['product'];
+        $productB = $data['productB'];
 
-        $payload = $this->validPayload($customer, $product, ['nominal' => 50000]);
+        $payload = $this->validPayload($customer, $product, [
+            'items' => [
+                ['product_id' => $product->id, 'jumlah_pcs' => 2],
+                ['product_id' => $productB->id, 'jumlah_pcs' => 3],
+            ],
+        ]);
 
         $this->post('/orders', $payload);
 
         $order = Order::query()->sole();
 
-        $this->assertSame(50000, $order->nominal);
+        // 26900*2 + 15000*3 = 53800 + 45000 = 98800
+        $this->assertSame(98800, $order->nominal);
     }
 
-    public function test_first_order_sets_customer_first_order_date_and_status_new(): void
+    public function test_empty_tanggal_defaults_to_today(): void
     {
         $data = $this->prepare();
         $customer = $data['customer'];
         $product = $data['product'];
 
-        $this->post('/orders', $this->validPayload($customer, $product, ['tanggal' => '2026-09-08']));
+        $this->post('/orders', $this->validPayload($customer, $product, ['tanggal' => '']));
 
-        $customer->refresh();
+        $order = Order::query()->sole();
 
-        $this->assertSame(Customer::STATUS_NEW, $customer->status_pelanggan);
-        $this->assertSame('2026-09-08', $customer->tanggal_order_pertama->format('Y-m-d'));
+        $this->assertSame(
+            Carbon::today()->format('Y-m-d'),
+            $order->tanggal->format('Y-m-d')
+        );
     }
 
-    public function test_second_order_sets_customer_status_repeat(): void
+    public function test_update_recalculates_nominal_from_new_items(): void
     {
         $data = $this->prepare();
         $customer = $data['customer'];
         $product = $data['product'];
+        $productB = $data['productB'];
 
-        // First order via the model (also triggers the observer).
-        Order::create($this->validPayload($customer, $product, ['tanggal' => '2026-09-01']));
+        $order = $this->post('/orders', $this->validPayload($customer, $product))->assertRedirectToRoute('orders.index');
 
-        // Second order via the HTTP endpoint.
-        $response = $this->post('/orders', $this->validPayload($customer, $product, ['tanggal' => '2026-09-08']));
+        $savedOrder = Order::query()->sole();
 
-        $response->assertRedirectToRoute('orders.index');
-
-        $customer->refresh();
-
-        $this->assertSame(Customer::STATUS_REPEAT, $customer->status_pelanggan);
-        $this->assertSame('2026-09-01', $customer->tanggal_order_pertama->format('Y-m-d'));
-    }
-
-    public function test_update_with_blank_nominal_recalculates_from_new_pcs(): void
-    {
-        $data = $this->prepare();
-        $customer = $data['customer'];
-        $product = $data['product'];
-
-        $order = Order::create($this->validPayload($customer, $product));
-
-        $response = $this->from("/orders/{$order->id}/edit")
-            ->put("/orders/{$order->id}", $this->validPayload(
+        $response = $this->from("/orders/{$savedOrder->id}/edit")
+            ->put("/orders/{$savedOrder->id}", $this->validPayload(
                 $customer,
                 $product,
-                ['jumlah_pcs' => 3, 'nominal' => '']
+                [
+                    'items' => [
+                        ['product_id' => $productB->id, 'jumlah_pcs' => 5],
+                    ],
+                ]
             ));
 
         $response->assertRedirectToRoute('orders.index');
 
-        $order->refresh();
+        $savedOrder->refresh();
 
-        $this->assertSame($product->harga_jual * 3, $order->nominal);
+        $this->assertSame(15000 * 5, $savedOrder->nominal);
+        $this->assertSame(1, $savedOrder->orderItems()->count());
     }
 
-    public function test_moving_order_to_another_customer_resyncs_both_customers(): void
+    public function test_items_with_invalid_product_are_rejected(): void
     {
         $data = $this->prepare();
-        $customerA = $data['customer'];
+        $customer = $data['customer'];
         $product = $data['product'];
 
-        $customerB = Customer::create([
-            'nama_lengkap' => 'Amina Bint',
-            'nama_brand' => 'Hijab Co',
-            'no_whatsapp' => '08129876543',
-            'domisili' => 'Rotterdam',
-            'sumber' => Customer::SUMBER_CRM_WHATSAPP,
-            'tanggal_masuk_chat' => '2026-09-02',
-            'status_pelanggan' => Customer::STATUS_NEW,
-            'segment' => Customer::SEGMENT_B,
+        $payload = $this->validPayload($customer, $product, [
+            'items' => [
+                ['product_id' => 999999, 'jumlah_pcs' => 2],
+            ],
         ]);
 
-        Order::create($this->validPayload($customerA, $product, ['tanggal' => '2026-09-01']));
-        $order = Order::create($this->validPayload($customerA, $product, ['tanggal' => '2026-09-05']));
+        $response = $this->from('/orders/create')->post('/orders', $payload);
 
-        // Move the second order to customer B (keeping its original date).
-        $response = $this->from("/orders/{$order->id}/edit")
-            ->put("/orders/{$order->id}", $this->validPayload(
-                $customerB,
-                $product,
-                ['tanggal' => '2026-09-05']
-            ));
+        $response->assertRedirectBackWithErrors(['items.0.product_id']);
 
-        $response->assertRedirectToRoute('orders.index');
-
-        $customerA->refresh();
-        $customerB->refresh();
-
-        // A lost one order (now only 1 remaining) and B received its first order.
-        $this->assertSame(Customer::STATUS_NEW, $customerA->status_pelanggan);
-        $this->assertSame(Customer::STATUS_NEW, $customerB->status_pelanggan);
-        $this->assertSame('2026-09-05', $customerB->tanggal_order_pertama->format('Y-m-d'));
+        $this->assertSame(0, Order::query()->count());
     }
 
     /**
-     * Create a customer and a product fixture.
+     * Create a customer and two products as order form fixtures.
      */
     private function prepare(): array
     {
@@ -146,11 +121,8 @@ class OrderAutomationTest extends TestCase
             'nama_lengkap' => 'Fatimah Zahra',
             'nama_brand' => 'Hijab Co',
             'no_whatsapp' => '08123456789',
-            'domisili' => 'Amsterdam',
             'sumber' => Customer::SUMBER_META_ADS,
             'tanggal_masuk_chat' => '2026-09-01',
-            'status_pelanggan' => Customer::STATUS_NEW,
-            'segment' => Customer::SEGMENT_A,
         ]);
 
         $product = Product::create([
@@ -159,29 +131,33 @@ class OrderAutomationTest extends TestCase
             'hpp' => 15500,
         ]);
 
-        return compact('customer', 'product');
+        $productB = Product::create([
+            'nama_produk' => 'Hijab Polos',
+            'harga_jual' => 15000,
+            'hpp' => 9000,
+        ]);
+
+        return compact('customer', 'product', 'productB');
     }
 
     /**
-     * Build a valid order payload, optionally overriding attributes.
+     * Build a valid order payload with its line items.
      */
     private function validPayload($customer, $product, array $overrides = []): array
     {
         return array_merge([
             'customer_id' => $customer->id,
-            'product_id' => $product->id,
             'tanggal' => '2026-09-08',
-            'nominal' => '',
             'tipe_bayar' => Order::TIPE_FULL_PAYMENT,
             'jenis_order' => Order::JENIS_READY_STOCK,
             'metode_bayar' => Order::METODE_TRANSFER_BANK,
             'pic_admin' => 'Admin A',
-            'jumlah_pcs' => 2,
-            'status' => Order::STATUS_LUNAS,
-            'link_desain' => '',
             'ongkir' => '',
             'alamat_kirim' => '',
             'ukuran_hijab' => '110x110',
+            'items' => [
+                ['product_id' => $product->id, 'jumlah_pcs' => 2],
+            ],
         ], $overrides);
     }
 }

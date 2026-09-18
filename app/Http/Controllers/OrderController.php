@@ -19,11 +19,15 @@ class OrderController extends Controller
     public function index(): View
     {
         $orders = Order::query()
-            ->with(['customer', 'product'])
+            ->with(['customer', 'orderItems.product'])
             ->orderByDesc('id')
             ->paginate(10);
 
-        return view('orders.index', compact('orders'));
+        $totalOmset = (int) Order::query()->sum('nominal');
+
+        $totalPcs = (int) \Illuminate\Support\Facades\DB::table('order_items')->sum('jumlah_pcs');
+
+        return view('orders.index', compact('orders', 'totalOmset', 'totalPcs'));
     }
 
     /**
@@ -42,26 +46,22 @@ class OrderController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'customer_id' => ['required', 'integer', Rule::exists('customers', 'id')],
-            'product_id' => ['required', 'integer', Rule::exists('products', 'id')],
-            'tanggal' => ['required', 'date'],
-            'nominal' => ['nullable', 'integer', 'min:0'],
-            'tipe_bayar' => ['required', Rule::in(Order::TIPES)],
-            'jenis_order' => ['required', Rule::in(Order::JENISES)],
-            'metode_bayar' => ['required', Rule::in(Order::METODES)],
-            'pic_admin' => ['required', 'string', 'max:255'],
-            'jumlah_pcs' => ['required', 'integer', 'min:1'],
-            'status' => ['required', Rule::in(Order::STATUSES)],
-            'link_desain' => ['nullable', 'string'],
-            'ongkir' => ['nullable', 'integer', 'min:0'],
-            'alamat_kirim' => ['nullable', 'string'],
-            'ukuran_hijab' => ['nullable', 'string', 'max:255'],
+        $data = $this->validated($request);
+
+        $order = Order::create([
+            'customer_id' => $data['customer_id'],
+            'tanggal' => $data['tanggal'] ?? now(),
+            'tipe_bayar' => $data['tipe_bayar'],
+            'jenis_order' => $data['jenis_order'],
+            'metode_bayar' => $data['metode_bayar'],
+            'pic_admin' => $data['pic_admin'],
+            'link_desain' => $data['link_desain'] ?? null,
+            'ongkir' => $data['ongkir'] ?? 0,
+            'alamat_kirim' => $data['alamat_kirim'] ?? null,
+            'ukuran_hijab' => $data['ukuran_hijab'] ?? null,
         ]);
 
-        $data['ongkir'] ??= 0;
-
-        Order::create($data);
+        $this->syncOrderItems($order, $data['items']);
 
         return redirect()
             ->route('orders.index')
@@ -73,6 +73,8 @@ class OrderController extends Controller
      */
     public function edit(Order $order): View
     {
+        $order->load('orderItems.product');
+
         $customers = Customer::query()->orderBy('nama_lengkap')->get();
         $products = Product::query()->orderBy('nama_produk')->get();
 
@@ -84,38 +86,22 @@ class OrderController extends Controller
      */
     public function update(Request $request, Order $order): RedirectResponse
     {
-        $previousCustomerId = $order->customer_id;
+        $data = $this->validated($request);
 
-        $data = $request->validate([
-            'customer_id' => ['required', 'integer', Rule::exists('customers', 'id')],
-            'product_id' => ['required', 'integer', Rule::exists('products', 'id')],
-            'tanggal' => ['required', 'date'],
-            'nominal' => ['nullable', 'integer', 'min:0'],
-            'tipe_bayar' => ['required', Rule::in(Order::TIPES)],
-            'jenis_order' => ['required', Rule::in(Order::JENISES)],
-            'metode_bayar' => ['required', Rule::in(Order::METODES)],
-            'pic_admin' => ['required', 'string', 'max:255'],
-            'jumlah_pcs' => ['required', 'integer', 'min:1'],
-            'status' => ['required', Rule::in(Order::STATUSES)],
-            'link_desain' => ['nullable', 'string'],
-            'ongkir' => ['nullable', 'integer', 'min:0'],
-            'alamat_kirim' => ['nullable', 'string'],
-            'ukuran_hijab' => ['nullable', 'string', 'max:255'],
+        $order->update([
+            'customer_id' => $data['customer_id'],
+            'tanggal' => $data['tanggal'] ?? $order->tanggal,
+            'tipe_bayar' => $data['tipe_bayar'],
+            'jenis_order' => $data['jenis_order'],
+            'metode_bayar' => $data['metode_bayar'],
+            'pic_admin' => $data['pic_admin'],
+            'link_desain' => $data['link_desain'] ?? null,
+            'ongkir' => $data['ongkir'] ?? 0,
+            'alamat_kirim' => $data['alamat_kirim'] ?? null,
+            'ukuran_hijab' => $data['ukuran_hijab'] ?? null,
         ]);
 
-        $data['ongkir'] ??= 0;
-
-        // If nominal was left blank, let the observer re-calculate it from the product.
-        if (blank($data['nominal'])) {
-            $data['nominal'] = null;
-        }
-
-        $order->update($data);
-
-        // When the order moves to another customer, re-sync the previous customer too.
-        if ($previousCustomerId !== $order->customer_id) {
-            OrderObserver::syncCustomer(Customer::findOrFail($previousCustomerId));
-        }
+        $this->syncOrderItems($order, $data['items']);
 
         return redirect()
             ->route('orders.index')
@@ -132,5 +118,54 @@ class OrderController extends Controller
         return redirect()
             ->route('orders.index')
             ->with('success', 'Order berhasil dihapus.');
+    }
+
+    /**
+     * Validate the master order payload including its dynamic line items.
+     *
+     * @return array<string, mixed>
+     */
+    private function validated(Request $request): array
+    {
+        return $request->validate([
+            'customer_id' => ['required', 'integer', Rule::exists('customers', 'id')],
+            'tanggal' => ['nullable', 'date'],
+            'tipe_bayar' => ['required', Rule::in(Order::TIPES)],
+            'jenis_order' => ['required', Rule::in(Order::JENISES)],
+            'metode_bayar' => ['required', Rule::in(Order::METODES)],
+            'pic_admin' => ['required', 'string', 'max:255'],
+            'link_desain' => ['nullable', 'string'],
+            'ongkir' => ['nullable', 'integer', 'min:0'],
+            'alamat_kirim' => ['nullable', 'string'],
+            'ukuran_hijab' => ['nullable', 'string', 'max:255'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.product_id' => ['required', 'integer', Rule::exists('products', 'id')],
+            'items.*.jumlah_pcs' => ['required', 'integer', 'min:1'],
+        ]);
+    }
+
+    /**
+     * Replace the line items of an order and recompute its nominal from the
+     * sum of the item subtotals (snapshotting the product price & HPP).
+     *
+     * @param  array<int, array<string, mixed>>  $items
+     */
+    private function syncOrderItems(Order $order, array $items): void
+    {
+        $order->orderItems()->delete();
+
+        foreach ($items as $item) {
+            $product = Product::findOrFail((int) $item['product_id']);
+
+            $order->orderItems()->create([
+                'product_id' => $product->id,
+                'jumlah_pcs' => (int) $item['jumlah_pcs'],
+                'harga_satuan' => $product->harga_jual,
+                'hpp_satuan' => $product->hpp,
+                'subtotal' => $product->harga_jual * (int) $item['jumlah_pcs'],
+            ]);
+        }
+
+        OrderObserver::recalcNominal($order);
     }
 }

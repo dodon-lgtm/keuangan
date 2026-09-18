@@ -10,12 +10,13 @@ class ExampleTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * A basic test example.
+     * The root URL redirects anonymous visitors to the auth-protected
+     * dashboard (which hands the guest over to the login page).
      */
-    public function test_the_application_returns_a_successful_response(): void
+    public function test_the_application_root_redirects_to_dashboard(): void
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response->assertRedirect('/dashboard');
     }
 }

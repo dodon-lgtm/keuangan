@@ -4,21 +4,17 @@ namespace Tests\Feature;
 
 use App\Models\Customer;
 use App\Models\MarketingSpend;
+use App\Models\OperationalExpense;
 use App\Models\Order;
 use App\Models\Product;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 /**
  * Every form view must render without Blade parse errors. The master-data
- * tests only post to these URLs (from() never renders the view), so the
- * broken "@error('field', 'is-invalid')" class attribute pattern previously
- * slipped through unnoticed.
+ * tests only post to these URLs (from() never renders the view), so broken
+ * field markup would otherwise slip through unnoticed.
  */
-class FormViewRenderTest extends TestCase
+class FormViewRenderTest extends AuthenticatedTestCase
 {
-    use RefreshDatabase;
-
     public function test_product_create_view_renders(): void
     {
         $this->get('/products/create')
@@ -48,55 +44,32 @@ class FormViewRenderTest extends TestCase
 
     public function test_customer_edit_view_renders(): void
     {
-        $customer = Customer::create([
-            'nama_lengkap' => 'Fatimah Zahra',
-            'nama_brand' => 'Hijab Co',
-            'no_whatsapp' => '08123456789',
-            'domisili' => 'Amsterdam',
-            'sumber' => Customer::SUMBER_META_ADS,
-            'tanggal_masuk_chat' => '2026-09-01',
-            'status_pelanggan' => Customer::STATUS_NEW,
-            'segment' => Customer::SEGMENT_A,
-        ]);
+        $customer = $this->customer();
 
         $this->get("/customers/{$customer->id}/edit")
             ->assertStatus(200)
             ->assertSee('Pelanggan Edit');
     }
 
-    public function test_order_create_view_renders(): void
+    public function test_order_create_view_renders_with_multi_product_form(): void
     {
         $this->prepareOrderFixtures();
 
         $this->get('/orders/create')
             ->assertStatus(200)
-            ->assertSee('Order Jaubah');
+            ->assertSee('Order Jaubah')
+            ->assertSee('+ Tambah Produk')
+            ->assertSee('Total Nominal Transaksi');
     }
 
     public function test_order_edit_view_renders(): void
     {
-        $data = $this->prepareOrderFixtures();
-
-        $order = Order::create([
-            'customer_id' => $data['customer']->id,
-            'product_id' => $data['product']->id,
-            'tanggal' => '2026-09-05',
-            'nominal' => 40000,
-            'tipe_bayar' => Order::TIPE_FULL_PAYMENT,
-            'jenis_order' => Order::JENIS_READY_STOCK,
-            'metode_bayar' => Order::METODE_TRANSFER_BANK,
-            'pic_admin' => 'Admin A',
-            'jumlah_pcs' => 2,
-            'status' => Order::STATUS_LUNAS,
-            'link_desain' => '',
-            'ongkir' => 5000,
-            'alamat_kirim' => '',
-            'ukuran_hijab' => '110x110',
-        ]);
+        $order = $this->createOrderWithItem();
 
         $this->get("/orders/{$order->id}/edit")
             ->assertStatus(200)
-            ->assertSee('Order Edit');
+            ->assertSee('Order Edit')
+            ->assertSee('+ Tambah Produk');
     }
 
     public function test_marketing_spend_create_view_renders(): void
@@ -119,6 +92,28 @@ class FormViewRenderTest extends TestCase
             ->assertSee('Marketing Spend Edit');
     }
 
+    public function test_operational_expense_create_view_renders(): void
+    {
+        $this->get('/operational-expenses/create')
+            ->assertStatus(200)
+            ->assertSee('Pengeluaran Operasional Jaubah');
+    }
+
+    public function test_operational_expense_edit_view_renders(): void
+    {
+        $expense = OperationalExpense::create([
+            'nama_pengeluaran' => 'Listrik',
+            'kategori' => OperationalExpense::KATEGORI_FIX_COST,
+            'nominal' => 400000,
+            'bulan' => 9,
+            'tahun' => 2026,
+        ]);
+
+        $this->get("/operational-expenses/{$expense->id}/edit")
+            ->assertStatus(200)
+            ->assertSee('Pengeluaran Operasional Edit');
+    }
+
     public function test_forms_render_validation_errors_without_parse_failures(): void
     {
         // Post invalid payloads from the form pages so the views render again
@@ -126,10 +121,12 @@ class FormViewRenderTest extends TestCase
         $this->from('/products/create')->post('/products', ['nama_produk' => ''])->assertRedirectBackWithErrors(['nama_produk']);
         $this->from('/customers/create')->post('/customers', ['nama_lengkap' => ''])->assertRedirectBackWithErrors(['nama_lengkap']);
         $this->from('/marketing-spends/create')->post('/marketing-spends', ['bulan' => ''])->assertRedirectBackWithErrors(['bulan']);
+        $this->from('/operational-expenses/create')->post('/operational-expenses', ['nama_pengeluaran' => ''])->assertRedirectBackWithErrors(['nama_pengeluaran']);
 
         $this->get('/products/create')->assertStatus(200);
         $this->get('/customers/create')->assertStatus(200);
         $this->get('/marketing-spends/create')->assertStatus(200);
+        $this->get('/operational-expenses/create')->assertStatus(200);
     }
 
     /**
@@ -137,16 +134,7 @@ class FormViewRenderTest extends TestCase
      */
     private function prepareOrderFixtures(): array
     {
-        $customer = Customer::create([
-            'nama_lengkap' => 'Fatimah Zahra',
-            'nama_brand' => 'Hijab Co',
-            'no_whatsapp' => '08123456789',
-            'domisili' => 'Amsterdam',
-            'sumber' => Customer::SUMBER_META_ADS,
-            'tanggal_masuk_chat' => '2026-09-01',
-            'status_pelanggan' => Customer::STATUS_NEW,
-            'segment' => Customer::SEGMENT_A,
-        ]);
+        $customer = $this->customer();
 
         $product = Product::create([
             'nama_produk' => 'Voal Test',
@@ -155,5 +143,47 @@ class FormViewRenderTest extends TestCase
         ]);
 
         return compact('customer', 'product');
+    }
+
+    private function customer(): Customer
+    {
+        return Customer::create([
+            'nama_lengkap' => 'Fatimah Zahra',
+            'nama_brand' => 'Hijab Co',
+            'no_whatsapp' => '08123456789',
+            'sumber' => Customer::SUMBER_META_ADS,
+            'tanggal_masuk_chat' => '2026-09-01',
+        ]);
+    }
+
+    /**
+     * Create an order that already has a line item.
+     */
+    private function createOrderWithItem(): Order
+    {
+        $data = $this->prepareOrderFixtures();
+        $customer = $data['customer'];
+        $product = $data['product'];
+
+        $order = Order::create([
+            'customer_id' => $customer->id,
+            'tanggal' => '2026-09-05',
+            'nominal' => 40000,
+            'tipe_bayar' => Order::TIPE_FULL_PAYMENT,
+            'jenis_order' => Order::JENIS_READY_STOCK,
+            'metode_bayar' => Order::METODE_TRANSFER_BANK,
+            'pic_admin' => 'Admin A',
+            'ongkir' => 5000,
+        ]);
+
+        $order->orderItems()->create([
+            'product_id' => $product->id,
+            'jumlah_pcs' => 2,
+            'harga_satuan' => $product->harga_jual,
+            'hpp_satuan' => $product->hpp,
+            'subtotal' => $product->harga_jual * 2,
+        ]);
+
+        return $order;
     }
 }

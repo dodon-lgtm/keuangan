@@ -15,16 +15,13 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('customer_id')->constrained();
-            $table->foreignId('product_id')->constrained();
 
-            $table->date('tanggal');
-            $table->unsignedBigInteger('nominal');
+            $table->date('tanggal')->nullable();
+            $table->unsignedBigInteger('nominal')->default(0);
             $table->enum('tipe_bayar', ['Full Payment', 'DP', 'Pelunasan']);
             $table->enum('jenis_order', ['Custom Design', 'Ready Stock']);
             $table->enum('metode_bayar', ['Transfer Bank', 'QRIS', 'Cash']);
             $table->string('pic_admin');
-            $table->integer('jumlah_pcs');
-            $table->enum('status', ['Pending', 'Lunas', 'Dibatalkan'])->default('Lunas');
             $table->text('link_desain')->nullable();
             $table->unsignedBigInteger('ongkir')->default(0);
             $table->text('alamat_kirim')->nullable();

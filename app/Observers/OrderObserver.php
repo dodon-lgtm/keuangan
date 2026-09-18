@@ -2,68 +2,44 @@
 
 namespace App\Observers;
 
-use App\Models\Customer;
 use App\Models\Order;
+use Illuminate\Support\Carbon;
 
 class OrderObserver
 {
     /**
-     * Auto-calculate the order nominal from the product price and quantity
-     * when the nominal was not manually provided in the form.
+     * Default the order date to today when it was left blank and seed a
+     * starting nominal of zero (the real value is calculated from the
+     * attached order_items afterwards).
      */
     public function creating(Order $order): void
     {
+        if (blank($order->tanggal)) {
+            $order->tanggal = Carbon::today();
+        }
+
         if (blank($order->nominal)) {
-            $order->nominal = $order->product->harga_jual * $order->jumlah_pcs;
+            $order->nominal = 0;
         }
     }
 
     /**
-     * Auto-sync the customer status after a new order has been stored.
-     */
-    public function created(Order $order): void
-    {
-        self::syncCustomer($order->customer);
-    }
-
-    /**
-     * Auto-calculate the order nominal when it is left blank during an update.
+     * Keep the order date defaulted to today when it is cleared during an update.
      */
     public function updating(Order $order): void
     {
-        if (blank($order->nominal)) {
-            $order->nominal = $order->product->harga_jual * $order->jumlah_pcs;
+        if (blank($order->tanggal)) {
+            $order->tanggal = Carbon::today();
         }
     }
 
     /**
-     * Keep the customer status in sync after an order has been updated.
+     * Recalculate the order nominal from the sum of its line item subtotals.
      */
-    public function updated(Order $order): void
+    public static function recalcNominal(Order $order): void
     {
-        self::syncCustomer($order->customer);
-    }
-
-    /**
-     * Sync the customer first-order date and status based on their orders:
-     *  - 1st order (or single order):  tanggal_order_pertama = earliest order date, status = 'new'
-     *  - 2nd order or later:            status = 'repeat'
-     */
-    public static function syncCustomer(Customer $customer): void
-    {
-        $orderCount = $customer->orders()->count();
-
-        if ($orderCount <= 1) {
-            $customer->update([
-                'tanggal_order_pertama' => $customer->orders()->min('tanggal'),
-                'status_pelanggan' => Customer::STATUS_NEW,
-            ]);
-
-            return;
-        }
-
-        $customer->update([
-            'status_pelanggan' => Customer::STATUS_REPEAT,
+        $order->update([
+            'nominal' => (int) $order->orderItems()->sum('subtotal'),
         ]);
     }
 }

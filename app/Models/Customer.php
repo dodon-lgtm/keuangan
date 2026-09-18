@@ -12,12 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'nama_lengkap',
     'nama_brand',
     'no_whatsapp',
-    'domisili',
     'sumber',
     'tanggal_masuk_chat',
-    'tanggal_order_pertama',
-    'status_pelanggan',
-    'segment',
     'catatan',
     'email',
 ])]
@@ -32,31 +28,10 @@ class Customer extends Model
 
     public const SUMBER_CRM_WHATSAPP = 'CRM Whatsapp';
 
-    public const STATUS_NEW = 'new';
-
-    public const STATUS_REPEAT = 'repeat';
-
-    public const SEGMENT_A = 'A';
-
-    public const SEGMENT_B = 'B';
-
-    public const SEGMENT_C = 'C';
-
     public const SUMBERS = [
         self::SUMBER_INSTAGRAM_ORGANIK,
         self::SUMBER_META_ADS,
         self::SUMBER_CRM_WHATSAPP,
-    ];
-
-    public const STATUSES = [
-        self::STATUS_NEW,
-        self::STATUS_REPEAT,
-    ];
-
-    public const SEGMENTS = [
-        self::SEGMENT_A,
-        self::SEGMENT_B,
-        self::SEGMENT_C,
     ];
 
     /**
@@ -68,6 +43,14 @@ class Customer extends Model
     }
 
     /**
+     * Whether this customer is "repeat" (has more than one transaction).
+     */
+    public function isRepeat(): bool
+    {
+        return $this->orders_count > 1;
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -76,7 +59,6 @@ class Customer extends Model
     {
         return [
             'tanggal_masuk_chat' => 'date',
-            'tanggal_order_pertama' => 'date',
         ];
     }
 }

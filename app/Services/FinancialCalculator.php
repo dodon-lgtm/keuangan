@@ -2,16 +2,18 @@
 
 namespace App\Services;
 
+use App\Models\Customer;
 use App\Models\MarketingSpend;
-use App\Models\Order;
+use App\Models\OperationalExpense;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Central place for all monthly financial calculations.
  *
- * Only paid orders (status = Lunas) count as revenue, so cancelled and
- * pending orders never influence the reported figures.
+ * Revenue (orders.nominal) is always the sum of the attached order_items
+ * subtotals. Operating costs combine shipping, cost of goods sold and the
+ * realtime operational expenses (Fix/Variable Cost) of the same period.
  */
 class FinancialCalculator
 {
@@ -26,36 +28,61 @@ class FinancialCalculator
     public const SHARE_RIZKY = 0.40;
 
     /**
-     * Total paid (Lunas) revenue for the given month / year.
+     * Total revenue for the given month / year: sum of orders.nominal.
      */
     public static function totalOmset(int $month, int $year): int
     {
-        return (int) (static::paidOrders($month, $year)->sum('nominal') ?? 0);
+        return (int) static::ordersOfMonth($month, $year)->sum('nominal');
     }
 
     /**
-     * Number of paid (Lunas) transactions for the given month / year.
+     * Number of transactions for the given month / year.
      */
     public static function totalTransaksi(int $month, int $year): int
     {
-        return static::paidOrders($month, $year)->count();
+        return static::ordersOfMonth($month, $year)->count();
+    }
+
+    /**
+     * Total shipping fees of the orders in the given month / year.
+     */
+    public static function totalOngkir(int $month, int $year): int
+    {
+        return (int) static::ordersOfMonth($month, $year)->sum('ongkir');
+    }
+
+    /**
+     * Total cost of goods sold for the period:
+     * sum(order_items.hpp_satuan * order_items.jumlah_pcs).
+     */
+    public static function totalHPP(int $month, int $year): int
+    {
+        return (int) DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->whereBetween('orders.tanggal', [static::startOfMonth($month, $year), static::endOfMonth($month, $year)])
+            ->sum(DB::raw('order_items.hpp_satuan * order_items.jumlah_pcs'));
+    }
+
+    /**
+     * Total realtime operational expenses (Fix/Variable Cost) for the period.
+     */
+    public static function totalOperationalExpenses(int $month, int $year): int
+    {
+        return (int) OperationalExpense::query()
+            ->where('bulan', $month)
+            ->where('tahun', $year)
+            ->sum('nominal');
     }
 
     /**
      * Total operating costs for the period:
-     * shipping fees (orders.ongkir) + cost of goods sold (product.hpp * qty).
+     * shipping (orders.ongkir) + cost of goods sold + operational expenses.
      */
     public static function totalOperasional(int $month, int $year): int
     {
-        $row = DB::table('orders')
-            ->join('products', 'products.id', '=', 'orders.product_id')
-            ->where('orders.status', Order::STATUS_LUNAS)
-            ->whereBetween('orders.tanggal', [static::startOfMonth($month, $year), static::endOfMonth($month, $year)])
-            ->selectRaw('COALESCE(SUM(orders.ongkir), 0) as total_ongkir')
-            ->selectRaw('COALESCE(SUM(products.hpp * orders.jumlah_pcs), 0) as total_hpp')
-            ->first();
-
-        return (int) ($row->total_ongkir ?? 0) + (int) ($row->total_hpp ?? 0);
+        return static::totalOngkir($month, $year)
+            + static::totalHPP($month, $year)
+            + static::totalOperationalExpenses($month, $year);
     }
 
     /**
@@ -64,6 +91,18 @@ class FinancialCalculator
     public static function netProfit(int $month, int $year): int
     {
         return static::totalOmset($month, $year) - static::totalOperasional($month, $year);
+    }
+
+    /**
+     * Number of "repeat" customers: customers that have more than one order.
+     */
+    public static function pelangganAktif(): int
+    {
+        return Customer::query()
+            ->withCount('orders')
+            ->get()
+            ->where('orders_count', '>', 1)
+            ->count();
     }
 
     /**
@@ -140,12 +179,11 @@ class FinancialCalculator
     }
 
     /**
-     * Query builder scoped to the paid orders of the given month / year.
+     * Query builder scoped to the orders of the given month / year.
      */
-    protected static function paidOrders(int $month, int $year)
+    protected static function ordersOfMonth(int $month, int $year)
     {
-        return Order::query()
-            ->where('status', Order::STATUS_LUNAS)
+        return \App\Models\Order::query()
             ->whereBetween('tanggal', [static::startOfMonth($month, $year), static::endOfMonth($month, $year)]);
     }
 

@@ -102,6 +102,38 @@
 
     <div class="card mb-4">
         <div class="card-header">
+            <h2 class="h5 mb-0">Rincian Biaya Operasional</h2>
+        </div>
+        <table class="table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>Komponen</th>
+                    <th>Nominal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total HPP (order_items)</td>
+                    <td>@include('partials.rupiah', ['value' => $totalHPP])</td>
+                </tr>
+                <tr>
+                    <td>Total Ongkir</td>
+                    <td>@include('partials.rupiah', ['value' => $totalOngkir])</td>
+                </tr>
+                <tr>
+                    <td>Biaya Operasional (Fix/Variable Cost)</td>
+                    <td>@include('partials.rupiah', ['value' => $totalOperasionalExpenses])</td>
+                </tr>
+                <tr class="table-light fw-bold" style="color:#0D0F12;">
+                    <td>Total Operasional</td>
+                    <td>@include('partials.rupiah', ['value' => $totalOperasional])</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
             <h2 class="h5 mb-0">Pembagian Profit</h2>
         </div>
         <table class="table table-striped mb-0">

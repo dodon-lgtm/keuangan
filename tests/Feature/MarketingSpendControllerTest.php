@@ -3,13 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\MarketingSpend;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class MarketingSpendControllerTest extends TestCase
+class MarketingSpendControllerTest extends AuthenticatedTestCase
 {
-    use RefreshDatabase;
-
     public function test_index_lists_marketing_spends(): void
     {
         MarketingSpend::create([
@@ -24,7 +20,7 @@ class MarketingSpendControllerTest extends TestCase
         $response->assertSee('Marketing Spends');
         $response->assertSee('September');
         $response->assertSee('2026');
-        $response->assertSee('Rp 250000');
+        $response->assertSee('Rp 250.000');
     }
 
     public function test_marketing_spend_can_be_created(): void

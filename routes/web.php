@@ -4,6 +4,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MarketingSpendController;
+use App\Http\Controllers\OperationalExpenseController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReportController;
@@ -36,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('customers', CustomerController::class);
     Route::resource('orders', OrderController::class);
     Route::resource('marketing-spends', MarketingSpendController::class);
+    Route::resource('operational-expenses', OperationalExpenseController::class);
 
     // Laporan
     Route::get('/reports/mer-roi', [ReportController::class, 'merRoi'])

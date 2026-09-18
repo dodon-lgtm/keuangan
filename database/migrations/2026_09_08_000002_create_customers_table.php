@@ -16,12 +16,8 @@ return new class extends Migration
             $table->string('nama_lengkap');
             $table->string('nama_brand');
             $table->string('no_whatsapp');
-            $table->string('domisili');
             $table->enum('sumber', ['Instagram Organik', 'Meta Ads', 'CRM Whatsapp']);
             $table->date('tanggal_masuk_chat');
-            $table->date('tanggal_order_pertama')->nullable();
-            $table->enum('status_pelanggan', ['new', 'repeat'])->default('new');
-            $table->enum('segment', ['A', 'B', 'C']);
             $table->text('catatan')->nullable();
             $table->string('email')->nullable();
             $table->timestamps();

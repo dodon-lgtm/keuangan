@@ -18,7 +18,16 @@ class ProductController extends Controller
             ->orderByDesc('id')
             ->paginate(10);
 
-        return view('products.index', compact('products'));
+        $stats = [
+            'total_produk' => Product::count(),
+            'avg_harga_jual' => (int) round((float) (Product::avg('harga_jual') ?? 0)),
+            'avg_hpp' => (int) round((float) (Product::avg('hpp') ?? 0)),
+            'avg_keuntungan' => (int) round((float) (Product::query()
+                ->selectRaw('AVG(harga_jual - hpp) as avg_keuntungan')
+                ->value('avg_keuntungan') ?? 0)),
+        ];
+
+        return view('products.index', compact('products', 'stats'));
     }
 
     /**

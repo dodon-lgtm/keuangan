@@ -9,19 +9,17 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[ObservedBy(OrderObserver::class)]
 #[Fillable([
     'customer_id',
-    'product_id',
     'tanggal',
     'nominal',
     'tipe_bayar',
     'jenis_order',
     'metode_bayar',
     'pic_admin',
-    'jumlah_pcs',
-    'status',
     'link_desain',
     'ongkir',
     'alamat_kirim',
@@ -48,12 +46,6 @@ class Order extends Model
 
     public const METODE_CASH = 'Cash';
 
-    public const STATUS_PENDING = 'Pending';
-
-    public const STATUS_LUNAS = 'Lunas';
-
-    public const STATUS_DIBATALKAN = 'Dibatalkan';
-
     public const TIPES = [
         self::TIPE_FULL_PAYMENT,
         self::TIPE_DP,
@@ -71,12 +63,6 @@ class Order extends Model
         self::METODE_CASH,
     ];
 
-    public const STATUSES = [
-        self::STATUS_PENDING,
-        self::STATUS_LUNAS,
-        self::STATUS_DIBATALKAN,
-    ];
-
     /**
      * The customer that placed this order.
      */
@@ -86,11 +72,11 @@ class Order extends Model
     }
 
     /**
-     * The product that was ordered.
+     * The products (with quantities) purchased in this order.
      */
-    public function product(): BelongsTo
+    public function orderItems(): HasMany
     {
-        return $this->belongsTo(Product::class);
+        return $this->hasMany(OrderItem::class);
     }
 
     /**
@@ -103,7 +89,6 @@ class Order extends Model
         return [
             'tanggal' => 'date',
             'nominal' => 'integer',
-            'jumlah_pcs' => 'integer',
             'ongkir' => 'integer',
         ];
     }

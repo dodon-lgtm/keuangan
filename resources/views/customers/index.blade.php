@@ -14,11 +14,11 @@
                 <th>ID</th>
                 <th>Nama Lengkap</th>
                 <th>Nama Brand</th>
+                <th>No. WhatsApp</th>
                 <th>Sumber</th>
                 <th>Tanggal Masuk Chat</th>
-                <th>Tanggal Order Pertama</th>
+                <th>Jumlah Order</th>
                 <th>Status</th>
-                <th>Segment</th>
                 <th class="text-end">Aksi</th>
             </tr>
         </thead>
@@ -28,17 +28,17 @@
                 <td>{{ $customer->id }}</td>
                 <td>{{ $customer->nama_lengkap }}</td>
                 <td>{{ $customer->nama_brand }}</td>
+                <td>{{ $customer->no_whatsapp }}</td>
                 <td>{{ $customer->sumber }}</td>
                 <td>{{ $customer->tanggal_masuk_chat?->format('d M Y') }}</td>
-                <td>{{ $customer->tanggal_order_pertama?->format('d M Y') ?: '—' }}</td>
+                <td>{{ $customer->orders_count }}</td>
                 <td>
-                    @if ($customer->status_pelanggan === 'repeat')
+                    @if ($customer->isRepeat())
                         <span class="badge bg-info">repeat</span>
                     @else
                         <span class="badge bg-secondary">new</span>
                     @endif
                 </td>
-                <td>{{ $customer->segment }}</td>
                 <td class="text-end">
                     <a href="{{ route('customers.edit', $customer) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                     <form action="{{ route('customers.destroy', $customer) }}" method="post" class="d-inline" onsubmit="return confirm('Hapus pelanggan ini?')">

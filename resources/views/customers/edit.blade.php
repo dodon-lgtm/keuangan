@@ -11,7 +11,8 @@
             <form action="{{ route('customers.update', $customer) }}" method="post" novalidate>
                 @csrf
                 @method('PUT')
-<div class="row g-3 mb-3">
+
+                <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label for="nama_lengkap" class="form-label">Nama Lengkap</label>
                         <input type="text" name="nama_lengkap" id="nama_lengkap" value="{{ old('nama_lengkap', $customer->nama_lengkap) }}"
@@ -39,15 +40,7 @@
                     @enderror
                 </div>
 
-                <div class="mb-3">
-                    <label for="domisili" class="form-label">Domisili</label>
-                    <input type="text" name="domisili" id="domisili" value="{{ old('domisili', $customer->domisili) }}"
-                           class="form-control @error('domisili') is-invalid @enderror">
-                    @error('domisili')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-<div class="row g-3 mb-3">
+                <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label for="sumber" class="form-label">Sumber</label>
                         <select name="sumber" id="sumber" class="form-select @error('sumber') is-invalid @enderror">
@@ -60,20 +53,6 @@
                         @enderror
                     </div>
                     <div class="col-md-6">
-                        <label for="segment" class="form-label">Segment</label>
-                        <select name="segment" id="segment" class="form-select @error('segment') is-invalid @enderror">
-                            @foreach (['A', 'B', 'C'] as $option)
-                                <option value="{{ $option }}" @selected(old('segment', $customer->segment) === $option)>{{ $option }}</option>
-                            @endforeach
-                        </select>
-                        @error('segment')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
                         <label for="tanggal_masuk_chat" class="form-label">Tanggal Masuk Chat</label>
                         <input type="date" name="tanggal_masuk_chat" id="tanggal_masuk_chat"
                                value="{{ old('tanggal_masuk_chat', $customer->tanggal_masuk_chat?->format('Y-m-d')) }}"
@@ -82,26 +61,6 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div class="col-md-6">
-                        <label for="tanggal_order_pertama" class="form-label">Tanggal Order Pertama (optional)</label>
-                        <input type="date" name="tanggal_order_pertama" id="tanggal_order_pertama"
-                               value="{{ old('tanggal_order_pertama', $customer->tanggal_order_pertama?->format('Y-m-d')) }}"
-                               class="form-control @error('tanggal_order_pertama') is-invalid @enderror">
-                        @error('tanggal_order_pertama')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-<div class="mb-3">
-                    <label for="status_pelanggan" class="form-label">Status Pelanggan</label>
-                    <select name="status_pelanggan" id="status_pelanggan" class="form-select @error('status_pelanggan') is-invalid @enderror">
-                        @foreach (['new', 'repeat'] as $option)
-                            <option value="{{ $option }}" @selected(old('status_pelanggan', $customer->status_pelanggan) === $option)>{{ $option }}</option>
-                        @endforeach
-                    </select>
-                    @error('status_pelanggan')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
                 </div>
 
                 <div class="mb-3">
@@ -119,6 +78,10 @@
                     @error('catatan')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
+                </div>
+
+                <div class="form-text mb-3 text-muted">
+                    Status Pelanggan dihitung otomatis: <strong>repeat</strong> (Pelanggan Aktif) jika memiliki lebih dari 1 transaksi order.
                 </div>
 
                 <button type="submit" class="btn btn-primary">Update</button>

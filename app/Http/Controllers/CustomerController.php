@@ -16,6 +16,7 @@ class CustomerController extends Controller
     public function index(): View
     {
         $customers = Customer::query()
+            ->withCount('orders')
             ->orderByDesc('id')
             ->paginate(10);
 
@@ -39,12 +40,8 @@ class CustomerController extends Controller
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'nama_brand' => ['required', 'string', 'max:255'],
             'no_whatsapp' => ['required', 'string', 'max:20'],
-            'domisili' => ['required', 'string', 'max:255'],
             'sumber' => ['required', Rule::in(Customer::SUMBERS)],
             'tanggal_masuk_chat' => ['required', 'date'],
-            'tanggal_order_pertama' => ['nullable', 'date'],
-            'status_pelanggan' => ['required', Rule::in(Customer::STATUSES)],
-            'segment' => ['required', Rule::in(Customer::SEGMENTS)],
             'catatan' => ['nullable', 'string'],
             'email' => ['nullable', 'email', 'max:255'],
         ]);
@@ -73,12 +70,8 @@ class CustomerController extends Controller
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'nama_brand' => ['required', 'string', 'max:255'],
             'no_whatsapp' => ['required', 'string', 'max:20'],
-            'domisili' => ['required', 'string', 'max:255'],
             'sumber' => ['required', Rule::in(Customer::SUMBERS)],
             'tanggal_masuk_chat' => ['required', 'date'],
-            'tanggal_order_pertama' => ['nullable', 'date'],
-            'status_pelanggan' => ['required', Rule::in(Customer::STATUSES)],
-            'segment' => ['required', Rule::in(Customer::SEGMENTS)],
             'catatan' => ['nullable', 'string'],
             'email' => ['nullable', 'email', 'max:255'],
         ]);

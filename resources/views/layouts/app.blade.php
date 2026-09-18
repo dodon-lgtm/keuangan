@@ -412,6 +412,19 @@
         }
         .pagination .page-link { font-variant-numeric: tabular-nums; }
     </style>
+    <script>
+        /* Terapkan tema sebelum render agar tidak ada flash (default: dark) */
+        (function () {
+            try {
+                var t = localStorage.getItem('theme');
+                if (t !== 'light') t = 'dark';
+                document.documentElement.setAttribute('data-theme', t);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
+    <link href="{{ asset('css/theme.css') }}" rel="stylesheet">
 </head>
 <body>
 <div class="bg-grain" aria-hidden="true"></div>
@@ -450,6 +463,11 @@
                     </ul>
                 </div>
 
+                <button type="button" class="theme-toggle" aria-pressed="false" aria-label="Aktifkan White Mode">
+                    <span class="icon-moon" aria-hidden="true">🌙</span>
+                    <span class="icon-sun" aria-hidden="true">☀️</span>
+                </button>
+
                 <form action="{{ route('logout') }}" method="post" class="logout-form">
                     @csrf
                     <button type="submit" class="logout-btn">
@@ -473,6 +491,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('js/theme.js') }}"></script>
 <script>
         (function () {
             var path = window.location.pathname;

@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Pelanggan Jaubah')
+@section('title', 'Pelanggan Hijab')
 
 @section('content')
     <div class="card mb-4">
         <div class="card-header">
-            <h1 class="h4 mb-0">Pelanggan Jaubah</h1>
+            <h1 class="h4 mb-0">Pelanggan Hijab</h1>
         </div>
         <div class="card-body">
             <form action="{{ route('customers.store') }}" method="post" novalidate>

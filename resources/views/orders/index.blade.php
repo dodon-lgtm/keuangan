@@ -5,7 +5,7 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Log Order</h1>
-        <a href="{{ route('orders.create') }}" class="btn btn-primary">+ Order Jaubah</a>
+        <a href="{{ route('orders.create') }}" class="btn btn-primary">+ Order Hijab</a>
     </div>
 
     

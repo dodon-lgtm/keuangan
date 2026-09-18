@@ -5,7 +5,7 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Produk</h1>
-        <a href="{{ route('products.create') }}" class="btn btn-primary">+ Produk Jaubah</a>
+        <a href="{{ route('products.create') }}" class="btn btn-primary">+ Produk Hijab</a>
     </div>
 
     <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">

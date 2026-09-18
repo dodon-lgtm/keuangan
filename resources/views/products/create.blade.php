@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-4">
         <div class="card-header">
-            <h1 class="h4 mb-0">Produk Jaubah</h1>
+            <h1 class="h4 mb-0">Produk Hijab</h1>
         </div>
         <div class="card-body">
             <form action="{{ route('products.store') }}" method="post" novalidate>

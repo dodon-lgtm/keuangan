@@ -437,8 +437,7 @@
                 <a class="top-link" data-top href="{{ route('products.index') }}">Produk</a>
                 <a class="top-link" data-top href="{{ route('customers.index') }}">Pelanggan</a>
                 <a class="top-link" data-top href="{{ route('orders.index') }}">Log Order</a>
-                <a class="top-link" data-top href="{{ route('marketing-spends.index') }}">Marketing Spends</a>
-                <a class="top-link" data-top href="{{ route('operational-expenses.index') }}">Pengeluaran</a>
+                <a class="top-link" data-top href="{{ route('marketing-spends.index') }}">Pengeluaran Hijab</a>
 
                 <div class="js-dropdown">
                     <a class="top-link" data-top="reports" href="#" aria-haspopup="true" aria-expanded="false">

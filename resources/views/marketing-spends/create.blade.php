@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Marketing Spend Jaubah')
+@section('title', 'Marketing Spend Hijab')
 
 @section('content')
     <div class="card mb-4">
         <div class="card-header">
-            <h1 class="h4 mb-0">Marketing Spend Jaubah</h1>
+            <h1 class="h4 mb-0">Marketing Pengeluaran Hijab</h1>
         </div>
         <div class="card-body">
             <form action="{{ route('marketing-spends.store') }}" method="post" novalidate>

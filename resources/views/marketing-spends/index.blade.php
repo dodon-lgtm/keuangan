@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Marketing Spends')
+@section('title', 'Pengeluaran Hijab')
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Marketing Spends</h1>
-        <a href="{{ route('marketing-spends.create') }}" class="btn btn-primary">+ Marketing Spend Jaubah</a>
+        <h1>Pengeluaran hijab</h1>
+        <a href="{{ route('marketing-spends.create') }}" class="btn btn-primary">+ Pengeluaran hijab</a>
     </div>
 
     <table class="table table-striped align-middle">

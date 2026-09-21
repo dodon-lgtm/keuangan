@@ -4,7 +4,8 @@
 
 @section('content')
     <style>
-        .card-title.text-muted { color: #FFFFFF !important; }
+        /* Mengikuti tema: putih di dark mode, gelap di light mode */
+        .card-title.text-muted { color: var(--text) !important; }
     </style>
 
     <div class="d-flex justify-content-between align-items-center mb-3">

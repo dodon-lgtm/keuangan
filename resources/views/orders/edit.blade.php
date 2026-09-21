@@ -26,7 +26,7 @@
 
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
-                        <h6 class="text-uppercase text-muted mb-3">Data Pelanggan &amp; Tanggal</h6>
+                        <h6 class="text-uppercase mb-3" style="color: var(--muted) !important;">Data Pelanggan &amp; Tanggal</h6>
 
                         <div class="mb-3">
                             <label for="customer_id" class="form-label">Pelanggan</label>
@@ -65,7 +65,7 @@
                     </div>
 
                     <div class="col-md-4">
-                        <h6 class="text-uppercase text-muted mb-3">Pembayaran &amp; Ongkir</h6>
+                        <h6 class="text-uppercase mb-3" style="color: var(--muted) !important;">Pembayaran &amp; Ongkir</h6>
 
                         <div class="mb-3">
                             <label for="tipe_bayar" class="form-label">Tipe Bayar</label>
@@ -114,7 +114,7 @@
                     </div>
 
                     <div class="col-md-4">
-                        <h6 class="text-uppercase text-muted mb-3">Admin &amp; Alamat</h6>
+                        <h6 class="text-uppercase mb-3" style="color: var(--muted) !important;">Admin &amp; Alamat</h6>
 
                         <div class="mb-3">
                             <label for="pic_admin" class="form-label">Pic Admin</label>
@@ -142,6 +142,7 @@
                             @enderror
                         </div>
                     </div>
+                </div>
 
                 <div class="card border mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -159,7 +160,7 @@
                             <div class="alert alert-danger py-2">{{ $message }}</div>
                         @enderror
 
-                        <div class="row g-2 mb-2 fw-bold text-muted small">
+                        <div class="row g-2 mb-2 fw-bold small" style="color: var(--muted) !important;">
                             <div class="col-md-7">Produk</div>
                             <div class="col-md-2">Jumlah Pcs</div>
                             <div class="col-md-2">Subtotal</div>
@@ -196,7 +197,7 @@
                         </div>
 
                         <div class="d-flex justify-content-end align-items-center mt-3">
-                            <h6 class="mb-0 me-3 text-muted">Total Nominal Transaksi</h6>
+                            <h6 class="mb-0 me-3" style="color: var(--muted) !important;">Total Nominal Transaksi</h6>
                             <span id="totalNominal" class="fs-4 fw-bold">Rp {{ number_format($order->nominal, 0, ',', '.') }}</span>
                         </div>
                     </div>

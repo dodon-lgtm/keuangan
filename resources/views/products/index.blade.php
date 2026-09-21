@@ -36,7 +36,7 @@
             Reset
         </a>
         @if ($q !== '' || $hargaMin !== null || $hargaMax !== null)
-            <span class="filter-active">Filter actief</span>
+            <span class="filter-active">Filter aktif</span>
         @endif
     </form>
 
@@ -44,7 +44,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted">Total Jenis Produk</h5>
+                    <h5 class="card-title" style="color: var(--muted) !important;">Total Jenis Produk</h5>
                     <p class="card-text fs-4">{{ $stats['total_produk'] }}</p>
                 </div>
             </div>
@@ -52,7 +52,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted">Rata-rata Harga Jual</h5>
+                    <h5 class="card-title" style="color: var(--muted) !important;">Rata-rata Harga Jual</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $stats['avg_harga_jual']])</p>
                 </div>
             </div>
@@ -60,7 +60,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted">Rata-rata HPP</h5>
+                    <h5 class="card-title" style="color: var(--muted) !important;">Rata-rata HPP</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $stats['avg_hpp']])</p>
                 </div>
             </div>
@@ -68,7 +68,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted">Rata-rata Keuntungan</h5>
+                    <h5 class="card-title" style="color: var(--muted) !important;">Rata-rata Keuntungan</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $stats['avg_keuntungan']])</p>
                 </div>
             </div>

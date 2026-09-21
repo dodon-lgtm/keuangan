@@ -226,6 +226,7 @@
             flex-wrap: wrap;
             gap: 14px;
             align-items: flex-end;
+            margin: 14px 0 30px;
         }
         .filter-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 7px; font-weight: 600; letter-spacing: 0.2px; }
         .filter-select {
@@ -271,7 +272,7 @@
             display: grid;
             gap: 18px;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            margin-top: 30px;
+            margin-top: 6px;
         }
         .kpi {
             position: relative;
@@ -411,6 +412,232 @@
             --bs-pagination-disabled-border-color: rgba(255, 255, 255, 0.06);
         }
         .pagination .page-link { font-variant-numeric: tabular-nums; }
+
+        /* ---- Complete filter (typing search + typeable selects + reset) ---- */
+        .filter-input {
+            width: 100%;
+            background: var(--input);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 11px 13px;
+            border-radius: 11px;
+            font-size: 14px;
+            outline: none;
+            min-width: 168px;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+        .filter-input:focus, .filter-input:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.18); outline: none; }
+        .filter-input::placeholder { color: #6B7280; }
+        .filter-reset {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #C9CED6;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 11px;
+            text-decoration: none;
+            transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+        }
+        .filter-reset:hover { color: var(--text); background: rgba(255, 255, 255, 0.09); border-color: rgba(255, 255, 255, 0.25); }
+        .filter-reset svg { width: 14px; height: 14px; }
+        .filter-active {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            color: #E8EAEE;
+            background: var(--accent-soft);
+            border: 1px solid rgba(225, 29, 72, 0.35);
+            border-radius: 999px;
+            padding: 5px 12px;
+            width: fit-content;
+        }
+        .filter-active::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.22); }
+        .filter-panel .filter-field { display: flex; flex-direction: column; gap: 8px; min-width: 150px; }
+
+        /* ---- Typeable searchable select (.ss) ---- */
+        .ss { position: relative; min-width: 158px; }
+        .ss-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+            background: var(--input);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 11px 13px;
+            border-radius: 11px;
+            font-size: 14px;
+            font-weight: 550;
+            cursor: pointer;
+            text-align: left;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+        .ss-btn:hover { border-color: rgba(255, 255, 255, 0.22); }
+        .ss-btn.open, .ss-btn:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.18); }
+        .ss-btn svg { width: 13px; height: 13px; opacity: 0.65; flex: 0 0 auto; }
+        .ss-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 auto; }
+        .ss-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            width: max-content;
+            max-width: 330px;
+            min-width: 100%;
+            background: #0F1114;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.48);
+            padding: 8px;
+            display: none;
+            z-index: 120;
+        }
+        .ss-menu.open { display: block; }
+        .ss-search {
+            width: 100%;
+            background: #12141A;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            color: var(--text);
+            padding: 8px 10px;
+            border-radius: 9px;
+            font-size: 13px;
+            outline: none;
+            box-sizing: border-box;
+            margin-bottom: 7px;
+        }
+        .ss-search:focus { border-color: var(--accent); }
+        .ss-search::placeholder { color: #6B7280; }
+        .ss-list { list-style: none; margin: 0; padding: 0; max-height: 212px; overflow-y: auto; }
+        .ss-list li {
+            padding: 8px 11px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 550;
+            transition: background 0.12s ease, color 0.12s ease;
+        }
+        .ss-list li:hover, .ss-list li.hover { background: rgba(225, 29, 72, 0.10); color: #fff; }
+        .ss-list li.selected { background: rgba(225, 29, 72, 0.16); color: #fff; box-shadow: inset 0 0 0 1px rgba(225, 29, 72, 0.4); }
+        .ss-empty { padding: 9px 11px; font-size: 12.5px; color: #6B7280; }
+
+        /* ---- Analysis charts ---- */
+        .chart-section { margin-top: 40px; padding-top: 6px; }
+        .chart-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #E8EAEE;
+            border: 1px solid rgba(245, 245, 245, 0.14);
+            background: rgba(8, 9, 11, 0.35);
+            padding: 6px 13px;
+            border-radius: 999px;
+            width: fit-content;
+        }
+        .chart-eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.25); }
+        .chart-heading { margin: 12px 0 2px; font-size: clamp(19px, 2.4vw, 24px); font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+        .chart-sub { font-size: 13.5px; color: var(--muted); margin: 0; }
+        .chart-grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); margin-top: 18px; }
+        .chart-card {
+            position: relative;
+            background: linear-gradient(180deg, #11141A 0%, #0E1013 55%, #141019 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 20px 18px;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.02);
+        }
+        .chart-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            background: radial-gradient(85% 60% at 88% 6%, rgba(225, 29, 72, 0.055), transparent 60%);
+        }
+        .chart-card > * { position: relative; z-index: 1; }
+        .chart-head { display: flex; flex-direction: column; gap: 6px; }
+        .chart-title { font-size: 15px; font-weight: 700; color: var(--text); margin: 0; }
+        .chart-desc { font-size: 12.5px; color: var(--muted); margin: 0; }
+        .chart-canvas { min-height: 300px; margin-top: 14px; }
+        .chart-empty {
+            padding: 28px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13.5px;
+            border: 1px dashed rgba(255, 255, 255, 0.16);
+            border-radius: 12px;
+            margin-top: 14px;
+        }
+        .chart-note { font-size: 12px; color: var(--muted); margin-top: 14px; }
+
+        @media (max-width: 900px) {
+            .chart-grid { grid-template-columns: 1fr; }
+            .filter-panel { flex-direction: column; align-items: stretch; }
+        }
+
+        /* ---- Pagination: force dark theme (fixes white leak from Tailwind view) ---- */
+        .pagination-wrap { display: flex; justify-content: center; margin-top: 22px; }
+        .pagination-wrap nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; }
+        .pagination-wrap nav > div:first-child { display: none; }
+        .pagination-wrap nav > div { display: contents; }
+        .pagination-wrap nav a,
+        .pagination-wrap nav span,
+        .pagination-wrap nav p { color: #C9CED6; font-size: 13px; }
+        .pagination-wrap nav p { margin: 0; color: var(--muted); }
+        .pagination-wrap nav a {
+            background: #12141A;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 6px 12px;
+            min-width: 34px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 550;
+            font-variant-numeric: tabular-nums;
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+        .pagination-wrap nav a:hover { background: #1C2026; border-color: rgba(255, 255, 255, 0.28); color: var(--text); }
+        .pagination-wrap nav a[rel="prev"], .pagination-wrap nav a[rel="next"] { padding: 6px 10px; }
+        .pagination-wrap nav a svg { width: 16px; height: 16px; }
+        .pagination-wrap nav span[aria-current="page"],
+        .pagination-wrap nav span[aria-current="page"] span {
+            background: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 10px;
+            color: #fff;
+            padding: 6px 12px;
+            min-width: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pagination-wrap nav span[aria-disabled="true"],
+        .pagination-wrap nav span[aria-disabled="true"] span {
+            background: #0E1013;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            color: #6B7280;
+            padding: 6px 12px;
+            min-width: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ---- Consistent section rhythm (table → content) ---- */
+        .table { margin-bottom: 14px; }
+        .chart-section + .chart-section { margin-top: 40px; }
     </style>
     <script>
         /* Terapkan tema sebelum render agar tidak ada flash (default: dark) */
@@ -439,7 +666,7 @@
                 <span class="brand-name">Keuangan Hijab<span>Vendor Hijab Bandung</span></span>
             </a>
 
-            <button class="toggler" type="button" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="toggler" type="button" aria-controls="navMenu" aria-expanded="false" aria-label="Open/sluit navigatie">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                     <path d="M4 7 20 7 M4 12 20 12 M4 17 20 17" />
                 </svg>
@@ -472,7 +699,7 @@
                     @csrf
                     <button type="submit" class="logout-btn">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                        Logout
+                        Keluar
                     </button>
                 </form>
             </nav>
@@ -483,7 +710,7 @@
         @if (session('success'))
             <div class="flash flash-success alert" role="status">
                 {{ session('success') }}
-                <button type="button" class="flash-x" data-bs-dismiss="alert" aria-label="Close">&times;</button>
+                <button type="button" class="flash-x" data-bs-dismiss="alert" aria-label="Sluiten">&times;</button>
             </div>
         @endif
 
@@ -550,5 +777,191 @@
             }
         })();
     </script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@4/dist/apexcharts.min.js"></script>
+    <script>
+        /* Shared chart theme + formatters, matching the dark rose template. */
+        window.KeuanganChart = {
+            colors: ['#E11D48', '#22C55E', '#F5B524', '#22D3EE', '#8B5CF6', '#F47171', '#38BDF8', '#F97316', '#A3E635', '#EC4899'],
+            rupiah: function (val) {
+                var neg = val < 0 ? '-' : '';
+                var str = String(Math.round(Math.abs(val)));
+                return 'Rp ' + neg + str.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            },
+            pct: function (val) {
+                return String(val).replace('.', ',') + '%';
+            },
+            base: function (extra) {
+                var labels = { colors: '#9AA1AB', fontSize: '12px', fontFamily: "'Inter', sans-serif", fontWeight: 500 };
+                var defaults = {
+                    chart: { type: 'bar', background: 'transparent', foreColor: '#9AA1AB', fontFamily: "'Inter', sans-serif", toolbar: { show: false } },
+                    dataLabels: { enabled: false },
+                    grid: { padding: { left: 10, right: 10 }, strokeDashArray: 4, borderColor: 'rgba(255,255,255,0.08)', colors: ['rgba(255,255,255,0.06)'] },
+                    tooltip: { theme: 'dark', style: { fontSize: '12.5px', fontFamily: "'Inter', sans-serif" } },
+                    legend: { show: false, position: 'bottom', labels: { colors: '#C9CED6' }, markers: { size: 4 } },
+                    stroke: { width: 2, curve: 'smooth' },
+                    xaxis: { labels: labels, axisBorder: { show: false }, axisTicks: { show: false } },
+                    yaxis: { labels: Object.assign({}, labels, { formatter: window.KeuanganChart.rupiah }) },
+                    colors: window.KeuanganChart.colors.slice()
+                };
+
+                extra = extra || {};
+
+                if (extra.chart) { defaults.chart = Object.assign(defaults.chart, extra.chart); delete extra.chart; }
+                if (extra.legend) { defaults.legend = Object.assign(defaults.legend, extra.legend); delete extra.legend; }
+
+                return Object.assign(defaults, extra);
+            }
+        };
+    </script>
+    <script id="keuangan-ss-upgrade">
+        /* Turn filter selects into typeable / searchable dropdowns (progressive enhancement). */
+        (function () {
+            function chevron() {
+                var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('viewBox', '0 0 12 12');
+                svg.setAttribute('fill', 'none');
+                svg.setAttribute('stroke', 'currentColor');
+                svg.setAttribute('stroke-width', '1.6');
+                var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', 'M4 5 8 5 M6 3 6 7');
+                svg.appendChild(path);
+                return svg;
+            }
+
+            function currentLabel(select) {
+                var options = Array.prototype.slice.call(select.querySelectorAll('option'));
+                for (var i = 0; i < options.length; i++) {
+                    if (options[i].value === select.value) return options[i].text;
+                }
+                var first = select.querySelector('option');
+                return first ? first.text : '';
+            }
+
+            function openMenu(ui) {
+                var q = (ui.search.value || '').toLowerCase();
+                ui.list.innerHTML = '';
+                var first = null;
+
+                Array.prototype.slice.call(ui.select.querySelectorAll('option')).forEach(function (opt) {
+                    var text = opt.text;
+                    if (q && text.toLowerCase().indexOf(q) === -1) return;
+                    var li = document.createElement('li');
+                    li.textContent = text;
+                    li.dataset.value = opt.value;
+                    if (opt.value === ui.select.value) li.className = 'selected';
+                    if (!first) first = li;
+                    ui.list.appendChild(li);
+                });
+
+                if (!ui.list.querySelector('li')) {
+                    var empty = document.createElement('li');
+                    empty.className = 'ss-empty';
+                    empty.textContent = 'Belum ada hasil yang sesuai.';
+                    ui.list.appendChild(empty);
+                }
+
+                ui.btn.classList.add('open');
+                ui.menu.classList.add('open');
+                ui.btn.setAttribute('aria-expanded', 'true');
+                ui.search.focus();
+                ui.search.select();
+            }
+
+            function closeMenu(ui) {
+                ui.btn.classList.remove('open');
+                ui.menu.classList.remove('open');
+                ui.btn.setAttribute('aria-expanded', 'false');
+            }
+
+            function enhance(select) {
+                if (select.dataset.ssEnabled) return;
+                select.dataset.ssEnabled = '1';
+
+                var wrap = document.createElement('div');
+                wrap.className = 'ss';
+
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'ss-btn';
+                btn.setAttribute('aria-haspopup', 'true');
+                btn.setAttribute('aria-expanded', 'false');
+                var label = document.createElement('span');
+                label.className = 'ss-label';
+                label.textContent = currentLabel(select);
+                btn.appendChild(label);
+                btn.appendChild(chevron());
+
+                var menu = document.createElement('div');
+                menu.className = 'ss-menu';
+                var search = document.createElement('input');
+                search.type = 'text';
+                search.className = 'ss-search';
+                search.placeholder = 'Tipe untuk mencari...';
+                search.setAttribute('aria-label', 'Opties mencari: ' + (select.id || select.name));
+                var list = document.createElement('ul');
+                list.className = 'ss-list';
+                menu.appendChild(search);
+                menu.appendChild(list);
+
+                wrap.appendChild(btn);
+                wrap.appendChild(menu);
+
+                var ui = { select: select, wrap: wrap, btn: btn, label: label, menu: menu, search: search, list: list };
+                var parent = select.parentNode;
+
+                select.style.display = 'none';
+                parent.insertBefore(wrap, select);
+                parent.removeChild(select);
+                wrap.appendChild(select);
+
+                btn.addEventListener('click', function () {
+                    if (menu.classList.contains('open')) { closeMenu(ui); return; }
+                    Array.prototype.slice.call(document.querySelectorAll('.ss-menu.open')).forEach(function (m) {
+                        m.classList.remove('open');
+                        var b = m.parentNode.querySelector('.ss-btn');
+                        if (b) { b.classList.remove('open'); b.setAttribute('aria-expanded', 'false'); }
+                    });
+                    search.value = '';
+                    openMenu(ui);
+                });
+
+                search.addEventListener('input', function () { openMenu(ui); });
+
+                search.addEventListener('keydown', function (e) {
+                    if (e.key !== 'Enter') return;
+                    var first = list.querySelector('li:not(.ss-empty)');
+                    if (first) first.click();
+                    e.preventDefault();
+                });
+
+                list.addEventListener('click', function (e) {
+                    var li = e.target.closest('li');
+                    if (!li || !li.dataset || !li.dataset.value) return;
+                    select.value = li.dataset.value;
+                    label.textContent = li.textContent;
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                    closeMenu(ui);
+                });
+
+                select.addEventListener('change', function () {
+                    label.textContent = currentLabel(select);
+                });
+            }
+
+            Array.prototype.slice.call(document.querySelectorAll('.filter-panel select.filter-select[data-searchable]')).forEach(enhance);
+
+            document.addEventListener('click', function (e) {
+                Array.prototype.slice.call(document.querySelectorAll('.ss-menu.open')).forEach(function (menu) {
+                    var wrap = menu.closest('.ss');
+                    if (!wrap || !wrap.contains(e.target)) {
+                        menu.classList.remove('open');
+                        var b = wrap.querySelector('.ss-btn');
+                        if (b) { b.classList.remove('open'); b.setAttribute('aria-expanded', 'false'); }
+                    }
+                });
+            });
+        })();
+    </script>
+    @stack('scripts')
 </body>
 </html>

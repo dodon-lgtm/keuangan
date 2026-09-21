@@ -179,6 +179,77 @@ class FinancialCalculator
     }
 
     /**
+     * Per-month financial breakdown for the given year, used by the
+     * dashboard &amp; report analysis charts. Aggregation happens in PHP so the
+     * query stays portable between MySQL (produkcija) and SQLite (tests).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function monthlySeries(int $year): array
+    {
+        $start = Carbon::createFromDate($year, 1, 1)->format('Y-m-d');
+        $end = Carbon::createFromDate($year, 12, 31)->format('Y-m-d');
+
+        $series = [];
+
+        for ($month = 1; $month <= 12; $month++) {
+            $series[$month] = [
+                'label' => Carbon::createFromDate(2026, $month, 1)->format('M'),
+                'omset' => 0,
+                'hpp' => 0,
+                'ongkir' => 0,
+                'operacional' => 0,
+                'marketing' => 0,
+                'transaksi' => 0,
+            ];
+        }
+
+        foreach (DB::table('orders')
+            ->whereBetween('tanggal', [$start, $end])
+            ->get(['tanggal', 'nominal', 'ongkir']) as $row) {
+            $month = (int) substr((string) $row->tanggal, 6, 2);
+
+            $series[$month]['omset'] += (int) $row->nominal;
+            $series[$month]['ongkir'] += (int) $row->ongkir;
+            $series[$month]['transaksi']++;
+        }
+
+        foreach (DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->whereBetween('orders.tanggal', [$start, $end])
+            ->get(['orders.tanggal', 'order_items.hpp_satuan', 'order_items.jumlah_pcs']) as $row) {
+            $month = (int) substr((string) $row->tanggal, 6, 2);
+
+            $series[$month]['hpp'] += (int) $row->hpp_satuan * (int) $row->jumlah_pcs;
+        }
+
+        foreach (OperationalExpense::query()->where('tahun', $year)->get() as $expense) {
+            $series[(int) $expense->bulan]['operacional'] += (int) $expense->nominal;
+        }
+
+        foreach (MarketingSpend::query()->where('tahun', $year)->get() as $spend) {
+            $series[(int) $spend->bulan]['marketing'] += (int) $spend->nominal;
+        }
+
+        for ($month = 1; $month <= 12; $month++) {
+            $data = $series[$month];
+
+            $data['total_operacional'] = $data['hpp'] + $data['ongkir'] + $data['operacional'];
+            $data['net_profit'] = $data['omset'] - $data['total_operacional'];
+            $data['mer'] = $data['omset'] > 0
+                ? round((($data['marketing'] / $data['omset']) * 100) * 100) / 100
+                : 0.0;
+            $data['roi'] = $data['marketing'] > 0
+                ? round((($data['net_profit'] / $data['marketing']) * 100) * 100) / 100
+                : 0.0;
+
+            $series[$month] = $data;
+        }
+
+        return $series;
+    }
+
+    /**
      * Query builder scoped to the orders of the given month / year.
      */
     protected static function ordersOfMonth(int $month, int $year)

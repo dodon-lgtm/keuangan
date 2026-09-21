@@ -19,26 +19,92 @@ class ExpenseController extends Controller
     /**
      * Display both expense sections on one page.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $marketingSpends = MarketingSpend::query()
+        $bulan = filled($request->get('bulan')) ? (int) $request->get('bulan') : null;
+        $tahun = filled($request->get('tahun')) ? (int) $request->get('tahun') : null;
+        $kategori = filled($request->get('kategori')) ? (string) $request->get('kategori') : '';
+
+        $marketingQuery = MarketingSpend::query();
+
+        if ($bulan !== null) {
+            $marketingQuery->where('bulan', $bulan);
+        }
+
+        if ($tahun !== null) {
+            $marketingQuery->where('tahun', $tahun);
+        }
+
+        $marketingSpends = $marketingQuery
             ->orderByDesc('tahun')
             ->orderByDesc('bulan')
             ->get();
 
-        $operationalExpenses = OperationalExpense::query()
+        $operationalQuery = OperationalExpense::query();
+
+        if ($bulan !== null) {
+            $operationalQuery->where('bulan', $bulan);
+        }
+
+        if ($tahun !== null) {
+            $operationalQuery->where('tahun', $tahun);
+        }
+
+        if ($kategori !== '') {
+            $operationalQuery->where('kategori', $kategori);
+        }
+
+        $operationalExpenses = $operationalQuery
             ->orderByDesc('tahun')
             ->orderByDesc('bulan')
             ->orderBy('nama_pengeluaran')
             ->get();
 
-        $totalMarketing = (int) MarketingSpend::query()->sum('nominal');
-        $totalFixCost = (int) OperationalExpense::query()
+        $totalMarketing = (int) $marketingQuery->clone()->sum('nominal');
+        $totalFixCost = (int) $operationalQuery->clone()
             ->where('kategori', OperationalExpense::KATEGORI_FIX_COST)
             ->sum('nominal');
-        $totalVariableCost = (int) OperationalExpense::query()
+        $totalVariableCost = (int) $operationalQuery->clone()
             ->where('kategori', OperationalExpense::KATEGORI_VARIABLE_COST)
             ->sum('nominal');
+
+        // Grafik: budget iklan per bulan van geselecteerde jaar
+        $chartYear = $tahun ?? (int) now()->year;
+
+        $spendByMonth = [];
+
+        foreach (MarketingSpend::query()->where('tahun', $chartYear)->get() as $spend) {
+            $spendByMonth[(int) $spend->bulan] = ($spendByMonth[(int) $spend->bulan] ?? 0) + (int) $spend->nominal;
+        }
+
+        $chartMarketingLabels = [];
+        $chartMarketingValue = [];
+
+        foreach ($this->monthOptions() as $key => $label) {
+            $chartMarketingLabels[] = $label;
+            $chartMarketingValue[] = (int) ($spendByMonth[$key] ?? 0);
+        }
+
+        // Grafik: kompositie fix vs variable cost
+        $chartKategoriLabels = ['Fix Cost', 'Variable Cost'];
+        $chartKategoriValue = [
+            (int) $operationalQuery->clone()->where('kategori', OperationalExpense::KATEGORI_FIX_COST)->sum('nominal'),
+            (int) $operationalQuery->clone()->where('kategori', OperationalExpense::KATEGORI_VARIABLE_COST)->sum('nominal'),
+        ];
+
+        // Grafik: top 5 pengeluaran operasional
+        $topOperational = $operationalQuery->clone()
+            ->orderByDesc('nominal')
+            ->limit(5)
+            ->get();
+
+        $chartTopNama = [];
+        $chartTopValue = [];
+
+        foreach ($topOperational as $expense) {
+            $chartTopNama[] = $expense->nama_pengeluaran;
+            $chartTopValue[] = (int) $expense->nominal;
+        }
 
         $months = $this->monthOptions();
         $years = $this->yearOptions();
@@ -46,6 +112,10 @@ class ExpenseController extends Controller
         return view('expenses.index', compact(
             'marketingSpends', 'operationalExpenses',
             'totalMarketing', 'totalFixCost', 'totalVariableCost',
+            'bulan', 'tahun', 'kategori', 'chartYear',
+            'chartMarketingLabels', 'chartMarketingValue',
+            'chartKategoriLabels', 'chartKategoriValue',
+            'chartTopNama', 'chartTopValue',
             'months', 'years'
         ));
     }

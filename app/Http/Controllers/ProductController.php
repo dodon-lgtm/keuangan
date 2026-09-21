@@ -12,22 +12,97 @@ class ProductController extends Controller
     /**
      * Display a listing of the products.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $products = Product::query()
+        $q = filled($request->get('q')) ? trim((string) $request->get('q')) : '';
+        $hargaMin = filled($request->get('harga_min')) ? (int) $request->get('harga_min') : null;
+        $hargaMax = filled($request->get('harga_max')) ? (int) $request->get('harga_max') : null;
+
+        $filters = compact('q', 'hargaMin', 'hargaMax');
+
+        $products = $this->applyFilters($filters, Product::query())
             ->orderByDesc('id')
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
+
+        $statsQuery = $this->applyFilters($filters, Product::query());
 
         $stats = [
-            'total_produk' => Product::count(),
-            'avg_harga_jual' => (int) round((float) (Product::avg('harga_jual') ?? 0)),
-            'avg_hpp' => (int) round((float) (Product::avg('hpp') ?? 0)),
-            'avg_keuntungan' => (int) round((float) (Product::query()
+            'total_produk' => $statsQuery->count(),
+            'avg_harga_jual' => (int) round((float) ($statsQuery->avg('harga_jual') ?? 0)),
+            'avg_hpp' => (int) round((float) ($statsQuery->avg('hpp') ?? 0)),
+            'avg_keuntungan' => (int) round((float) ($statsQuery
                 ->selectRaw('AVG(harga_jual - hpp) as avg_keuntungan')
                 ->value('avg_keuntungan') ?? 0)),
         ];
 
-        return view('products.index', compact('products', 'stats'));
+        // Grafik: Harga Jual vs HPP (top 10 produk oleh keuntungan)
+        $top = $this->applyFilters($filters, Product::query())
+            ->orderByRaw('(harga_jual - hpp) DESC')
+            ->limit(10)
+            ->get();
+
+        $chartNama = [];
+        $chartJual = [];
+        $chartHpp = [];
+        $chartMargin = [];
+
+        foreach ($top as $product) {
+            $chartNama[] = $product->nama_produk;
+            $chartJual[] = (int) $product->harga_jual;
+            $chartHpp[] = (int) $product->hpp;
+            $chartMargin[] = (int) $product->harga_jual - (int) $product->hpp;
+        }
+
+        // Grafik: share keuntungan per produk (top 8, margin positief)
+        $shareNama = [];
+        $shareValue = [];
+
+        foreach ($this->applyFilters($filters, Product::query())
+            ->orderByRaw('(harga_jual - hpp) DESC')
+            ->limit(8)
+            ->get() as $product) {
+            $margin = (int) $product->harga_jual - (int) $product->hpp;
+
+            if ($margin > 0) {
+                $shareNama[] = $product->nama_produk;
+                $shareValue[] = $margin;
+            }
+        }
+
+        return view('products.index', compact(
+            'products', 'stats',
+            'q', 'hargaMin', 'hargaMax',
+            'chartNama', 'chartJual', 'chartHpp', 'chartMargin',
+            'shareNama', 'shareValue'
+        ));
+    }
+
+    /**
+     * Apply the shared index filters to the given product query.
+     *
+     * @param  array<string, mixed>  $filters
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    private function applyFilters(array $filters, $query)
+    {
+        $q = (string) ($filters['q'] ?? '');
+        $hargaMin = $filters['hargaMin'] ?? null;
+        $hargaMax = $filters['hargaMax'] ?? null;
+
+        if ($q !== '') {
+            $query->whereLike('nama_produk', "%$q%");
+        }
+
+        if ($hargaMin !== null) {
+            $query->where('harga_jual', '>=', (int) $hargaMin);
+        }
+
+        if ($hargaMax !== null) {
+            $query->where('harga_jual', '<=', (int) $hargaMax);
+        }
+
+        return $query;
     }
 
     /**

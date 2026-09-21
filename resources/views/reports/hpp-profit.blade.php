@@ -11,26 +11,34 @@
         <h1>Laporan HPP &amp; Profit</h1>
     </div>
 
-    <form action="{{ route('reports.hpp-profit') }}" method="get" class="row g-3 align-items-end mb-4">
-        <div class="col-md-4">
+    <form action="{{ route('reports.hpp-profit') }}" method="get" class="filter-panel">
+        <div class="filter-field">
             <label for="month" class="form-label">Bulan</label>
-            <select name="month" id="month" class="form-select">
+            <select name="month" id="month" class="filter-select" data-searchable>
                 @foreach ($months as $key => $label)
                     <option value="{{ $key }}" @selected($month == $key)>{{ $label }}</option>
                 @endforeach
             </select>
         </div>
-        <div class="col-md-4">
+        <div class="filter-field">
             <label for="year" class="form-label">Tahun</label>
-            <select name="year" id="year" class="form-select">
+            <select name="year" id="year" class="filter-select" data-searchable>
                 @foreach ($years as $yearOption)
                     <option value="{{ $yearOption }}" @selected($year == $yearOption)>{{ $yearOption }}</option>
                 @endforeach
             </select>
         </div>
-        <div class="col-md-4">
-            <button type="submit" class="btn btn-primary w-100">Filter</button>
-        </div>
+        <button type="submit" class="filter-btn">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="8" cy="8" r="6.2" />
+                <rect x="3" y="4.5" width="10" height="2" /><rect x="3" y="11.5" width="10" height="2" /><rect x="3" y="4.5" width="2" height="7" /><rect x="11" y="4.5" width="2" height="7" />
+            </svg>
+            Filter
+        </button>
+        <a href="{{ route('reports.hpp-profit') }}" class="filter-reset">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h10M8 3v10" /></svg>
+            Reset
+        </a>
     </form>
 
     <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
@@ -84,9 +92,71 @@
         @endforeach
         @if (empty($products))
             <tr>
-                <td colspan="6" class="text-center text-muted">Geen verkoop in deze periode.</td>
+                <td colspan="6" class="text-center text-muted">Belum ada transaksi untuk periode ini.</td>
             </tr>
         @endif
         </tbody>
     </table>
+
+    @php
+        $chartEmpty = count($chartNama) === 0;
+        $shareEmpty = count($shareNama) === 0;
+    @endphp
+
+    <div class="chart-section">
+        <span class="chart-eyebrow">Analisis</span>
+        <h2 class="chart-heading">Analisis Grafik</h2>
+        <p class="chart-sub">Rincian omset, HPP, dan margin per produk untuk {{ $months[$month] }} {{ $year }}.</p>
+
+        <div class="chart-grid">
+            @include('partials.chart-card', [
+                'id' => 'chart-hpp-bar',
+                'title' => 'Omset vs HPP vs Margin',
+                'desc' => 'Top 10 produk (per omset)',
+                'empty' => $chartEmpty,
+            ])
+
+            @include('partials.chart-card', [
+                'id' => 'chart-hpp-share',
+                'title' => 'Pembagian Margin',
+                'desc' => 'Margin per produk (top 8)',
+                'empty' => $shareEmpty,
+            ])
+        </div>
+    </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var KC = window.KeuanganChart;
+
+                if (document.getElementById('chart-hpp-bar')) {
+                    new ApexCharts(document.getElementById('chart-hpp-bar'), KC.base({
+                        chart: { type: 'bar' },
+                        series: [
+                            { name: 'Omset', data: @json($chartOmset) },
+                            { name: 'HPP', data: @json($chartHpp) },
+                            { name: 'Margin', data: @json($chartMargin) }
+                        ],
+                        xaxis: { categories: @json($chartNama) },
+                        legend: { show: true, position: 'bottom' },
+                        colors: ['#E11D48', '#F5B524', '#22C55E']
+                    })).render();
+                }
+
+                if (document.getElementById('chart-hpp-share')) {
+                    new ApexCharts(document.getElementById('chart-hpp-share'), KC.base({
+                        chart: { type: 'donut' },
+                        series: @json($shareValue),
+                        labels: @json($shareNama),
+                        plotOptions: { pie: { donut: { size: '68%' } } },
+                        dataLabels: { enabled: true, formatter: function (val) { return KC.pct(val); } },
+                        legend: { show: true, position: 'bottom' },
+                        tooltip: { y: { formatter: function (v) { return KC.rupiah(v); } } },
+                        colors: KC.colors.slice()
+                    })).render();
+                }
+            });
+        </script>
+    @endpush
 @endsection

@@ -107,7 +107,7 @@ class ExpenseController extends Controller
         }
 
         $months = $this->monthOptions();
-        $years = $this->yearOptions();
+        $years = $this->yearOptions($tahun);
 
         return view('expenses.index', compact(
             'marketingSpends', 'operationalExpenses',

@@ -85,6 +85,79 @@ class ReportControllerTest extends AuthenticatedTestCase
         $this->get('/reports/hpp-profit?month=1&year=2020')->assertStatus(200);
     }
 
+    public function test_dashboard_full_year_filter_accumulates_every_month(): void
+    {
+        $this->prepareTwoMonths();
+
+        // Bulan September 2026 saja.
+        $this->get('/dashboard?month=9&year=2026')
+            ->assertStatus(200)
+            ->assertSee('Rp 40.000')
+            ->assertDontSee('Rp 80.000');
+
+        // "Semua Bulan": akumulasi Januari - Desember 2026.
+        $this->get('/dashboard?month=all&year=2026')
+            ->assertStatus(200)
+            ->assertSee('Rp 80.000')
+            ->assertSee('Semua Bulan (Full Year)')
+            ->assertSee('value="all" selected', false)
+            ->assertSee('tahun 2026 (Jan-Des)');
+    }
+
+    public function test_reports_follow_the_full_year_filter(): void
+    {
+        $this->prepareTwoMonths();
+
+        $this->get('/reports/mer-roi?month=all&year=2026')
+            ->assertStatus(200)
+            ->assertSee('Rp 80.000')
+            ->assertSee('Rp 100.000')
+            ->assertSee('Rp 20.000');
+
+        $this->get('/reports/hpp-profit?month=all&year=2026')
+            ->assertStatus(200)
+            ->assertSee('Voal Test')
+            ->assertSee('Rp 80.000');
+    }
+
+    public function test_period_filter_forms_expose_full_year_and_free_year_input(): void
+    {
+        foreach (['/dashboard', '/reports/mer-roi', '/reports/hpp-profit'] as $url) {
+            $response = $this->get($url.'?month=all&year=2026');
+
+            $response->assertStatus(200);
+            $response->assertSee('Semua Bulan (Full Year)');
+            $response->assertSee('name="year"', false);
+            $response->assertSee('min="1900"', false);
+            $response->assertSee('max="9999"', false);
+            $response->assertSee('value="all" selected', false);
+        }
+    }
+
+    public function test_period_filter_accepts_free_custom_years(): void
+    {
+        $this->prepareMonth();
+
+        // Tahun lampau dan tahun jauh ke depan: tetap 200 dengan angka 0.
+        foreach ([1999, 3000] as $year) {
+            $this->get('/dashboard?month=all&year='.$year)
+                ->assertStatus(200)
+                ->assertSee('Rp 0')
+                ->assertSee('value="'.$year.'"', false);
+
+            $this->get('/reports/mer-roi?month=all&year='.$year)
+                ->assertStatus(200)
+                ->assertSee('Rp 0');
+
+            $this->get('/reports/hpp-profit?month=all&year='.$year)
+                ->assertStatus(200);
+
+            $this->get('/expenses?tahun='.$year)
+                ->assertStatus(200)
+                ->assertSee('value="'.$year.'"', false);
+        }
+    }
+
     /**
      * Seed one order of 2 pcs (price 20000, hpp 10000, ongkir 5000),
      * an operational expense of 10000 and a marketing spend of 100000
@@ -107,6 +180,44 @@ class ReportControllerTest extends AuthenticatedTestCase
         ]);
 
         $this->createOrder($customer, $product, '2026-09-05');
+
+        OperationalExpense::create([
+            'nama_pengeluaran' => 'Listrik',
+            'kategori' => OperationalExpense::KATEGORI_FIX_COST,
+            'nominal' => 10000,
+            'bulan' => 9,
+            'tahun' => 2026,
+        ]);
+
+        MarketingSpend::create([
+            'bulan' => 9,
+            'tahun' => 2026,
+            'nominal' => 100000,
+        ]);
+    }
+
+    /**
+     * Seed an order in September and October 2026 (2 pcs x 20000 each),
+     * plus one operational expense and one marketing spend for September.
+     */
+    private function prepareTwoMonths(): void
+    {
+        $customer = Customer::create([
+            'nama_lengkap' => 'Fatimah Zahra',
+            'nama_brand' => 'Hijab Co',
+            'no_whatsapp' => '08123456789',
+            'sumber' => Customer::SUMBER_META_ADS,
+            'tanggal_masuk_chat' => '2026-09-01',
+        ]);
+
+        $product = Product::create([
+            'nama_produk' => 'Voal Test',
+            'harga_jual' => 20000,
+            'hpp' => 10000,
+        ]);
+
+        $this->createOrder($customer, $product, '2026-09-05');
+        $this->createOrder($customer, $product, '2026-10-11');
 
         OperationalExpense::create([
             'nama_pengeluaran' => 'Listrik',

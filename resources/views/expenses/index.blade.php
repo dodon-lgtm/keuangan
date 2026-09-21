@@ -12,7 +12,7 @@
         <div class="filter-field">
             <label for="f-bulan">Bulan</label>
             <select name="bulan" id="f-bulan" class="filter-select" data-searchable>
-                <option value="">Bulan</option>
+                <option value="">Semua Bulan (Full Year)</option>
                 @foreach ($months as $key => $label)
                     <option value="{{ $key }}" @selected($bulan == $key)>{{ $label }}</option>
                 @endforeach
@@ -20,12 +20,14 @@
         </div>
         <div class="filter-field">
             <label for="f-tahun">Tahun</label>
-            <select name="tahun" id="f-tahun" class="filter-select" data-searchable>
-                <option value="">Tahun</option>
+            <input type="number" name="tahun" id="f-tahun" class="filter-input" value="{{ $tahun }}"
+                min="1900" max="9999" step="1" inputmode="numeric" autocomplete="off"
+                list="f-tahun-options" placeholder="Semua Tahun">
+            <datalist id="f-tahun-options">
                 @foreach ($years as $yearOption)
-                    <option value="{{ $yearOption }}" @selected($tahun == $yearOption)>{{ $yearOption }}</option>
+                    <option value="{{ $yearOption }}"></option>
                 @endforeach
-            </select>
+            </datalist>
         </div>
         <div class="filter-field">
             <label for="f-kategori">Kategori</label>

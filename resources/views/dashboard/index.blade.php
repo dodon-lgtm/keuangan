@@ -13,23 +13,7 @@
 
     {{-- Filter Panel --}}
     <form action="{{ route('dashboard') }}" method="get" class="filter-panel">
-        <div class="filter-field">
-            <label for="month">Bulan</label>
-            <select name="month" id="month" class="filter-select" data-searchable>
-                @foreach ($months as $key => $label)
-                    <option value="{{ $key }}" @selected($month == $key)>{{ $label }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="filter-field">
-            <label for="year">Tahun</label>
-            <select name="year" id="year" class="filter-select" data-searchable>
-                @foreach ($years as $yearOption)
-                    <option value="{{ $yearOption }}" @selected($year == $yearOption)>{{ $yearOption }}</option>
-                @endforeach
-            </select>
-        </div>
+        @include('partials.period-filter')
 
         <button type="submit" class="filter-btn">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -114,8 +98,6 @@
             $chartMer[] = (float) $item['mer'];
         }
 
-        $splitTotal = (int) $profitSplit['roni'] + (int) $profitSplit['rizky'];
-
         $chartEmptyTrend = true;
         $chartEmptyMarketing = true;
 
@@ -132,7 +114,7 @@
     <div class="chart-section">
         <span class="chart-eyebrow">Analisis</span>
         <h2 class="chart-heading">Analisis Grafik</h2>
-        <p class="chart-sub">Tren performans keuangan, efisiensi marketing, dan pembagian profit untuk tahun {{ $year }}.</p>
+        <p class="chart-sub">Tren performans keuangan dan efisiensi marketing untuk {{ $periodLabel }}.</p>
 
         <div class="chart-grid">
             @include('partials.chart-card', [
@@ -147,13 +129,6 @@
                 'title' => 'Budget Iklan & MER',
                 'desc' => 'Budget Iklan per bulan (kolom) dan MER % (garis)',
                 'empty' => array_sum($chartMarketing) === 0,
-            ])
-
-            @include('partials.chart-card', [
-                'id' => 'chart-split',
-                'title' => 'Pembagian Profit',
-                'desc' => 'Pembagian Profit ' . ($months[$month] ?? '') . ': A Roni 60% & Rizky 40%',
-                'empty' => $splitTotal <= 0,
             ])
         </div>
     </div>
@@ -193,19 +168,6 @@
                         ],
                         colors: ['#22D3EE', '#E11D48'],
                         legend: { show: true, position: 'bottom' }
-                    })).render();
-                }
-
-                if (document.getElementById('chart-split')) {
-                    new ApexCharts(document.getElementById('chart-split'), KC.base({
-                        chart: { type: 'donut' },
-                        series: {!! json_encode([(int) $profitSplit['roni'], (int) $profitSplit['rizky']]) !!},
-                        labels: ['A Roni (60%)', 'Rizky (40%)'],
-                        plotOptions: { pie: { donut: { size: '68%', labels: { show: true, total: { show: true, label: 'Keuntungan', color: '#9AA1AB', formatter: function (w) { return KC.rupiah(w); } } } } } },
-                        dataLabels: { enabled: true, formatter: function (val) { return KC.pct(val); } },
-                        legend: { show: true, position: 'bottom' },
-                        tooltip: { y: { formatter: function (v) { return KC.rupiah(v); } } },
-                        colors: ['#E11D48', '#22C55E']
                     })).render();
                 }
             });

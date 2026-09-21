@@ -100,6 +100,95 @@ class FinancialCalculatorTest extends AuthenticatedTestCase
         $this->assertSame(1, FinancialCalculator::pelangganAktif());
     }
 
+    public function test_period_range_covers_a_single_month_and_the_full_year(): void
+    {
+        $this->assertSame(['2026-09-01', '2026-09-30'], FinancialCalculator::periodRange(9, 2026));
+        $this->assertSame(['2026-01-01', '2026-12-31'], FinancialCalculator::periodRange(null, 2026));
+        $this->assertSame(['2024-02-01', '2024-02-29'], FinancialCalculator::periodRange(2, 2024));
+    }
+
+    public function test_null_month_accumulates_every_month_of_the_year(): void
+    {
+        $customer = $this->customer('Fatimah Zahra');
+        $product = Product::create([
+            'nama_produk' => 'Voal Test',
+            'harga_jual' => 20000,
+            'hpp' => 10000,
+        ]);
+
+        // Dua order senilai 40.000 (2 pcs x 20.000) di bulan yang berbeda.
+        $this->createOrder($customer, $product, '2026-09-05');
+        $this->createOrder($customer, $product, '2026-10-11');
+
+        OperationalExpense::create([
+            'nama_pengeluaran' => 'Listrik',
+            'kategori' => OperationalExpense::KATEGORI_FIX_COST,
+            'nominal' => 10000,
+            'bulan' => 9,
+            'tahun' => 2026,
+        ]);
+
+        OperationalExpense::create([
+            'nama_pengeluaran' => 'Internet',
+            'kategori' => OperationalExpense::KATEGORI_VARIABLE_COST,
+            'nominal' => 5000,
+            'bulan' => 10,
+            'tahun' => 2026,
+        ]);
+
+        MarketingSpend::create(['bulan' => 9, 'tahun' => 2026, 'nominal' => 100000]);
+        MarketingSpend::create(['bulan' => 10, 'tahun' => 2026, 'nominal' => 60000]);
+
+        // Bulan spesifik: hanya data bulan tersebut.
+        $this->assertSame(40000, FinancialCalculator::totalOmset(9, 2026));
+        $this->assertSame(1, FinancialCalculator::totalTransaksi(9, 2026));
+
+        // null = "Semua Bulan": akumulasi Januari - Desember 2026.
+        $this->assertSame(80000, FinancialCalculator::totalOmset(null, 2026));
+        $this->assertSame(2, FinancialCalculator::totalTransaksi(null, 2026));
+        $this->assertSame(40000, FinancialCalculator::totalHPP(null, 2026));
+        $this->assertSame(10000, FinancialCalculator::totalOngkir(null, 2026));
+        $this->assertSame(15000, FinancialCalculator::totalOperationalExpenses(null, 2026));
+        $this->assertSame(65000, FinancialCalculator::totalOperasional(null, 2026));
+        $this->assertSame(15000, FinancialCalculator::netProfit(null, 2026));
+        $this->assertSame(40000.0, FinancialCalculator::averageOrder(null, 2026));
+
+        // Marketing, MER, ROI dan pembagian profit mengikuti periode yang sama.
+        $this->assertSame(160000, FinancialCalculator::marketingSpend(null, 2026));
+        $this->assertSame(200.0, FinancialCalculator::mer(null, 2026));
+        $this->assertEqualsWithDelta(9.375, FinancialCalculator::roi(null, 2026), 0.0001);
+
+        $split = FinancialCalculator::profitSplit(null, 2026);
+
+        $this->assertSame(9000, $split['roni']);
+        $this->assertSame(6000, $split['rizky']);
+
+        // Pelanggan aktif ikut periode: 2 order di 2026, 1 order di September.
+        $this->assertSame(1, FinancialCalculator::pelangganAktif(null, 2026));
+        $this->assertSame(0, FinancialCalculator::pelangganAktif(9, 2026));
+        $this->assertSame(1, FinancialCalculator::pelangganAktif());
+    }
+
+    public function test_arbitrary_years_without_data_return_zero(): void
+    {
+        // Tahun bebas (lampau maupun jauh ke depan) tidak boleh membuat error.
+        $this->assertSame(0, FinancialCalculator::totalOmset(null, 1999));
+        $this->assertSame(0, FinancialCalculator::totalOmset(null, 3000));
+        $this->assertSame(0, FinancialCalculator::totalTransaksi(null, 3000));
+        $this->assertSame(0, FinancialCalculator::totalOperasional(null, 3000));
+        $this->assertSame(0, FinancialCalculator::totalOperationalExpenses(null, 1999));
+        $this->assertSame(0, FinancialCalculator::marketingSpend(null, 1999));
+        $this->assertSame(0.0, FinancialCalculator::mer(null, 1999));
+        $this->assertSame(0.0, FinancialCalculator::roi(null, 3000));
+        $this->assertSame(0.0, FinancialCalculator::averageOrder(null, 3000));
+        $this->assertSame(0, FinancialCalculator::pelangganAktif(null, 3000));
+
+        $split = FinancialCalculator::profitSplit(null, 1999);
+
+        $this->assertSame(0, $split['roni']);
+        $this->assertSame(0, $split['rizky']);
+    }
+
     /**
      * Seed one order (2 pcs, ongkir 5000, HPP snapshot 10000) for September 2026,
      * an operational expense of 10000 and a marketing spend of 100000.

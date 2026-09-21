@@ -5,11 +5,16 @@ namespace App\Services;
 use App\Models\Customer;
 use App\Models\MarketingSpend;
 use App\Models\OperationalExpense;
+use App\Models\Order;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Central place for all monthly financial calculations.
+ * Central place for all periodic financial calculations.
+ *
+ * Every metric takes a nullable month: 1 - 12 scopes the calculation to that
+ * single month, while null means "Semua Bulan" and aggregates January -
+ * December of the given (fully dynamic) year.
  *
  * Revenue (orders.nominal) is always the sum of the attached order_items
  * subtotals. Operating costs combine shipping, cost of goods sold and the
@@ -29,24 +34,27 @@ class FinancialCalculator
 
     /**
      * Total revenue for the given month / year: sum of orders.nominal.
+     * A null month accumulates the whole year.
      */
-    public static function totalOmset(int $month, int $year): int
+    public static function totalOmset(?int $month, int $year): int
     {
         return (int) static::ordersOfMonth($month, $year)->sum('nominal');
     }
 
     /**
      * Number of transactions for the given month / year.
+     * A null month accumulates the whole year.
      */
-    public static function totalTransaksi(int $month, int $year): int
+    public static function totalTransaksi(?int $month, int $year): int
     {
         return static::ordersOfMonth($month, $year)->count();
     }
 
     /**
      * Total shipping fees of the orders in the given month / year.
+     * A null month accumulates the whole year.
      */
-    public static function totalOngkir(int $month, int $year): int
+    public static function totalOngkir(?int $month, int $year): int
     {
         return (int) static::ordersOfMonth($month, $year)->sum('ongkir');
     }
@@ -54,31 +62,37 @@ class FinancialCalculator
     /**
      * Total cost of goods sold for the period:
      * sum(order_items.hpp_satuan * order_items.jumlah_pcs).
+     * A null month accumulates the whole year.
      */
-    public static function totalHPP(int $month, int $year): int
+    public static function totalHPP(?int $month, int $year): int
     {
         return (int) DB::table('order_items')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
-            ->whereBetween('orders.tanggal', [static::startOfMonth($month, $year), static::endOfMonth($month, $year)])
+            ->whereBetween('orders.tanggal', static::periodRange($month, $year))
             ->sum(DB::raw('order_items.hpp_satuan * order_items.jumlah_pcs'));
     }
 
     /**
      * Total realtime operational expenses (Fix/Variable Cost) for the period.
+     * A null month accumulates every month of the year.
      */
-    public static function totalOperationalExpenses(int $month, int $year): int
+    public static function totalOperationalExpenses(?int $month, int $year): int
     {
-        return (int) OperationalExpense::query()
-            ->where('bulan', $month)
-            ->where('tahun', $year)
-            ->sum('nominal');
+        $query = OperationalExpense::query()->where('tahun', $year);
+
+        if ($month !== null) {
+            $query->where('bulan', $month);
+        }
+
+        return (int) $query->sum('nominal');
     }
 
     /**
      * Total operating costs for the period:
      * shipping (orders.ongkir) + cost of goods sold + operational expenses.
+     * A null month accumulates the whole year.
      */
-    public static function totalOperasional(int $month, int $year): int
+    public static function totalOperasional(?int $month, int $year): int
     {
         return static::totalOngkir($month, $year)
             + static::totalHPP($month, $year)
@@ -87,33 +101,50 @@ class FinancialCalculator
 
     /**
      * Net profit for the period: totalOmset - totalOperasional.
+     * A null month accumulates the whole year.
      */
-    public static function netProfit(int $month, int $year): int
+    public static function netProfit(?int $month, int $year): int
     {
         return static::totalOmset($month, $year) - static::totalOperasional($month, $year);
     }
 
     /**
      * Number of "repeat" customers: customers that have more than one order.
+     *
+     * When a year is given the orders are counted inside that period (a null
+     * month counts the whole year), so the metric follows the period filter.
+     * Without arguments every order ever recorded is counted.
      */
-    public static function pelangganAktif(): int
+    public static function pelangganAktif(?int $month = null, ?int $year = null): int
     {
-        return Customer::query()
-            ->withCount('orders')
-            ->get()
-            ->where('orders_count', '>', 1)
-            ->count();
+        $query = Customer::query();
+
+        if ($year === null) {
+            $query->withCount('orders');
+        } else {
+            $range = static::periodRange($month, $year);
+
+            $query->withCount(['orders' => function ($orders) use ($range) {
+                $orders->whereBetween('orders.tanggal', $range);
+            }]);
+        }
+
+        return $query->get()->where('orders_count', '>', 1)->count();
     }
 
     /**
      * The marketing budget entered for the given month / year.
+     * A null month sums the budget of every month in that year.
      */
-    public static function marketingSpend(int $month, int $year): int
+    public static function marketingSpend(?int $month, int $year): int
     {
-        $spend = MarketingSpend::query()
-            ->where('bulan', $month)
-            ->where('tahun', $year)
-            ->first();
+        $query = MarketingSpend::query()->where('tahun', $year);
+
+        if ($month === null) {
+            return (int) $query->sum('nominal');
+        }
+
+        $spend = $query->where('bulan', $month)->first();
 
         return (int) ($spend?->nominal ?? 0);
     }
@@ -122,7 +153,7 @@ class FinancialCalculator
      * Marketing Efficiency Ratio: (marketing spend / total omset) * 100%.
      * Returns 0.0 when there was no omset to avoid a division by zero.
      */
-    public static function mer(int $month, int $year): float
+    public static function mer(?int $month, int $year): float
     {
         $omset = static::totalOmset($month, $year);
 
@@ -137,7 +168,7 @@ class FinancialCalculator
      * Return On Investment: (net profit / marketing spend) * 100%.
      * Returns 0.0 when there was no marketing spend to avoid a division by zero.
      */
-    public static function roi(int $month, int $year): float
+    public static function roi(?int $month, int $year): float
     {
         $spend = static::marketingSpend($month, $year);
 
@@ -152,7 +183,7 @@ class FinancialCalculator
      * Average order value: totalOmset / totalTransaksi.
      * Returns 0.0 when there were no transactions to avoid a division by zero.
      */
-    public static function averageOrder(int $month, int $year): float
+    public static function averageOrder(?int $month, int $year): float
     {
         $transaksi = static::totalTransaksi($month, $year);
 
@@ -168,7 +199,7 @@ class FinancialCalculator
      *
      * @return array<string, int>
      */
-    public static function profitSplit(int $month, int $year): array
+    public static function profitSplit(?int $month, int $year): array
     {
         $netProfit = static::netProfit($month, $year);
 
@@ -194,7 +225,7 @@ class FinancialCalculator
 
         for ($month = 1; $month <= 12; $month++) {
             $series[$month] = [
-                'label' => Carbon::createFromDate(2026, $month, 1)->format('M'),
+                'label' => Carbon::createFromDate($year, $month, 1)->format('M'),
                 'omset' => 0,
                 'hpp' => 0,
                 'ongkir' => 0,
@@ -207,7 +238,11 @@ class FinancialCalculator
         foreach (DB::table('orders')
             ->whereBetween('tanggal', [$start, $end])
             ->get(['tanggal', 'nominal', 'ongkir']) as $row) {
-            $month = (int) substr((string) $row->tanggal, 6, 2);
+            $month = static::monthOfDate((string) $row->tanggal);
+
+            if ($month === null) {
+                continue;
+            }
 
             $series[$month]['omset'] += (int) $row->nominal;
             $series[$month]['ongkir'] += (int) $row->ongkir;
@@ -218,7 +253,11 @@ class FinancialCalculator
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->whereBetween('orders.tanggal', [$start, $end])
             ->get(['orders.tanggal', 'order_items.hpp_satuan', 'order_items.jumlah_pcs']) as $row) {
-            $month = (int) substr((string) $row->tanggal, 6, 2);
+            $month = static::monthOfDate((string) $row->tanggal);
+
+            if ($month === null) {
+                continue;
+            }
 
             $series[$month]['hpp'] += (int) $row->hpp_satuan * (int) $row->jumlah_pcs;
         }
@@ -250,27 +289,48 @@ class FinancialCalculator
     }
 
     /**
+     * Resolve the month number (1 - 12) from a stored date value.
+     *
+     * The month always sits at offset 5 of a "YYYY-MM-DD" (or datetime)
+     * string. Returns null when the value cannot be resolved, so callers can
+     * skip malformed rows instead of crashing on an unknown series key.
+     */
+    protected static function monthOfDate(string $date): ?int
+    {
+        $month = (int) substr($date, 5, 2);
+
+        return ($month >= 1 && $month <= 12) ? $month : null;
+    }
+
+    /**
+     * First and last day of the resolved period as Y-m-d strings.
+     * A null month resolves to the whole year (1 January - 31 December),
+     * which powers the "Semua Bulan / Full Year" filter option.
+     *
+     * @return array{0: string, 1: string}
+     */
+    public static function periodRange(?int $month, int $year): array
+    {
+        if ($month === null) {
+            return [
+                Carbon::createFromDate($year, 1, 1)->format('Y-m-d'),
+                Carbon::createFromDate($year, 12, 31)->format('Y-m-d'),
+            ];
+        }
+
+        return [
+            Carbon::createFromDate($year, $month, 1)->format('Y-m-d'),
+            Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('Y-m-d'),
+        ];
+    }
+
+    /**
      * Query builder scoped to the orders of the given month / year.
+     * A null month scopes the query to the whole year.
      */
-    protected static function ordersOfMonth(int $month, int $year)
+    protected static function ordersOfMonth(?int $month, int $year)
     {
-        return \App\Models\Order::query()
-            ->whereBetween('tanggal', [static::startOfMonth($month, $year), static::endOfMonth($month, $year)]);
-    }
-
-    /**
-     * First day of the given month as a Y-m-d string.
-     */
-    protected static function startOfMonth(int $month, int $year): string
-    {
-        return Carbon::createFromDate($year, $month, 1)->format('Y-m-d');
-    }
-
-    /**
-     * Last day of the given month as a Y-m-d string.
-     */
-    protected static function endOfMonth(int $month, int $year): string
-    {
-        return Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('Y-m-d');
+        return Order::query()
+            ->whereBetween('tanggal', static::periodRange($month, $year));
     }
 }

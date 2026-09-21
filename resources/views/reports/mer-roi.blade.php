@@ -26,22 +26,8 @@
     </div>
 
     <form action="{{ route('reports.mer-roi') }}" method="get" class="filter-panel">
-        <div class="filter-field">
-            <label for="month" class="form-label">Bulan</label>
-            <select name="month" id="month" class="filter-select" data-searchable>
-                @foreach ($months as $key => $label)
-                    <option value="{{ $key }}" @selected($month == $key)>{{ $label }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="filter-field">
-            <label for="year" class="form-label">Tahun</label>
-            <select name="year" id="year" class="filter-select" data-searchable>
-                @foreach ($years as $yearOption)
-                    <option value="{{ $yearOption }}" @selected($year == $yearOption)>{{ $yearOption }}</option>
-                @endforeach
-            </select>
-        </div>
+        @include('partials.period-filter')
+
         <button type="submit" class="filter-btn">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="8" r="6.2" />
@@ -190,7 +176,7 @@
     <div class="chart-section">
         <span class="chart-eyebrow">Analisis</span>
         <h2 class="chart-heading">Analisis Grafik</h2>
-        <p class="chart-sub">Trend MER &amp; ROI dan verband tussen budget iklan dan omset untuk {{ $year }}.</p>
+        <p class="chart-sub">Trend MER &amp; ROI dan verband tussen budget iklan dan omset untuk {{ $periodLabel }}.</p>
 
         <div class="chart-grid">
             @include('partials.chart-card', [

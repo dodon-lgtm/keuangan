@@ -15,12 +15,13 @@ class DashboardController extends Controller
     {
         $period = $this->resolvePeriod($request);
         $month = $period['month'];
+        $monthKey = $period['monthKey'];
         $year = $period['year'];
 
         $totalOmset = FinancialCalculator::totalOmset($month, $year);
         $totalTransaksi = FinancialCalculator::totalTransaksi($month, $year);
         $averageOrder = FinancialCalculator::averageOrder($month, $year);
-        $pelangganAktif = FinancialCalculator::pelangganAktif();
+        $pelangganAktif = FinancialCalculator::pelangganAktif($month, $year);
 
         // Grafik data (analisis)
         $series = FinancialCalculator::monthlySeries($year);
@@ -28,11 +29,12 @@ class DashboardController extends Controller
         $roi = FinancialCalculator::roi($month, $year);
         $profitSplit = FinancialCalculator::profitSplit($month, $year);
 
-        $months = $this->monthOptions();
-        $years = $this->yearOptions();
+        $months = $this->monthFilterOptions();
+        $years = $this->yearOptions($year);
+        $periodLabel = $this->periodLabel($month, $year);
 
         return view('dashboard.index', compact(
-            'month', 'year', 'months', 'years',
+            'month', 'monthKey', 'year', 'months', 'years', 'periodLabel',
             'totalOmset', 'totalTransaksi', 'averageOrder', 'pelangganAktif',
             'series', 'mer', 'roi', 'profitSplit'
         ));

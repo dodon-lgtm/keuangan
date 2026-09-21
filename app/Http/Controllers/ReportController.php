@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Services\FinancialCalculator;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -17,6 +16,7 @@ class ReportController extends Controller
     {
         $period = $this->resolvePeriod($request);
         $month = $period['month'];
+        $monthKey = $period['monthKey'];
         $year = $period['year'];
 
         $totalOmset = FinancialCalculator::totalOmset($month, $year);
@@ -34,11 +34,12 @@ class ReportController extends Controller
         // Grafik: trend mer & roi over het hele jaar
         $series = FinancialCalculator::monthlySeries($year);
 
-        $months = $this->monthOptions();
-        $years = $this->yearOptions();
+        $months = $this->monthFilterOptions();
+        $years = $this->yearOptions($year);
+        $periodLabel = $this->periodLabel($month, $year);
 
         return view('reports.mer-roi', compact(
-            'month', 'year', 'months', 'years',
+            'month', 'monthKey', 'year', 'months', 'years', 'periodLabel',
             'totalOmset', 'totalHPP', 'totalOngkir', 'totalOperasionalExpenses',
             'totalOperasional', 'netProfit',
             'marketingSpend', 'averageOrder', 'mer', 'roi', 'profitSplit',
@@ -53,10 +54,10 @@ class ReportController extends Controller
     {
         $period = $this->resolvePeriod($request);
         $month = $period['month'];
+        $monthKey = $period['monthKey'];
         $year = $period['year'];
 
-        $start = Carbon::createFromDate($year, $month, 1)->format('Y-m-d');
-        $end = Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('Y-m-d');
+        [$start, $end] = FinancialCalculator::periodRange($month, $year);
 
         $rows = DB::table('order_items')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
@@ -113,11 +114,12 @@ class ReportController extends Controller
             }
         }
 
-        $months = $this->monthOptions();
-        $years = $this->yearOptions();
+        $months = $this->monthFilterOptions();
+        $years = $this->yearOptions($year);
+        $periodLabel = $this->periodLabel($month, $year);
 
         return view('reports.hpp-profit', compact(
-            'month', 'year', 'months', 'years', 'products',
+            'month', 'monthKey', 'year', 'months', 'years', 'periodLabel', 'products',
             'totalOmset', 'totalOperasional', 'netProfit',
             'chartNama', 'chartOmset', 'chartHpp', 'chartMargin',
             'shareNama', 'shareValue'

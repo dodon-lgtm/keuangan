@@ -45,6 +45,26 @@ class ReportControllerTest extends AuthenticatedTestCase
         $response->assertSee('Rp 40.000');
     }
 
+    public function test_dashboard_shows_operasional_breakdown_including_marketing(): void
+    {
+        $this->prepareMonth();
+
+        $response = $this->get('/dashboard?month=9&year=2026');
+
+        $response->assertStatus(200);
+        $response->assertSee('Rincian Total Operasional');
+        $response->assertSee('Total HPP (order_items)');
+        $response->assertSee('Total Ongkir');
+        $response->assertSee('Biaya Operasional (Fix/Variable Cost)');
+        $response->assertSee('Biaya Marketing (Marketing Spend)');
+        $response->assertSee('Rp 20.000');  // HPP
+        $response->assertSee('Rp 5.000');   // ongkir
+        $response->assertSee('Rp 10.000');  // Fix/Variable Cost
+        $response->assertSee('Rp 100.000'); // marketing spend
+        $response->assertSee('Rp 135.000'); // total operasional (termasuk marketing)
+        $response->assertSee('Rp -95.000'); // net profit
+    }
+
     public function test_mer_roi_report_renders_figures_and_profit_split(): void
     {
         $this->prepareMonth();
@@ -53,14 +73,29 @@ class ReportControllerTest extends AuthenticatedTestCase
 
         $response->assertStatus(200);
         $response->assertSee('Laporan MER');
-        $response->assertSee('Rp 40.000');
-        $response->assertSee('Rp 35.000'); // total operasional
-        $response->assertSee('Rp 5.000');  // net profit & ongkir & rincian
+        $response->assertSee('Rp 40.000');  // total omset
+        $response->assertSee('Rp 5.000');   // total ongkir
+        $response->assertSee('Rp 20.000');  // total HPP
+        $response->assertSee('Rp 10.000');  // Fix/Variable Cost
         $response->assertSee('Rp 100.000'); // marketing spend
+        $response->assertSee('Biaya Marketing (Marketing Spend)');
+
+        // Total Operasional = HPP + ongkir + Fix/Variable Cost + marketing.
+        $response->assertSee('Rp 135.000');
+
+        // Net Profit = omset - total operasional (marketing sudah termasuk).
+        $response->assertSee('Rp -95.000');
+
+        // MER & ROI tampil dengan 2 angka di belakang koma.
+        // MER = 100.000 / 40.000 * 100 = 250.00%
+        // ROI = -95.000 / 100.000 * 100 = -95.00%
+        $response->assertSee('250.00%');
+        $response->assertSee('-95.00%');
+
         $response->assertSee('A Roni');
         $response->assertSee('Rizky');
-        $response->assertSee('Rp 3.000');
-        $response->assertSee('Rp 2.000');
+        $response->assertSee('Rp -57.000'); // pembagian profit A Roni (60%)
+        $response->assertSee('Rp -38.000'); // pembagian profit Rizky (40%)
     }
 
     public function test_hpp_profit_report_renders_per_product_breakdown(): void
@@ -76,6 +111,7 @@ class ReportControllerTest extends AuthenticatedTestCase
         $response->assertSee('2'); // qty
         $response->assertSee('Rp 20.000'); // total HPP
         $response->assertSee('Rp 20.000'); // margin profit
+        $response->assertSee('50.00%');    // margin pct dengan 2 angka di belakang koma
     }
 
     public function test_reports_handle_empty_periods_without_errors(): void
@@ -112,7 +148,9 @@ class ReportControllerTest extends AuthenticatedTestCase
             ->assertStatus(200)
             ->assertSee('Rp 80.000')
             ->assertSee('Rp 100.000')
-            ->assertSee('Rp 20.000');
+            ->assertSee('Biaya Marketing (Marketing Spend)')
+            ->assertSee('Rp 160.000')  // total operasional full year (termasuk marketing)
+            ->assertSee('Rp -80.000'); // net profit full year
 
         $this->get('/reports/hpp-profit?month=all&year=2026')
             ->assertStatus(200)

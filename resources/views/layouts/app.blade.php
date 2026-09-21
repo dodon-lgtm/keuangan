@@ -915,7 +915,13 @@
                 return 'Rp ' + neg + str.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             },
             pct: function (val) {
-                return String(val).replace('.', ',') + '%';
+                var num = Number(val);
+
+                // Nilai kosong/tidak valid tetap tampil rapi sebagai 0.00%.
+                if (!isFinite(num)) { num = 0; }
+
+                // Konsisten dengan number_format($x, 2) di sisi Blade.
+                return num.toFixed(2) + '%';
             },
             base: function (extra) {
                 var labels = { colors: '#9AA1AB', fontSize: '12px', fontFamily: "'Inter', sans-serif", fontWeight: 500 };

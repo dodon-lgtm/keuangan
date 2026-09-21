@@ -12,7 +12,7 @@ use App\Services\FinancialCalculator;
 
 class FinancialCalculatorTest extends AuthenticatedTestCase
 {
-    public function test_totals_use_order_items_and_operational_expenses(): void
+    public function test_totals_use_order_items_operational_and_marketing_expenses(): void
     {
         $this->prepareMonth();
 
@@ -20,14 +20,52 @@ class FinancialCalculatorTest extends AuthenticatedTestCase
         $this->assertSame(40000, FinancialCalculator::totalOmset(9, 2026));
         $this->assertSame(1, FinancialCalculator::totalTransaksi(9, 2026));
 
+        // Komponen biaya satu per satu.
         // Total HPP = sum(hpp_satuan * jumlah_pcs) = 10000 * 2
         $this->assertSame(20000, FinancialCalculator::totalHPP(9, 2026));
         $this->assertSame(5000, FinancialCalculator::totalOngkir(9, 2026));
         $this->assertSame(10000, FinancialCalculator::totalOperationalExpenses(9, 2026));
+        $this->assertSame(100000, FinancialCalculator::marketingSpend(9, 2026));
 
-        // Total Operasional = ongkir + HPP + operasional = 5000 + 20000 + 10000
+        // Total Operasional = ongkir + HPP + Fix/Variable Cost + marketing
+        //                  = 5000 + 20000 + 10000 + 100000
+        $this->assertSame(135000, FinancialCalculator::totalOperasional(9, 2026));
+
+        // Net Profit = total omset - total operasional (marketing ikut dihitung)
+        $this->assertSame(-95000, FinancialCalculator::netProfit(9, 2026));
+    }
+
+    public function test_total_operasional_includes_marketing_spend(): void
+    {
+        $customer = $this->customer('Fatimah Zahra');
+        $product = Product::create([
+            'nama_produk' => 'Voal Test',
+            'harga_jual' => 20000,
+            'hpp' => 10000,
+        ]);
+
+        // Order 2 pcs x 20.000 dengan ongkir 5.000 dan HPP 10.000 per pcs.
+        $this->createOrder($customer, $product, '2026-09-05');
+
+        // Tanpa pengeluaran lain: operasional = ongkir + HPP = 5000 + 20000.
+        $this->assertSame(25000, FinancialCalculator::totalOperasional(9, 2026));
+
+        OperationalExpense::create([
+            'nama_pengeluaran' => 'Listrik',
+            'kategori' => OperationalExpense::KATEGORI_FIX_COST,
+            'nominal' => 10000,
+            'bulan' => 9,
+            'tahun' => 2026,
+        ]);
+
+        // Bertambah Fix/Variable Cost: 25000 + 10000.
         $this->assertSame(35000, FinancialCalculator::totalOperasional(9, 2026));
-        $this->assertSame(5000, FinancialCalculator::netProfit(9, 2026));
+
+        MarketingSpend::create(['bulan' => 9, 'tahun' => 2026, 'nominal' => 100000]);
+
+        // Bertambah biaya marketing: 35000 + 100000.
+        $this->assertSame(135000, FinancialCalculator::totalOperasional(9, 2026));
+        $this->assertSame(40000 - 135000, FinancialCalculator::netProfit(9, 2026));
     }
 
     public function test_mer_roi_average_and_profit_split(): void
@@ -36,13 +74,17 @@ class FinancialCalculatorTest extends AuthenticatedTestCase
 
         $this->assertSame(100000, FinancialCalculator::marketingSpend(9, 2026));
         $this->assertSame(250.0, FinancialCalculator::mer(9, 2026));
-        $this->assertSame(5.0, FinancialCalculator::roi(9, 2026));
+
+        // ROI = net profit / marketing spend, dan net profit sudah dikurangi
+        // biaya marketing: -95000 / 100000 * 100.
+        $this->assertSame(-95.0, FinancialCalculator::roi(9, 2026));
         $this->assertSame(40000.0, FinancialCalculator::averageOrder(9, 2026));
 
         $split = FinancialCalculator::profitSplit(9, 2026);
 
-        $this->assertSame(3000, $split['roni']);
-        $this->assertSame(2000, $split['rizky']);
+        // Pembagian profit mengikuti net profit baru: -95000 * 60% / 40%.
+        $this->assertSame(-57000, $split['roni']);
+        $this->assertSame(-38000, $split['rizky']);
     }
 
     public function test_guards_avoid_division_by_zero_when_period_is_empty(): void
@@ -69,8 +111,13 @@ class FinancialCalculatorTest extends AuthenticatedTestCase
             'nominal' => 100000,
         ]);
 
+        // MER tidak bisa dihitung tanpa omset.
         $this->assertSame(0.0, FinancialCalculator::mer(6, 2026));
-        $this->assertSame(0.0, FinancialCalculator::roi(6, 2026));
+
+        // Marketing kini menjadi komponen biaya operasional, sehingga belanja
+        // iklan tanpa omset berarti seluruh modal iklan menjadi kerugian:
+        // -100000 / 100000 * 100.
+        $this->assertSame(-100.0, FinancialCalculator::roi(6, 2026));
     }
 
     public function test_roi_returns_zero_when_there_is_no_marketing_spend(): void
@@ -149,19 +196,19 @@ class FinancialCalculatorTest extends AuthenticatedTestCase
         $this->assertSame(40000, FinancialCalculator::totalHPP(null, 2026));
         $this->assertSame(10000, FinancialCalculator::totalOngkir(null, 2026));
         $this->assertSame(15000, FinancialCalculator::totalOperationalExpenses(null, 2026));
-        $this->assertSame(65000, FinancialCalculator::totalOperasional(null, 2026));
-        $this->assertSame(15000, FinancialCalculator::netProfit(null, 2026));
+        $this->assertSame(10000 + 40000 + 15000 + 160000, FinancialCalculator::totalOperasional(null, 2026));
+        $this->assertSame(80000 - 225000, FinancialCalculator::netProfit(null, 2026));
         $this->assertSame(40000.0, FinancialCalculator::averageOrder(null, 2026));
 
         // Marketing, MER, ROI dan pembagian profit mengikuti periode yang sama.
         $this->assertSame(160000, FinancialCalculator::marketingSpend(null, 2026));
         $this->assertSame(200.0, FinancialCalculator::mer(null, 2026));
-        $this->assertEqualsWithDelta(9.375, FinancialCalculator::roi(null, 2026), 0.0001);
+        $this->assertEqualsWithDelta(-90.625, FinancialCalculator::roi(null, 2026), 0.0001);
 
         $split = FinancialCalculator::profitSplit(null, 2026);
 
-        $this->assertSame(9000, $split['roni']);
-        $this->assertSame(6000, $split['rizky']);
+        $this->assertSame(-87000, $split['roni']);
+        $this->assertSame(-58000, $split['rizky']);
 
         // Pelanggan aktif ikut periode: 2 order di 2026, 1 order di September.
         $this->assertSame(1, FinancialCalculator::pelangganAktif(null, 2026));

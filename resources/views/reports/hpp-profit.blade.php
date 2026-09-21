@@ -73,7 +73,7 @@
                 <td>@include('partials.rupiah', ['value' => $product['total_omset']])</td>
                 <td>@include('partials.rupiah', ['value' => $product['total_hpp']])</td>
                 <td>@include('partials.rupiah', ['value' => $product['margin']])</td>
-                <td>{{ $product['margin_pct'] }}%</td>
+                <td>{{ number_format((float) $product['margin_pct'], 2) }}%</td>
             </tr>
         @endforeach
         @if (empty($products))

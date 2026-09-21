@@ -52,7 +52,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted">Operasional</h5>
+                    <h5 class="card-title text-muted">Total Operasional</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalOperasional])</p>
                 </div>
             </div>
@@ -80,7 +80,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title text-muted">MER (Spend / Omset)</h5>
-                    <p class="card-text fs-3">{{ $mer }}%</p>
+                    <p class="card-text fs-3">{{ number_format($mer, 2) }}%</p>
                 </div>
             </div>
         </div>
@@ -88,7 +88,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title text-muted">ROI (Net Profit / Spend)</h5>
-                    <p class="card-text fs-3">{{ $roi }}%</p>
+                    <p class="card-text fs-3">{{ number_format($roi, 2) }}%</p>
                 </div>
             </div>
         </div>
@@ -118,6 +118,10 @@
                     <td>Biaya Operasional (Fix/Variable Cost)</td>
                     <td>@include('partials.rupiah', ['value' => $totalOperasionalExpenses])</td>
                 </tr>
+                <tr>
+                    <td>Biaya Marketing (Marketing Spend)</td>
+                    <td>@include('partials.rupiah', ['value' => $marketingSpend])</td>
+                </tr>
                 <tr class="total-row fw-bold">
                     <td>Total Operasional</td>
                     <td>@include('partials.rupiah', ['value' => $totalOperasional])</td>
@@ -126,32 +130,7 @@
         </table>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-header">
-            <h2 class="h5 mb-0">Pembagian Profit</h2>
-        </div>
-        <table class="table table-striped mb-0">
-            <thead>
-                <tr>
-                    <th>Nama</th>
-                    <th>Share</th>
-                    <th>Nominal</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>A Roni</td>
-                    <td>60%</td>
-                    <td>@include('partials.rupiah', ['value' => $profitSplit['roni']])</td>
-                </tr>
-                <tr>
-                    <td>Rizky</td>
-                    <td>40%</td>
-                    <td>@include('partials.rupiah', ['value' => $profitSplit['rizky']])</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    {{-- no needed pembagian provit cuz it's just for demonstration --}}
 
     @php
         $chartMonths = [];

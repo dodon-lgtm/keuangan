@@ -88,19 +88,25 @@ class FinancialCalculator
     }
 
     /**
-     * Total operating costs for the period:
-     * shipping (orders.ongkir) + cost of goods sold + operational expenses.
-     * A null month accumulates the whole year.
+     * Total operating costs for the period. Every cost component is included:
+     * shipping (orders.ongkir) + cost of goods sold + operational expenses
+     * (Fix/Variable Cost) + marketing spend.
+     *
+     * Marketing spend is part of the operating cost because the ad budget is
+     * an actual cash-out for the period. A null month accumulates the whole
+     * year.
      */
     public static function totalOperasional(?int $month, int $year): int
     {
         return static::totalOngkir($month, $year)
             + static::totalHPP($month, $year)
-            + static::totalOperationalExpenses($month, $year);
+            + static::totalOperationalExpenses($month, $year)
+            + static::marketingSpend($month, $year);
     }
 
     /**
-     * Net profit for the period: totalOmset - totalOperasional.
+     * Net profit for the period: totalOmset - totalOperasional, where the
+     * operating costs already contain the marketing spend.
      * A null month accumulates the whole year.
      */
     public static function netProfit(?int $month, int $year): int
@@ -273,7 +279,9 @@ class FinancialCalculator
         for ($month = 1; $month <= 12; $month++) {
             $data = $series[$month];
 
-            $data['total_operacional'] = $data['hpp'] + $data['ongkir'] + $data['operacional'];
+            // Total operational cost of the month, marketing spend included,
+            // so the charts match the Total Operasional shown on the pages.
+            $data['total_operacional'] = $data['hpp'] + $data['ongkir'] + $data['operacional'] + $data['marketing'];
             $data['net_profit'] = $data['omset'] - $data['total_operacional'];
             $data['mer'] = $data['omset'] > 0
                 ? round((($data['marketing'] / $data['omset']) * 100) * 100) / 100

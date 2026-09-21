@@ -23,6 +23,14 @@ class DashboardController extends Controller
         $averageOrder = FinancialCalculator::averageOrder($month, $year);
         $pelangganAktif = FinancialCalculator::pelangganAktif($month, $year);
 
+        // Rincian total operasional: HPP, ongkir, Fix/Variable Cost, marketing.
+        $totalHPP = FinancialCalculator::totalHPP($month, $year);
+        $totalOngkir = FinancialCalculator::totalOngkir($month, $year);
+        $totalOperasionalExpenses = FinancialCalculator::totalOperationalExpenses($month, $year);
+        $marketingSpend = FinancialCalculator::marketingSpend($month, $year);
+        $totalOperasional = FinancialCalculator::totalOperasional($month, $year);
+        $netProfit = FinancialCalculator::netProfit($month, $year);
+
         // Grafik data (analisis)
         $series = FinancialCalculator::monthlySeries($year);
         $mer = FinancialCalculator::mer($month, $year);
@@ -36,6 +44,8 @@ class DashboardController extends Controller
         return view('dashboard.index', compact(
             'month', 'monthKey', 'year', 'months', 'years', 'periodLabel',
             'totalOmset', 'totalTransaksi', 'averageOrder', 'pelangganAktif',
+            'totalHPP', 'totalOngkir', 'totalOperasionalExpenses', 'marketingSpend',
+            'totalOperasional', 'netProfit',
             'series', 'mer', 'roi', 'profitSplit'
         ));
     }

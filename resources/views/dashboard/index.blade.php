@@ -81,6 +81,49 @@
         </div>
     </div>
 
+    {{-- Rincian Total Operasional (termasuk biaya marketing) --}}
+    <div class="card mt-4">
+        <div class="card-body">
+            <span class="chart-eyebrow">Biaya</span>
+            <h2 class="chart-heading">Rincian Total Operasional</h2>
+            <p class="chart-sub mb-0">Akumulasi seluruh komponen biaya untuk {{ $periodLabel }}, termasuk biaya marketing.</p>
+        </div>
+        <table class="table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>Komponen</th>
+                    <th class="text-end">Nominal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total HPP (order_items)</td>
+                    <td class="text-end">@include('partials.rupiah', ['value' => $totalHPP])</td>
+                </tr>
+                <tr>
+                    <td>Total Ongkir</td>
+                    <td class="text-end">@include('partials.rupiah', ['value' => $totalOngkir])</td>
+                </tr>
+                <tr>
+                    <td>Biaya Operasional (Fix/Variable Cost)</td>
+                    <td class="text-end">@include('partials.rupiah', ['value' => $totalOperasionalExpenses])</td>
+                </tr>
+                <tr>
+                    <td>Biaya Marketing (Marketing Spend)</td>
+                    <td class="text-end">@include('partials.rupiah', ['value' => $marketingSpend])</td>
+                </tr>
+                <tr class="total-row fw-bold">
+                    <td>Total Operasional</td>
+                    <td class="text-end">@include('partials.rupiah', ['value' => $totalOperasional])</td>
+                </tr>
+                <tr>
+                    <td>Net Profit (Total Omset - Total Operasional)</td>
+                    <td class="text-end">@include('partials.rupiah', ['value' => $netProfit])</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
     @php
         $chartMonths = [];
         $chartOmset = [];

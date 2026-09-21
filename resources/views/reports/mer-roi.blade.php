@@ -4,19 +4,20 @@
 
 @section('content')
     <style>
-        h1 { color: #FFFFFF; }
-        .form-label { color: #C9CED6; }
+        /* Semua teks mengikuti tema via CSS variable (putih di dark, gelap di light) */
+        h1 { color: var(--text); }
+        .form-label { color: var(--muted); }
 
         .card-title,
         .card-title.text-muted,
-        .card-text { color: #FFFFFF; }
-        .card-title.text-muted { color: #FFFFFF !important; }
+        .card-text { color: var(--text); }
+        .card-title.text-muted { color: var(--text) !important; }
 
         .card-header h2,
-        .card-header .h5 { color: #FFFFFF; }
+        .card-header .h5 { color: var(--text); }
 
         .table thead th,
-        .table tbody td { color: #FFFFFF; }
+        .table tbody td { color: var(--text); }
         .table thead th { font-weight: 600; }
     </style>
 

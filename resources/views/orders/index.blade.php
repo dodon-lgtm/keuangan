@@ -72,7 +72,7 @@
         </a>
         @if ($q !== '' || $tipeBayar !== '' || $jenisOrder !== '' || $metodeBayar !== ''
                 || $tanggalFrom !== '' || $tanggalTo !== '' || $nominalMin !== null || $nominalMax !== null)
-            <span class="filter-active">Filter actief</span>
+            <span class="filter-active">Filter aktif</span>
         @endif
     </form>
 
@@ -80,7 +80,8 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted">Total Keseluruhan Omset</h5>
+                    <!-- Diubah menggunakan style var(--muted) agar adaptif di dark mode -->
+                    <h5 class="card-title" style="color: var(--muted) !important;">Total Keseluruhan Omset</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalOmset])</p>
                 </div>
             </div>
@@ -88,7 +89,8 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted">Total Keseluruhan Pcs Terjual</h5>
+                    <!-- Diubah menggunakan style var(--muted) agar adaptif di dark mode -->
+                    <h5 class="card-title" style="color: var(--muted) !important;">Total Keseluruhan Pcs Terjual</h5>
                     <p class="card-text fs-4">{{ $totalPcs }} pcs</p>
                 </div>
             </div>
@@ -117,7 +119,7 @@
                 <td>{{ $order->customer->nama_lengkap }}</td>
                 <td>
                     @if ($order->orderItems->isEmpty())
-                        <span class="text-muted">â€”</span>
+                        <span style="color: var(--muted);">—</span>
                     @else
                         {{ $order->orderItems->map(fn ($item) => $item->product->nama_produk . ' (x' . $item->jumlah_pcs . ')')->implode(', ') }}
                     @endif

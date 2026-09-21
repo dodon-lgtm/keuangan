@@ -73,8 +73,9 @@
                     @enderror
                 </div>
 
-                <div class="form-text mb-3 text-muted">
-                    Status Pelanggan dihitung otomatis: <strong>repeat</strong> (Pelanggan Aktif) jika memiliki lebih dari 1 transaksi order.
+                <!-- Diperbaiki menggunakan style var(--muted) agar terlihat jelas di dark mode -->
+                <div class="form-text mb-3" style="color: var(--muted) !important;">
+                    Status Pelanggan dihitung otomatis: <strong style="color: var(--text) !important;">repeat</strong> (Pelanggan Aktif) jika memiliki lebih dari 1 transaksi order.
                 </div>
 
                 <button type="submit" class="btn btn-primary">Update</button>

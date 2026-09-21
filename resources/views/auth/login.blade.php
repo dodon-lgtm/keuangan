@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -497,7 +497,7 @@
             bottom: 0;
             display: flex;
             align-items: center;
-            color: #6B7280;
+            color: #9AA1AB;
             pointer-events: none;
         }
         .input-wrap .icon svg,
@@ -518,7 +518,7 @@
             transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
         }
         .input-field::placeholder {
-            color: #555D69;
+            color: #7B8493;
         }
         .input-field:focus {
             border-color: var(--accent);
@@ -557,7 +557,7 @@
             background: transparent;
             border: none;
             cursor: pointer;
-            color: #6B7280;
+            color: #9AA1AB;
             padding: 0;
             transition: color 0.15s ease;
         }
@@ -666,7 +666,7 @@
             right: 0;
             text-align: center;
             font-size: 12px;
-            color: #6B7280;
+            color: #9AA1AB;
         }
 
         /* --- animations --- */
@@ -835,7 +835,7 @@
         }
     </style>
     <script>
-        /* Halaman login SELALU dark mode — tema disimpan tetap dipakai di dalam aplikasi */
+        /* Halaman login SELALU dark mode â€” tema disimpan tetap dipakai di dalam aplikasi */
         document.documentElement.setAttribute('data-theme', 'dark');
     </script>
     <link href="{{ asset('css/theme.css') }}" rel="stylesheet">
@@ -909,7 +909,7 @@
 
         <!-- ===== RIGHT: FORM ===== -->
         <main class="form-panel">
-            <!-- ===== BACKGROUND DECORATION (kanan) — subtiel, achter de card ===== -->
+            <!-- ===== BACKGROUND DECORATION (kanan) â€” subtiel, achter de card ===== -->
             <div class="panel-deco" aria-hidden="true">
                 <div class="deco-glow"></div>
                 <div class="deco-grid"></div>
@@ -1007,7 +1007,7 @@
                                    {{ old('remember') ? 'checked' : '' }}>
                             Ingat saya
                         </label>
-                        <a class="forgot-link" href="#">Lupa password?</a>
+                        {{-- <a class="forgot-link" href="#">Lupa password?</a> --}}
                     </div>
 
                     <button type="submit" class="submit-btn">

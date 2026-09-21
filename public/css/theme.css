@@ -93,6 +93,33 @@ html[data-theme="light"] .theme-switch:hover .ts-track {
     cursor: pointer;
 }
 
+/* ---------- DARK MODE (eksplisit) ---------- */
+html[data-theme="dark"] {
+    --bg: #08090B;
+    --panel: #0D0F12;
+    --card: #101216;
+    --input: #15181D;
+    --border: #242832;
+    --text: #F5F5F5;
+    --muted: #D6DBE2;
+    --accent: #E11D48;
+    --accent-hover: #C8103F;
+    --accent-soft: rgba(225, 29, 72, 0.12);
+    --success: #22C55E;
+    --error: #F87171;
+}
+/* Teks sekunder di dark mode: selalu terang & kontras */
+html[data-theme="dark"] .text-muted,
+html[data-theme="dark"] .card-text,
+html[data-theme="dark"] .card-subtitle,
+html[data-theme="dark"] .form-label,
+html[data-theme="dark"] .dash-sub,
+html[data-theme="dark"] .kpi-label,
+html[data-theme="dark"] .chart-desc,
+html[data-theme="dark"] .chart-note {
+    color: var(--muted);
+}
+
 /* ==========================================================================
    WHITE MODE
    ========================================================================== */
@@ -215,6 +242,8 @@ html[data-theme="light"] .card-footer {
     background: #FAFBFC;
     border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
+html[data-theme="light"] .card-title { color: var(--text); }
+html[data-theme="light"] .card-text { color: var(--muted); }
 
 /* ---------- Form / Input ---------- */
 html[data-theme="light"] .form-control,

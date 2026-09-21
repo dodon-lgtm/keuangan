@@ -5,7 +5,7 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Pengeluaran</h1>
-        <span class="text-muted">Kelola seluruh biaya bulanan (Budget Iklan &amp; Operasional) dalam satu halaman.</span>
+        <span style="color: var(--muted) !important;">Kelola seluruh biaya bulanan (Budget Iklan &amp; Operasional) dalam satu halaman.</span>
     </div>
 
     <form action="{{ route('expenses.index') }}" method="get" class="filter-panel">
@@ -54,7 +54,7 @@
             Reset
         </a>
         @if ($bulan !== null || $tahun !== null || $kategori !== '')
-            <span class="filter-active">Filter actief</span>
+            <span class="filter-active">Filter aktif</span>
         @endif
     </form>
 
@@ -62,7 +62,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted">Total Budget Iklan (Marketing Spend)
+                    <h5 class="card-title" style="color: var(--muted) !important;">Total Budget Iklan (Marketing Spend)
                     </h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalMarketing])</p>
                 </div>
@@ -71,7 +71,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted">Total Fix Cost</h5>
+                    <h5 class="card-title" style="color: var(--muted) !important;">Total Fix Cost</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalFixCost])</p>
                 </div>
             </div>
@@ -79,7 +79,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted">Total Variable Cost</h5>
+                    <h5 class="card-title" style="color: var(--muted) !important;">Total Variable Cost</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalVariableCost])</p>
                 </div>
             </div>
@@ -175,7 +175,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="text-center text-muted">Belum ada budget iklan.</td>
+                            <td colspan="4" class="text-center" style="color: var(--muted);">Belum ada budget iklan.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -188,8 +188,6 @@
                     @method('PUT')
                 </form>
             @endforeach
-
-            <!-- === MARKETING_TABLE === -->
         </div>
     </div>
 
@@ -319,7 +317,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted">Belum ada pengeluaran operasional.</td>
+                            <td colspan="6" class="text-center" style="color: var(--muted);">Belum ada pengeluaran operasional.</td>
                         </tr>
                     @endforelse
                 </tbody>

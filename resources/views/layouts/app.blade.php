@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -16,7 +16,7 @@
             --input: #15181D;
             --border: #242832;
             --text: #F5F5F5;
-            --muted: #9AA1AB;
+            --muted: #D6DBE2;
             --accent: #E11D48;
             --accent-hover: #C8103F;
             --accent-soft: rgba(225, 29, 72, 0.12);
@@ -68,7 +68,7 @@
             backdrop-filter: blur(14px) saturate(1.15);
             -webkit-backdrop-filter: blur(14px) saturate(1.15);
         }
-        /* Hairline merah halus di bawah header — identitas brand */
+        /* Hairline merah halus di bawah header â€” identitas brand */
         .app-header::after {
             content: '';
             position: absolute;
@@ -387,7 +387,7 @@
         .kpi-unit { font-size: 13px; color: var(--muted); font-weight: 600; }
 
         .card { background: #101216; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; color: var(--text); }
-        .card-title { color: var(--text); }
+        .card-title { color: #FFFFFF; }
         .card-text { color: var(--muted); }
         .form-control, .form-select { background: var(--input); border: 1px solid var(--border); color: var(--text); border-radius: 10px; }
         .form-control:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.16); }
@@ -483,8 +483,8 @@
         .btn-outline-success { color: var(--success); border-color: rgba(34, 197, 94, 0.5); background: transparent; }
         .btn-outline-success:hover { color: #fff; background: rgba(34, 197, 94, 0.16); border-color: var(--success); }
 
-        .form-control::placeholder, .form-select::placeholder { color: #6B7280; }
-        .form-control:disabled, .form-select:disabled { background: #12141A; color: #6B7280; border-color: rgba(255, 255, 255, 0.06); }
+        .form-control::placeholder, .form-select::placeholder { color: #9AA1AB; }
+        .form-control:disabled, .form-select:disabled { background: #12141A; color: #9AA1AB; border-color: rgba(255, 255, 255, 0.06); }
 
         .invalid-feedback { color: #F5B8B8; }
 
@@ -507,7 +507,7 @@
             --bs-pagination-active-color: #fff;
             --bs-pagination-active-bg: var(--accent);
             --bs-pagination-active-border-color: var(--accent);
-            --bs-pagination-disabled-color: #6B7280;
+            --bs-pagination-disabled-color: #9AA1AB;
             --bs-pagination-disabled-bg: #0E1013;
             --bs-pagination-disabled-border-color: rgba(255, 255, 255, 0.06);
         }
@@ -527,7 +527,7 @@
             transition: border-color 0.18s ease, box-shadow 0.18s ease;
         }
         .filter-input:focus, .filter-input:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.18); outline: none; }
-        .filter-input::placeholder { color: #6B7280; }
+        .filter-input::placeholder { color: #9AA1AB; }
         .filter-reset {
             display: inline-flex;
             align-items: center;
@@ -614,7 +614,7 @@
             margin-bottom: 7px;
         }
         .ss-search:focus { border-color: var(--accent); }
-        .ss-search::placeholder { color: #6B7280; }
+        .ss-search::placeholder { color: #9AA1AB; }
         .ss-list { list-style: none; margin: 0; padding: 0; max-height: 212px; overflow-y: auto; }
         .ss-list li {
             padding: 8px 11px;
@@ -627,7 +627,7 @@
         }
         .ss-list li:hover, .ss-list li.hover { background: rgba(225, 29, 72, 0.10); color: #fff; }
         .ss-list li.selected { background: rgba(225, 29, 72, 0.16); color: #fff; box-shadow: inset 0 0 0 1px rgba(225, 29, 72, 0.4); }
-        .ss-empty { padding: 9px 11px; font-size: 12.5px; color: #6B7280; }
+        .ss-empty { padding: 9px 11px; font-size: 12.5px; color: #9AA1AB; }
 
         /* ---- Analysis charts ---- */
         .chart-section { margin-top: 40px; padding-top: 6px; }
@@ -727,7 +727,7 @@
             background: #0E1013;
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 10px;
-            color: #6B7280;
+            color: #9AA1AB;
             padding: 6px 12px;
             min-width: 34px;
             display: inline-flex;
@@ -735,7 +735,7 @@
             justify-content: center;
         }
 
-        /* ---- Consistent section rhythm (table → content) ---- */
+        /* ---- Consistent section rhythm (table â†’ content) ---- */
         .table { margin-bottom: 14px; }
         .chart-section + .chart-section { margin-top: 40px; }
 
@@ -918,9 +918,9 @@
                 return String(val).replace('.', ',') + '%';
             },
             base: function (extra) {
-                var labels = { colors: '#9AA1AB', fontSize: '12px', fontFamily: "'Inter', sans-serif", fontWeight: 500 };
+                var labels = { colors: '#C3CAD4', fontSize: '12px', fontFamily: "'Inter', sans-serif", fontWeight: 500 };
                 var defaults = {
-                    chart: { type: 'bar', background: 'transparent', foreColor: '#9AA1AB', fontFamily: "'Inter', sans-serif", toolbar: { show: false } },
+                    chart: { type: 'bar', background: 'transparent', foreColor: '#C3CAD4', fontFamily: "'Inter', sans-serif", toolbar: { show: false } },
                     dataLabels: { enabled: false },
                     grid: { padding: { left: 10, right: 10 }, strokeDashArray: 4, borderColor: 'rgba(255,255,255,0.08)', colors: ['rgba(255,255,255,0.06)'] },
                     tooltip: { theme: 'dark', style: { fontSize: '12.5px', fontFamily: "'Inter', sans-serif" } },

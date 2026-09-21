@@ -22,12 +22,19 @@ class DashboardController extends Controller
         $averageOrder = FinancialCalculator::averageOrder($month, $year);
         $pelangganAktif = FinancialCalculator::pelangganAktif();
 
+        // Grafik data (analisis)
+        $series = FinancialCalculator::monthlySeries($year);
+        $mer = FinancialCalculator::mer($month, $year);
+        $roi = FinancialCalculator::roi($month, $year);
+        $profitSplit = FinancialCalculator::profitSplit($month, $year);
+
         $months = $this->monthOptions();
         $years = $this->yearOptions();
 
         return view('dashboard.index', compact(
             'month', 'year', 'months', 'years',
-            'totalOmset', 'totalTransaksi', 'averageOrder', 'pelangganAktif'
+            'totalOmset', 'totalTransaksi', 'averageOrder', 'pelangganAktif',
+            'series', 'mer', 'roi', 'profitSplit'
         ));
     }
 }

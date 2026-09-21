@@ -31,6 +31,9 @@ class ReportController extends Controller
         $roi = FinancialCalculator::roi($month, $year);
         $profitSplit = FinancialCalculator::profitSplit($month, $year);
 
+        // Grafik: trend mer & roi over het hele jaar
+        $series = FinancialCalculator::monthlySeries($year);
+
         $months = $this->monthOptions();
         $years = $this->yearOptions();
 
@@ -38,7 +41,8 @@ class ReportController extends Controller
             'month', 'year', 'months', 'years',
             'totalOmset', 'totalHPP', 'totalOngkir', 'totalOperasionalExpenses',
             'totalOperasional', 'netProfit',
-            'marketingSpend', 'averageOrder', 'mer', 'roi', 'profitSplit'
+            'marketingSpend', 'averageOrder', 'mer', 'roi', 'profitSplit',
+            'series'
         ));
     }
 
@@ -87,12 +91,36 @@ class ReportController extends Controller
         $totalOperasional = FinancialCalculator::totalOperasional($month, $year);
         $netProfit = FinancialCalculator::netProfit($month, $year);
 
+        // Grafik: omset vs hpp vs margin per produk (top 10)
+        $chartNama = [];
+        $chartOmset = [];
+        $chartHpp = [];
+        $chartMargin = [];
+        $shareNama = [];
+        $shareValue = [];
+
+        foreach ($products as $index => $product) {
+            if ($index < 10) {
+                $chartNama[] = $product['nama_produk'];
+                $chartOmset[] = (int) $product['total_omset'];
+                $chartHpp[] = (int) $product['total_hpp'];
+                $chartMargin[] = (int) $product['margin'];
+            }
+
+            if ($index < 8 && (int) $product['margin'] > 0) {
+                $shareNama[] = $product['nama_produk'];
+                $shareValue[] = (int) $product['margin'];
+            }
+        }
+
         $months = $this->monthOptions();
         $years = $this->yearOptions();
 
         return view('reports.hpp-profit', compact(
             'month', 'year', 'months', 'years', 'products',
-            'totalOmset', 'totalOperasional', 'netProfit'
+            'totalOmset', 'totalOperasional', 'netProfit',
+            'chartNama', 'chartOmset', 'chartHpp', 'chartMargin',
+            'shareNama', 'shareValue'
         ));
     }
 }

@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Observers\OrderObserver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -16,18 +17,142 @@ class OrderController extends Controller
     /**
      * Display a listing of the orders.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $orders = Order::query()
-            ->with(['customer', 'orderItems.product'])
-            ->orderByDesc('id')
-            ->paginate(10);
+        $q = filled($request->get('q')) ? trim((string) $request->get('q')) : '';
+        $tipeBayar = filled($request->get('tipe_bayar')) ? (string) $request->get('tipe_bayar') : '';
+        $jenisOrder = filled($request->get('jenis_order')) ? (string) $request->get('jenis_order') : '';
+        $metodeBayar = filled($request->get('metode_bayar')) ? (string) $request->get('metode_bayar') : '';
+        $tanggalFrom = filled($request->get('tanggal_from')) ? (string) $request->get('tanggal_from') : '';
+        $tanggalTo = filled($request->get('tanggal_to')) ? (string) $request->get('tanggal_to') : '';
+        $nominalMin = filled($request->get('nominal_min')) ? (int) $request->get('nominal_min') : null;
+        $nominalMax = filled($request->get('nominal_max')) ? (int) $request->get('nominal_max') : null;
 
-        $totalOmset = (int) Order::query()->sum('nominal');
+        $base = Order::query()->with(['customer', 'orderItems.product']);
 
-        $totalPcs = (int) \Illuminate\Support\Facades\DB::table('order_items')->sum('jumlah_pcs');
+        if ($q !== '') {
+            $base->where(function ($sub) use ($q) {
+                $sub->whereLike('pic_admin', "%$q%")
+                    ->orWhereIn('customer_id', Customer::query()->select('id')->whereLike('nama_lengkap', "%$q%"))
+                    ->orWhereIn('id', DB::table('order_items')
+                        ->join('products', 'products.id', '=', 'order_items.product_id')
+                        ->whereLike('products.nama_produk', "%$q%")
+                        ->select('order_items.order_id'));
+            });
+        }
 
-        return view('orders.index', compact('orders', 'totalOmset', 'totalPcs'));
+        if ($tipeBayar !== '') {
+            $base->where('tipe_bayar', $tipeBayar);
+        }
+
+        if ($jenisOrder !== '') {
+            $base->where('jenis_order', $jenisOrder);
+        }
+
+        if ($metodeBayar !== '') {
+            $base->where('metode_bayar', $metodeBayar);
+        }
+
+        if ($tanggalFrom !== '') {
+            $base->where('tanggal', '>=', $tanggalFrom);
+        }
+
+        if ($tanggalTo !== '') {
+            $base->where('tanggal', '<=', $tanggalTo);
+        }
+
+        if ($nominalMin !== null) {
+            $base->where('nominal', '>=', $nominalMin);
+        }
+
+        if ($nominalMax !== null) {
+            $base->where('nominal', '<=', $nominalMax);
+        }
+
+        $orders = $base->orderByDesc('id')->paginate(10)->withQueryString();
+
+        // Statistiken (filter-bewust)
+        $filteredIds = $base->clone()->select('id');
+
+        $totalOmset = (int) $base->sum('nominal');
+
+        // Ambil array ID-nya terlebih dahulu menggunakan ->pluck('id')
+        $orderIds = is_object($filteredIds) ? $filteredIds->pluck('id') : $filteredIds;
+
+        $totalPcs = (int) DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->whereIn('orders.id', $orderIds)
+            ->sum('jumlah_pcs');
+        // Grafik: omset per tipe bayar
+        $tipeTotals = [];
+
+        foreach ($base->clone()->get(['tipe_bayar', 'nominal']) as $row) {
+            $label = $row->tipe_bayar ?? '';
+
+            $tipeTotals[$label] = ($tipeTotals[$label] ?? 0) + (int) $row->nominal;
+        }
+
+        $chartTipe = [];
+        $chartTipeValue = [];
+
+        foreach (Order::TIPES as $label) {
+            $chartTipe[] = $label;
+            $chartTipeValue[] = (int) ($tipeTotals[$label] ?? 0);
+        }
+
+        // Grafik: transaksi per jenis order
+        $jenisTotals = [];
+
+        foreach ($base->clone()->get(['jenis_order']) as $row) {
+            $label = $row->jenis_order ?? '';
+
+            $jenisTotals[$label] = ($jenisTotals[$label] ?? 0) + 1;
+        }
+
+        $chartJenis = [];
+        $chartJenisValue = [];
+
+        foreach (Order::JENISES as $label) {
+            $chartJenis[] = $label;
+            $chartJenisValue[] = (int) ($jenisTotals[$label] ?? 0);
+        }
+
+        // Grafik: omset per metode bayar
+        $metodeTotals = [];
+
+        foreach ($base->clone()->get(['metode_bayar', 'nominal']) as $row) {
+            $label = $row->metode_bayar ?? '';
+
+            $metodeTotals[$label] = ($metodeTotals[$label] ?? 0) + (int) $row->nominal;
+        }
+
+        $chartMetode = [];
+        $chartMetodeValue = [];
+
+        foreach (Order::METODES as $label) {
+            $chartMetode[] = $label;
+            $chartMetodeValue[] = (int) ($metodeTotals[$label] ?? 0);
+        }
+
+        return view('orders.index', compact(
+            'orders',
+            'totalOmset',
+            'totalPcs',
+            'q',
+            'tipeBayar',
+            'jenisOrder',
+            'metodeBayar',
+            'tanggalFrom',
+            'tanggalTo',
+            'nominalMin',
+            'nominalMax',
+            'chartTipe',
+            'chartTipeValue',
+            'chartJenis',
+            'chartJenisValue',
+            'chartMetode',
+            'chartMetodeValue'
+        ));
     }
 
     /**

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Laporan MER & ROI')
 
@@ -132,7 +132,7 @@
                     <td>Biaya Operasional (Fix/Variable Cost)</td>
                     <td>@include('partials.rupiah', ['value' => $totalOperasionalExpenses])</td>
                 </tr>
-                <tr class="table-light fw-bold" style="color:#0D0F12;">
+                <tr class="total-row fw-bold">
                     <td>Total Operasional</td>
                     <td>@include('partials.rupiah', ['value' => $totalOperasional])</td>
                 </tr>

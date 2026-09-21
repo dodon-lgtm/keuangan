@@ -87,7 +87,7 @@
                     @endif
                 </td>
                 <td class="text-end">
-                    <a href="{{ route('customers.edit', $customer) }}" class="btn btn-sm btn-outline-secondary">Bewerk</a>
+                    <a href="{{ route('customers.edit', $customer) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                     <form action="{{ route('customers.destroy', $customer) }}" method="post" class="d-inline" onsubmit="return confirm('Hapus pelanggan ini?')">
                         @csrf
                         @method('DELETE')

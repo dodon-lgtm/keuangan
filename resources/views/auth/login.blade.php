@@ -835,24 +835,12 @@
         }
     </style>
     <script>
-        /* Terapkan tema sebelum render agar tidak ada flash (default: dark) */
-        (function () {
-            try {
-                var t = localStorage.getItem('theme');
-                if (t !== 'light') t = 'dark';
-                document.documentElement.setAttribute('data-theme', t);
-            } catch (e) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            }
-        })();
+        /* Halaman login SELALU dark mode — tema disimpan tetap dipakai di dalam aplikasi */
+        document.documentElement.setAttribute('data-theme', 'dark');
     </script>
     <link href="{{ asset('css/theme.css') }}" rel="stylesheet">
 </head>
 <body>
-    <button type="button" class="theme-toggle theme-toggle-floating" aria-pressed="false" aria-label="Aktifkan White Mode">
-        <span class="icon-moon" aria-hidden="true">🌙</span>
-        <span class="icon-sun" aria-hidden="true">☀️</span>
-    </button>
     <div class="app">
 
         <!-- ===== LEFT: VISUAL HERO ===== -->

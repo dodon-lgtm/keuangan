@@ -15,17 +15,29 @@
     function apply(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         try { localStorage.setItem(KEY, theme); } catch (e) {}
+        sync(theme);
+    }
+
+    function sync(theme) {
+        var light = theme === 'light';
+        document.querySelectorAll('.theme-switch').forEach(function (btn) {
+            btn.setAttribute('aria-checked', light ? 'true' : 'false');
+            btn.setAttribute('aria-label', light ? 'Aktifkan Dark Mode' : 'Aktifkan White Mode');
+        });
         document.querySelectorAll('.theme-toggle').forEach(function (btn) {
-            btn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
-            btn.setAttribute('aria-label', theme === 'light' ? 'Aktifkan Dark Mode' : 'Aktifkan White Mode');
+            btn.setAttribute('aria-pressed', light ? 'true' : 'false');
+            btn.setAttribute('aria-label', light ? 'Aktifkan Dark Mode' : 'Aktifkan White Mode');
         });
     }
 
-    document.querySelectorAll('.theme-toggle').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            apply(current() === 'light' ? 'dark' : 'light');
-        });
+    function toggle() {
+        apply(current() === 'light' ? 'dark' : 'light');
+    }
+
+    document.querySelectorAll('.theme-switch, .theme-toggle').forEach(function (btn) {
+        btn.addEventListener('click', toggle);
     });
+    sync(current());
 
     /* Sinkronkan antar-tab */
     window.addEventListener('storage', function (e) {

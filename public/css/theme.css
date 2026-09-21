@@ -4,7 +4,79 @@
    Alternatif: White Mode (data-theme="light") — identitas: hitam, merah, putih
    ========================================================================== */
 
-/* ---------- Tombol Toggle Theme ---------- */
+/* ---------- Theme Switch (sliding) ---------- */
+.theme-switch {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    line-height: 0;
+    flex: 0 0 auto;
+    cursor: pointer;
+}
+.theme-switch .ts-track {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 62px;
+    height: 30px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.09);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.theme-switch:hover .ts-track {
+    background: rgba(225, 29, 72, 0.12);
+    border-color: rgba(225, 29, 72, 0.45);
+}
+.theme-switch:active .ts-thumb { transform: scale(0.92); }
+html[data-theme="light"] .theme-switch:active .ts-thumb { transform: translateX(32px) scale(0.92); }
+.theme-switch:focus-visible { outline: none; }
+.theme-switch:focus-visible .ts-track { box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.30); }
+.theme-switch .ts-thumb {
+    position: absolute;
+    top: 50%;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    margin-top: -12px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 3px 10px rgba(225, 29, 72, 0.45);
+    display: grid;
+    place-items: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.4, 0.44, 1), background 0.25s ease, box-shadow 0.25s ease;
+}
+html[data-theme="light"] .theme-switch .ts-thumb { transform: translateX(32px); }
+.theme-switch .ts-icon {
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    color: #FFFFFF;
+    transition: opacity 0.2s ease, transform 0.3s ease;
+}
+.theme-switch .ts-moon { opacity: 1; transform: rotate(0deg); }
+.theme-switch .ts-sun { opacity: 0; transform: rotate(90deg) scale(0.5); }
+html[data-theme="light"] .theme-switch .ts-moon { opacity: 0; transform: rotate(-90deg) scale(0.5); }
+html[data-theme="light"] .theme-switch .ts-sun { opacity: 1; transform: rotate(0deg); }
+html[data-theme="light"] .theme-switch .ts-track {
+    background: rgba(0, 0, 0, 0.07);
+    border-color: rgba(0, 0, 0, 0.16);
+}
+html[data-theme="light"] .theme-switch:hover .ts-track {
+    background: rgba(225, 29, 72, 0.10);
+    border-color: rgba(225, 29, 72, 0.45);
+}
+
+/* Toggle mengambang untuk halaman Login (tidak ada navbar) */
+.theme-switch-floating {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1000;
+}
+/* Kompatibilitas: toggle lama (bila masih dipakai di halaman lain) */
 .theme-toggle {
     display: inline-flex;
     align-items: center;
@@ -19,39 +91,6 @@
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 10px;
     cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
-}
-.theme-toggle:hover {
-    background: rgba(225, 29, 72, 0.10);
-    border-color: rgba(225, 29, 72, 0.4);
-}
-.theme-toggle:active { transform: scale(0.94); }
-
-html[data-theme="light"] .theme-toggle {
-    border-color: rgba(0, 0, 0, 0.15);
-}
-html[data-theme="light"] .theme-toggle:hover {
-    background: rgba(225, 29, 72, 0.08);
-    border-color: rgba(225, 29, 72, 0.4);
-}
-
-/* Ikon: 🌙 tampil saat Dark, ☀️ tampil saat Light */
-.theme-toggle .icon-sun { display: none; }
-html[data-theme="light"] .theme-toggle .icon-sun { display: inline; }
-html[data-theme="light"] .theme-toggle .icon-moon { display: none; }
-
-/* Toggle mengambang untuk halaman Login (tidak ada navbar) */
-.theme-toggle-floating {
-    position: fixed;
-    top: 16px;
-    right: 16px;
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(8px);
-}
-html[data-theme="light"] .theme-toggle-floating {
-    background: rgba(255, 255, 255, 0.85);
-    box-shadow: 0 2px 10px rgba(16, 24, 40, 0.10);
 }
 
 /* ==========================================================================
@@ -211,6 +250,12 @@ html[data-theme="light"] .table-striped > tbody > tr:nth-of-type(odd) {
     background-color: rgba(0, 0, 0, 0.028);
 }
 html[data-theme="light"] .table thead th { border-bottom: 2px solid rgba(225, 29, 72, 0.35); }
+html[data-theme="light"] .table tr.total-row > td,
+html[data-theme="light"] .table tr.total-row > th {
+    background: #FFF1F4;
+    color: var(--text);
+    border-top: 2px solid rgba(225, 29, 72, 0.35);
+}
 
 /* ---------- Buttons ---------- */
 html[data-theme="light"] .btn-secondary {
@@ -300,24 +345,100 @@ html[data-theme="light"] .pagination {
     --bs-pagination-disabled-bg: #F3F4F6;
     --bs-pagination-disabled-border-color: rgba(0, 0, 0, 0.06);
 }
+html[data-theme="light"] .pagination-wrap nav a {
+    background: #FFFFFF;
+    border-color: rgba(0, 0, 0, 0.12);
+    color: #444D5A;
+}
+html[data-theme="light"] .pagination-wrap nav a:hover {
+    background: #F1F3F6;
+    border-color: rgba(0, 0, 0, 0.22);
+    color: var(--text);
+}
+html[data-theme="light"] .pagination-wrap nav span[aria-disabled="true"],
+html[data-theme="light"] .pagination-wrap nav span[aria-disabled="true"] span {
+    background: #F3F4F6;
+    border-color: rgba(0, 0, 0, 0.06);
+    color: #A7AFBB;
+}
 
 /* ==========================================================================
    Halaman LOGIN (White Mode)
    Panel kiri (visual/hero di atas foto) tetap gelap agar teks terbaca.
    ========================================================================== */
-html[data-theme="light"] .form-panel { background: var(--bg); }
+html[data-theme="light"] .form-panel {
+    /* Warm ivory / cream — nyambung dengan tone foto hijab, tanpa nuansa pink */
+    background:
+        radial-gradient(46% 36% at 90% 4%, rgba(225, 29, 72, 0.04), transparent 60%),
+        linear-gradient(168deg, #F9F6F1 0%, #F4F0EA 52%, #EFEAE3 100%);
+    background-color: #F5F1EB;
+}
+html[data-theme="light"] .form-panel::before {
+    background: radial-gradient(42% 30% at 8% 0%, rgba(225, 29, 72, 0.035), transparent 70%);
+}
+/* Dekorasi panel: versi LIGHT dari dark mode — sangat subtle, warm, tidak ramai */
+html[data-theme="light"] .deco-glow {
+    background:
+        radial-gradient(62% 50% at 82% 14%, rgba(225, 29, 72, 0.045), transparent 60%),
+        radial-gradient(20% 16% at 96% 48%, rgba(255, 255, 255, 0.5), transparent 66%),
+        radial-gradient(34% 26% at 64% 46%, rgba(150, 125, 95, 0.05), transparent 70%),
+        radial-gradient(46% 36% at 84% 86%, rgba(225, 29, 72, 0.03), transparent 64%);
+}
+html[data-theme="light"] .deco-grid {
+    background-image:
+        linear-gradient(rgba(60, 50, 40, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(60, 50, 40, 0.045) 1px, transparent 1px);
+}
+html[data-theme="light"] .deco-ring { border-color: rgba(60, 50, 40, 0.08); }
+html[data-theme="light"] .deco-ring-1 {
+    box-shadow: 0 0 0 60px rgba(120, 100, 75, 0.02), 0 0 0 120px rgba(120, 100, 75, 0.012);
+}
+html[data-theme="light"] .deco-ring-3 { border-color: rgba(225, 29, 72, 0.10); }
+html[data-theme="light"] .deco-dots {
+    background-image: radial-gradient(circle, rgba(60, 50, 40, 0.5) 0.55px, transparent 1.05px);
+    opacity: 0.08;
+}
+html[data-theme="light"] .panel-deco { opacity: 0.8; }
 html[data-theme="light"] .visual {
     --text: #FFFFFF;
     --muted: #C6CCD4;
     --border: rgba(255, 255, 255, 0.18);
+    /* Teks hero selalu PUTIH di atas foto — tidak boleh ikut light mode */
+    color: var(--text);
 }
 html[data-theme="light"] .login-card {
-    background: #FFFFFF;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 18px 40px rgba(16, 24, 40, 0.10);
+    /* Card ivory bersih — bukan bubble pink: gradient netral hangat + shadow lembut */
+    background: linear-gradient(152deg, #FFFFFF 0%, #FDFBF7 58%, #FBF6EF 100%);
+    border: 1px solid rgba(60, 50, 40, 0.10);
+    border-top-color: rgba(60, 50, 40, 0.07);
+    border-right-color: rgba(60, 50, 40, 0.05);
+    border-bottom-color: rgba(60, 50, 40, 0.12);
+    border-left-color: rgba(60, 50, 40, 0.05);
+    box-shadow:
+        0 22px 55px rgba(60, 45, 30, 0.10),
+        0 8px 20px rgba(60, 45, 30, 0.06),
+        0 14px 34px rgba(225, 29, 72, 0.04);
 }
-html[data-theme="light"] .input-field { background: var(--input); border-color: var(--border); color: var(--text); }
-html[data-theme="light"] .input-field::placeholder { color: #8A94A3; }
+html[data-theme="light"] .input-field {
+    /* Input warm white — bukan biru muda */
+    background: #FBFAF7;
+    border-color: #E6E0D8;
+    color: #14161A;
+}
+html[data-theme="light"] .input-field::placeholder { color: #9AA1AB; }
+html[data-theme="light"] .input-field:focus {
+    border-color: var(--accent);
+    background: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.13);
+}
+/* Red glow internal kartu ikut diredam di white mode */
+html[data-theme="light"] .login-card::before {
+    background:
+        radial-gradient(80% 60% at 88% 6%, rgba(225, 29, 72, 0.04), transparent 60%),
+        radial-gradient(130% 85% at 50% -12%, rgba(225, 29, 72, 0.03), transparent 58%);
+}
+html[data-theme="light"] .input-wrap .icon,
+html[data-theme="light"] .password-wrap .icon { color: #8A8F98; }
 html[data-theme="light"] .input-field.is-error {
     background: #FEF2F2;
     border-color: rgba(220, 38, 38, 0.55);
@@ -328,7 +449,19 @@ html[data-theme="light"] .login-alert {
     border: 1px solid rgba(220, 38, 38, 0.35);
     color: #B91C1C;
 }
-html[data-theme="light"] .eye-toggle { color: #8A94A3; }
-html[data-theme="light"] .eye-toggle:hover { color: var(--text); }
-html[data-theme="light"] .panel-deco { opacity: 0.35; }
-html[data-theme="light"] .submit-btn { color: #FFFFFF; }
+html[data-theme="light"] .field-label { color: #5C6675; }
+html[data-theme="light"] .card-sub { color: #5C6675; }
+html[data-theme="light"] .remember-label { color: #5C6675; }
+html[data-theme="light"] .remember-label input[type="checkbox"] {
+    background: #FFFFFF;
+    border-color: #D9D3CD;
+}
+html[data-theme="light"] .forgot-link { color: #5C6675; }
+html[data-theme="light"] .panel-foot { color: #8A94A3; }
+html[data-theme="light"] .eye-toggle { color: #8A8F98; }
+html[data-theme="light"] .eye-toggle:hover { color: #14161A; }
+/* Tombol merah tetap primary + shadow lembut */
+html[data-theme="light"] .submit-btn {
+    color: #FFFFFF;
+    box-shadow: 0 8px 18px rgba(225, 29, 72, 0.24);
+}

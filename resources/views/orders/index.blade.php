@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Log Order')
 
@@ -80,7 +80,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted" style="color:#FFFFFF !important;">Total Keseluruhan Omset</h5>
+                    <h5 class="card-title text-muted">Total Keseluruhan Omset</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalOmset])</p>
                 </div>
             </div>
@@ -88,7 +88,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted" style="color:#FFFFFF !important;">Total Keseluruhan Pcs Terjual</h5>
+                    <h5 class="card-title text-muted">Total Keseluruhan Pcs Terjual</h5>
                     <p class="card-text fs-4">{{ $totalPcs }} pcs</p>
                 </div>
             </div>
@@ -117,7 +117,7 @@
                 <td>{{ $order->customer->nama_lengkap }}</td>
                 <td>
                     @if ($order->orderItems->isEmpty())
-                        <span class="text-muted">—</span>
+                        <span class="text-muted">â€”</span>
                     @else
                         {{ $order->orderItems->map(fn ($item) => $item->product->nama_produk . ' (x' . $item->jumlah_pcs . ')')->implode(', ') }}
                     @endif
@@ -129,7 +129,7 @@
                 <td>{{ $order->metode_bayar }}</td>
                 <td>{{ $order->orderItems->sum('jumlah_pcs') }}</td>
                 <td class="text-end">
-                    <a href="{{ route('orders.edit', $order) }}" class="btn btn-sm btn-outline-secondary">Bewerk</a>
+                    <a href="{{ route('orders.edit', $order) }}" class="btn btn-sm btn-outline-secondary">edit</a>
                     <form action="{{ route('orders.destroy', $order) }}" method="post" class="d-inline" onsubmit="return confirm('Hapus order ini?')">
                         @csrf
                         @method('DELETE')
@@ -140,7 +140,7 @@
         @endforeach
         </tbody>
         <tfoot>
-            <tr class="table-light fw-bold" style="color:#0D0F12;">
+            <tr class="total-row fw-bold">
                 <td colspan="4">Total Keseluruhan</td>
                 <td>@include('partials.rupiah', ['value' => $totalOmset])</td>
                 <td colspan="3"></td>

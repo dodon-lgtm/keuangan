@@ -73,9 +73,17 @@
             padding: 0 18px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
             flex-wrap: wrap;
         }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            order: 2;
+            flex: 0 0 auto;
+        }
+        .nav-menu { order: 1; display: flex; align-items: center; gap: 3px; flex-wrap: wrap; margin-left: auto; }
         .brand {
             display: flex;
             align-items: center;
@@ -112,7 +120,6 @@
         }
         .toggler svg { width: 19px; height: 19px; }
 
-        .nav-menu { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; }
         .top-link {
             color: var(--muted);
             text-decoration: none;
@@ -344,6 +351,13 @@
         .table thead th { color: #FFFFFF; font-weight: 600; }
         .table-striped > tbody > tr:nth-of-type(odd) { --bs-table-accent-bg: rgba(255, 255, 255, 0.03); background-color: rgba(255, 255, 255, 0.03); }
         .table tbody td, .table tbody th { color: #FFFFFF; }
+        /* Baris total (tfoot): terbaca di kedua tema */
+        .table tr.total-row > td,
+        .table tr.total-row > th {
+            background: rgba(225, 29, 72, 0.12);
+            color: var(--text);
+            border-top: 1px solid rgba(225, 29, 72, 0.40);
+        }
         .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
         .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: #fff; }
         .btn-outline-primary { color: var(--accent); border-color: rgba(225, 29, 72, 0.5); background: transparent; }
@@ -361,7 +375,7 @@
 
         @media (max-width: 991.98px) {
             .toggler { display: grid; }
-            .nav-menu { position: static; display: none; width: 100%; flex-direction: column; align-items: stretch; gap: 4px; padding: 10px 0; }
+            .nav-menu { order: 3; position: static; display: none; width: 100%; flex-direction: column; align-items: stretch; gap: 4px; padding: 10px 0; margin-left: 0; }
             .nav-menu.show { display: flex; }
             .nav-menu .top-link { display: flex; width: 100%; padding: 11px 13px; border-radius: 9px; }
             .js-dropdown { width: 100%; }
@@ -638,6 +652,28 @@
         /* ---- Consistent section rhythm (table → content) ---- */
         .table { margin-bottom: 14px; }
         .chart-section + .chart-section { margin-top: 40px; }
+
+        /* ---- Mobile refinement ---- */
+        @media (max-width: 767.98px) {
+            .app-main { padding: 18px 12px 40px; }
+            /* Tabel lebar: geser horizontal, tidak merusak layout */
+            .table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .table td, .table th { white-space: nowrap; }
+            .btn-sm { padding: 7px 13px; }
+            .dash-head { gap: 14px; }
+            .kpi { padding: 18px 14px; }
+            .chart-card { padding: 16px 14px; }
+        }
+        @media (max-width: 575.98px) {
+            .filter-panel { padding: 14px; gap: 11px; }
+            .filter-field { min-width: 0; }
+            .filter-select, .filter-input, .ss { min-width: 0; width: 100%; }
+            .filter-btn, .filter-reset { width: 100%; }
+            .flash { font-size: 13px; padding: 11px 13px; }
+            .pagination-wrap nav a,
+            .pagination-wrap nav span[aria-current="page"],
+            .pagination-wrap nav span[aria-disabled="true"] { min-width: 36px; padding: 8px 12px; }
+        }
     </style>
     <script>
         /* Terapkan tema sebelum render agar tidak ada flash (default: dark) */
@@ -666,11 +702,21 @@
                 <span class="brand-name">Keuangan Hijab<span>Vendor Hijab Bandung</span></span>
             </a>
 
-            <button class="toggler" type="button" aria-controls="navMenu" aria-expanded="false" aria-label="Open/sluit navigatie">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                    <path d="M4 7 20 7 M4 12 20 12 M4 17 20 17" />
-                </svg>
-            </button>
+            <div class="header-actions">
+                <button type="button" class="theme-switch" role="switch" aria-checked="false" aria-label="Ganti tema terang/gelap" title="Mode Terang / Gelap">
+                    <span class="ts-track" aria-hidden="true">
+                        <span class="ts-thumb">
+                            <svg class="ts-icon ts-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                            <svg class="ts-icon ts-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+                        </span>
+                    </span>
+                </button>
+                <button class="toggler" type="button" aria-controls="navMenu" aria-expanded="false" aria-label="Open/sluit navigatie">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M4 7 20 7 M4 12 20 12 M4 17 20 17" />
+                    </svg>
+                </button>
+            </div>
 
             <nav id="navMenu" class="nav-menu">
                 <a class="top-link" data-top href="{{ route('dashboard') }}">Dashboard</a>
@@ -689,11 +735,6 @@
                         <li><a href="{{ route('reports.hpp-profit') }}">HPP &amp; Profit</a></li>
                     </ul>
                 </div>
-
-                <button type="button" class="theme-toggle" aria-pressed="false" aria-label="Aktifkan White Mode">
-                    <span class="icon-moon" aria-hidden="true">🌙</span>
-                    <span class="icon-sun" aria-hidden="true">☀️</span>
-                </button>
 
                 <form action="{{ route('logout') }}" method="post" class="logout-form">
                     @csrf

@@ -79,10 +79,12 @@ class OrderController extends Controller
         // Ambil array ID-nya terlebih dahulu menggunakan ->pluck('id')
         $orderIds = is_object($filteredIds) ? $filteredIds->pluck('id') : $filteredIds;
 
-        $totalPcs = (int) DB::table('order_items')
-            ->join('orders', 'orders.id', '=', 'order_items.order_id')
-            ->whereIn('orders.id', $orderIds)
-            ->sum('jumlah_pcs');
+       $orderIds = is_object($filteredIds) ? $filteredIds->pluck('id') : $filteredIds;
+
+$totalPcs = (int) DB::table('order_items')
+    ->join('orders', 'orders.id', '=', 'order_items.order_id')
+    ->whereIn('orders.id', $orderIds)
+    ->sum('order_items.jumlah_pcs');
         // Grafik: omset per tipe bayar
         $tipeTotals = [];
 

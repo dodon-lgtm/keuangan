@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Pengeluaran')
 
@@ -62,7 +62,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted" style="color:#FFFFFF !important;">Total Budget Iklan (Marketing Spend)
+                    <h5 class="card-title text-muted">Total Budget Iklan (Marketing Spend)
                     </h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalMarketing])</p>
                 </div>
@@ -71,7 +71,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted" style="color:#FFFFFF !important;">Total Fix Cost</h5>
+                    <h5 class="card-title text-muted">Total Fix Cost</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalFixCost])</p>
                 </div>
             </div>
@@ -79,7 +79,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted" style="color:#FFFFFF !important;">Total Variable Cost</h5>
+                    <h5 class="card-title text-muted">Total Variable Cost</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalVariableCost])</p>
                 </div>
             </div>

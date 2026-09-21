@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Produk')
 
@@ -44,7 +44,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted" style="color:#FFFFFF !important;">Total Jenis Produk</h5>
+                    <h5 class="card-title text-muted">Total Jenis Produk</h5>
                     <p class="card-text fs-4">{{ $stats['total_produk'] }}</p>
                 </div>
             </div>
@@ -52,7 +52,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted" style="color:#FFFFFF !important;">Rata-rata Harga Jual</h5>
+                    <h5 class="card-title text-muted">Rata-rata Harga Jual</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $stats['avg_harga_jual']])</p>
                 </div>
             </div>
@@ -60,7 +60,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted" style="color:#FFFFFF !important;">Rata-rata HPP</h5>
+                    <h5 class="card-title text-muted">Rata-rata HPP</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $stats['avg_hpp']])</p>
                 </div>
             </div>
@@ -68,7 +68,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title text-muted" style="color:#FFFFFF !important;">Rata-rata Keuntungan</h5>
+                    <h5 class="card-title text-muted">Rata-rata Keuntungan</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $stats['avg_keuntungan']])</p>
                 </div>
             </div>
@@ -101,7 +101,7 @@
                     @endif
                 </td>
                 <td class="text-end">
-                    <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-outline-secondary">Bewerk</a>
+                    <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                     <form action="{{ route('products.destroy', $product) }}" method="post" class="d-inline" onsubmit="return confirm('Hapus produk ini?')">
                         @csrf
                         @method('DELETE')
@@ -112,7 +112,7 @@
         @endforeach
         </tbody>
         <tfoot>
-            <tr class="table-light fw-bold" style="color:#0D0F12;">
+            <tr class="total-row fw-bold">
                 <td colspan="2">Rata-rata Keseluruhan</td>
                 <td>@include('partials.rupiah', ['value' => $stats['avg_harga_jual']])</td>
                 <td>@include('partials.rupiah', ['value' => $stats['avg_hpp']])</td>

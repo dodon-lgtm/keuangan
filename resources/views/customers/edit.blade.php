@@ -31,14 +31,7 @@
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="no_whatsapp" class="form-label">No. WhatsApp</label>
-                    <input type="text" name="no_whatsapp" id="no_whatsapp" value="{{ old('no_whatsapp', $customer->no_whatsapp) }}"
-                           class="form-control @error('no_whatsapp') is-invalid @enderror">
-                    @error('no_whatsapp')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                @include('partials.whatsapp-field', ['value' => old('no_whatsapp', $customer->no_whatsapp)])
 
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">

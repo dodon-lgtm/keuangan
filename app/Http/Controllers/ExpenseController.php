@@ -68,7 +68,7 @@ class ExpenseController extends Controller
             ->where('kategori', OperationalExpense::KATEGORI_VARIABLE_COST)
             ->sum('nominal');
 
-        // Grafik: budget iklan per bulan van geselecteerde jaar
+        // Grafik: budget iklan per bulan untuk tahun terpilih
         $chartYear = $tahun ?? (int) now()->year;
 
         $spendByMonth = [];
@@ -131,12 +131,12 @@ class ExpenseController extends Controller
             ->where('bulan', $data['bulan'])
             ->where('tahun', $data['tahun'])
             ->exists()) {
-            return back()->withErrors(['bulan' => 'Budget iklan untuk bulan ini sudah ada.']);
+            return back()->withErrors(['bulan' => "Budget iklan {$this->periodLabel((int) $data['bulan'], (int) $data['tahun'])} sudah ada."]);
         }
 
         MarketingSpend::create($data);
 
-        return $this->backToExpenses('Budget iklan berhasil ditambahkan.');
+        return $this->backToExpenses("Budget iklan {$this->periodLabel((int) $data['bulan'], (int) $data['tahun'])} berhasil ditambahkan.");
     }
 
     /**
@@ -153,12 +153,12 @@ class ExpenseController extends Controller
             ->exists();
 
         if ($duplicate) {
-            return back()->withErrors(['bulan' => 'Budget iklan untuk bulan ini sudah ada.']);
+            return back()->withErrors(['bulan' => "Budget iklan {$this->periodLabel((int) $data['bulan'], (int) $data['tahun'])} sudah ada."]);
         }
 
         $marketingSpend->update($data);
 
-        return $this->backToExpenses('Budget iklan berhasil diperbarui.');
+        return $this->backToExpenses("Budget iklan {$this->periodLabel((int) $data['bulan'], (int) $data['tahun'])} berhasil diperbarui.");
     }
 
     /**
@@ -166,9 +166,11 @@ class ExpenseController extends Controller
      */
     public function destroySpend(MarketingSpend $marketingSpend): RedirectResponse
     {
+        $label = $this->periodLabel((int) $marketingSpend->bulan, (int) $marketingSpend->tahun);
+
         $marketingSpend->delete();
 
-        return $this->backToExpenses('Budget iklan berhasil dihapus.');
+        return $this->backToExpenses("Budget iklan {$label} berhasil dihapus.");
     }
 
     /**
@@ -178,9 +180,9 @@ class ExpenseController extends Controller
     {
         $data = $this->validatedOperational($request);
 
-        OperationalExpense::create($data);
+        $expense = OperationalExpense::create($data);
 
-        return $this->backToExpenses('Pengeluaran operasional berhasil ditambahkan.');
+        return $this->backToExpenses("Pengeluaran {$expense->nama_pengeluaran} berhasil ditambahkan.");
     }
 
     /**
@@ -192,7 +194,7 @@ class ExpenseController extends Controller
 
         $operationalExpense->update($data);
 
-        return $this->backToExpenses('Pengeluaran operasional berhasil diperbarui.');
+        return $this->backToExpenses("Pengeluaran {$operationalExpense->nama_pengeluaran} berhasil diperbarui.");
     }
 
     /**
@@ -200,9 +202,11 @@ class ExpenseController extends Controller
      */
     public function destroyOperational(OperationalExpense $operationalExpense): RedirectResponse
     {
+        $nama = $operationalExpense->nama_pengeluaran;
+
         $operationalExpense->delete();
 
-        return $this->backToExpenses('Pengeluaran operasional berhasil dihapus.');
+        return $this->backToExpenses("Pengeluaran {$nama} berhasil dihapus.");
     }
 
     /**

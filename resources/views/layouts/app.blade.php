@@ -42,6 +42,23 @@
             -webkit-font-smoothing: antialiased;
         }
 
+        /* Cegah overflow horizontal yang memicu ruang kosong / scrollbar di sisi kanan.
+           Gunakan 'clip' (bukan 'hidden') agar html/body tidak menjadi scroll container,
+           sehingga header sticky tetap berfungsi normal. */
+        html, body { overflow-x: clip; }
+
+        /* Sembunyikan scrollbar visual (vertikal & horizontal) tanpa mematikan fungsi scroll.
+           Halaman tetap bisa digulir normal via mouse wheel, trackpad, keyboard, dan touch. */
+        html {
+            scrollbar-width: none;              /* Firefox */
+            -ms-overflow-style: none;           /* IE/Edge lama */
+        }
+        html::-webkit-scrollbar {               /* Chrome, Safari, Edge (WebKit) */
+            width: 0;
+            height: 0;
+            display: none;
+        }
+
         /* Subtle fixed grain + grid texture overlays */
         .bg-grain,
         .bg-grid {
@@ -53,10 +70,136 @@
         .bg-grain { opacity: 0.04; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
         .bg-grid { opacity: 0.05; background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 44px 44px; }
 
-        .app-main { max-width: 1240px; margin: 0 auto; padding: 26px 18px 46px; }
+        /* Konten utama full-width: mengikuti lebar layar penuh (tanpa max-width kaku) */
+        .app-main {
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            padding: 26px clamp(16px, 3vw, 40px) 46px;
+        }
 
-        .flash { position: relative; padding: 13px 16px; border-radius: 12px; font-size: 14px; margin: 0 0 20px; }
+        /* ---- Notifikasi flash (partials/flash.blade.php) ---- */
+        .flash {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin: 0 0 20px;
+            padding: 13px 46px 13px 14px;
+            border-radius: 14px;
+            font-size: 13.5px;
+            line-height: 1.45;
+            overflow: hidden;
+            animation: flash-in 0.24s ease both;
+        }
+        .flash.is-leaving { animation: flash-out 0.18s ease both; }
+        .flash-icon {
+            flex: 0 0 auto;
+            display: grid;
+            place-items: center;
+            width: 26px;
+            height: 26px;
+            margin-top: 1px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.07);
+        }
+        .flash-icon svg { width: 15px; height: 15px; }
+        .flash-content { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .flash-title { font-size: 13.5px; font-weight: 700; letter-spacing: 0.2px; }
+        .flash-message { opacity: 0.92; overflow-wrap: anywhere; }
+        .flash-close {
+            position: absolute;
+            top: 9px;
+            right: 9px;
+            display: grid;
+            place-items: center;
+            width: 26px;
+            height: 26px;
+            padding: 0;
+            border: 1px solid transparent;
+            border-radius: 9px;
+            background: transparent;
+            color: inherit;
+            opacity: 0.6;
+            cursor: pointer;
+            transition: opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+        }
+        .flash-close:hover, .flash-close:focus-visible {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.18);
+        }
+        .flash-close svg { width: 13px; height: 13px; }
+        .flash-progress {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 2px;
+            background: currentColor;
+            opacity: 0.4;
+            transform-origin: left center;
+            animation: flash-progress var(--flash-duration, 4500ms) linear both;
+        }
+        .flash.is-paused .flash-progress { animation-play-state: paused; }
         .flash-success { background: rgba(34, 197, 94, 0.10); border: 1px solid rgba(34, 197, 94, 0.35); color: #B8F0C9; }
+        .flash-error { background: rgba(248, 113, 113, 0.10); border: 1px solid rgba(248, 113, 113, 0.35); color: #F5B8B8; }
+        .flash-warning { background: rgba(245, 158, 11, 0.10); border: 1px solid rgba(245, 158, 11, 0.35); color: #F6D9A5; }
+        .flash-info { background: rgba(56, 189, 248, 0.10); border: 1px solid rgba(56, 189, 248, 0.35); color: #B4E2F6; }
+        @keyframes flash-in {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes flash-out {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-8px); }
+        }
+        @keyframes flash-progress {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+
+        /* ---- Modal konfirmasi (pengganti window.confirm bawaan browser) ---- */
+        .confirm-modal .modal-dialog { max-width: 400px; }
+        .confirm-modal .modal-content {
+            background: var(--card);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: var(--radius);
+            box-shadow: 0 26px 60px rgba(0, 0, 0, 0.55);
+            color: var(--text);
+        }
+        .confirm-modal .modal-body { padding: 24px 22px 20px; text-align: center; }
+        .confirm-icon {
+            display: grid;
+            place-items: center;
+            width: 46px;
+            height: 46px;
+            margin: 0 auto 12px;
+            border-radius: 50%;
+            background: rgba(248, 113, 113, 0.14);
+            border: 1px solid rgba(248, 113, 113, 0.35);
+            color: #F5B8B8;
+        }
+        .confirm-icon svg { width: 22px; height: 22px; }
+        .confirm-title { margin: 0 0 6px; font-size: 16px; font-weight: 700; }
+        .confirm-message { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+        .confirm-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .confirm-actions .btn { flex: 1; }
+        .confirm-actions .btn-cancel {
+            flex: 1;
+            padding: 8px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 10px;
+            background: transparent;
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+        }
+        .confirm-actions .btn-cancel:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.26); }
+        .confirm-actions .btn-danger { background: #DC2626; border-color: #DC2626; color: #fff; font-weight: 600; }
+        .confirm-actions .btn-danger:hover { background: #B91C1C; border-color: #B91C1C; }
 
         .app-header {
             position: sticky;
@@ -80,9 +223,9 @@
             pointer-events: none;
         }
         .app-header .inner {
-            max-width: 1240px;
-            margin: 0 auto;
-            padding: 0 20px;
+            max-width: none;
+            margin: 0;
+            padding: 0 clamp(16px, 3vw, 40px);
             min-height: 64px;
             display: flex;
             align-items: center;
@@ -112,6 +255,209 @@
             background: rgba(255, 255, 255, 0.035);
             border: 1px solid rgba(255, 255, 255, 0.07);
             border-radius: 999px;
+        }
+
+        /* ---- Settings (gear): modal Bootstrap di tengah layar ---- */
+        .settings-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: transparent;
+            color: var(--text);
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.1s ease;
+        }
+        .settings-btn:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.28); }
+        .settings-btn:active { transform: scale(0.95); }
+        .settings-btn svg { width: 18px; height: 18px; }
+        .settings-btn:focus-visible { outline: 2px solid rgba(225, 29, 72, 0.6); outline-offset: 2px; }
+
+        /* Backdrop lebih gelap + blur */
+        .modal-backdrop.show { opacity: 1; background: rgba(8, 9, 11, 0.72); backdrop-filter: blur(3px); }
+
+        .settings-modal .modal-content {
+            background: #101216;
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 18px;
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.02);
+            color: var(--text);
+            overflow: hidden;
+        }
+        .settings-modal .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .settings-modal .modal-head h5 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: 0.2px; }
+        .settings-modal .modal-close {
+            width: 32px;
+            height: 32px;
+            display: grid;
+            place-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+        }
+        .settings-modal .modal-close:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.25); }
+        .settings-modal .modal-close svg { width: 15px; height: 15px; }
+        .settings-modal .modal-body { padding: 10px 12px 14px; }
+        .settings-item {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 14px;
+            border: 0;
+            border-radius: 12px;
+            background: transparent;
+            color: var(--text);
+            text-decoration: none;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.15s ease;
+        }
+        .settings-item:hover { background: rgba(255, 255, 255, 0.05); }
+        .settings-item > svg:first-child { width: 17px; height: 17px; flex: 0 0 auto; color: var(--accent); }
+        .settings-item .settings-chevron { margin-left: auto; color: var(--muted); display: inline-flex; }
+        .settings-item .settings-chevron svg { width: 14px; height: 14px; }
+        .settings-divider { height: 1px; background: rgba(255, 255, 255, 0.07); margin: 8px 8px; }
+        .theme-row .theme-switch { margin-left: auto; }
+        .theme-row .theme-state { margin-left: 8px; font-size: 12px; font-weight: 600; color: var(--muted); min-width: 52px; text-align: right; }
+
+        /* Form ganti password di dalam modal */
+        .settings-form { padding: 4px 4px 2px; }
+        .settings-form .form-label { color: var(--muted); }
+        .settings-form .field-error { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12.5px; color: #F5B8B8; }
+        .settings-form .form-actions { display: flex; gap: 10px; margin-top: 18px; }
+        .settings-form .form-actions .btn { flex: 1; }
+        .settings-form .btn-cancel {
+            flex: 0 0 auto;
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: transparent;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.15s ease, background 0.15s ease;
+        }
+        .settings-form .btn-cancel:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); }
+
+        /* Tombol mata (intip password) di dalam modal */
+        .pw-wrap { position: relative; }
+        .pw-wrap .form-control { padding-right: 44px; }
+        .pw-eye {
+            position: absolute;
+            right: 4px;
+            top: 4px;
+            bottom: 4px;
+            width: 34px;
+            display: grid;
+            place-items: center;
+            border: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            transition: color 0.15s ease, background 0.15s ease;
+        }
+        .pw-eye:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); }
+        .pw-eye svg { width: 17px; height: 17px; }
+        .pw-eye .eye-open { display: block; }
+        .pw-eye .eye-slash { display: none; }
+        .pw-eye.showing .eye-open { display: none; }
+        .pw-eye.showing .eye-slash { display: block; }
+        .pw-eye.showing { color: var(--accent); }
+
+        /* Indikator kecocokan password (real-time) */
+        .pw-match {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 7px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--muted);
+        }
+        .pw-match[hidden] { display: none; }
+        .pw-match::before {
+            content: '';
+            width: 14px;
+            height: 14px;
+            flex: 0 0 auto;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.16);
+            transition: background 0.15s ease;
+        }
+        .pw-match.ok { color: var(--success); }
+        .pw-match.ok::before { background: var(--success); }
+        .pw-match.bad { color: #F5B8B8; }
+        .pw-match.bad::before { background: var(--error); }
+
+        /* Hint + pesan error dinamis di dalam form ganti password */
+        .settings-form .form-hint { margin-top: 6px; font-size: 12px; color: var(--muted); }
+        .settings-form .field-error[hidden] { display: none; }
+        .settings-form .form-control.is-invalid {
+            border-color: rgba(248, 113, 113, 0.65);
+            box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.12);
+        }
+
+        /* Toast global: pesan sukses/error modal tanpa reload halaman */
+        .app-toast {
+            position: fixed;
+            left: 50%;
+            bottom: 26px;
+            z-index: 1090;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: min(92vw, 460px);
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text);
+            background: #101216;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+            animation: app-toast-in 0.22s ease both;
+        }
+        .app-toast[hidden] { display: none; }
+        .app-toast-icon { width: 10px; height: 10px; flex: 0 0 auto; border-radius: 50%; background: var(--muted); }
+        .app-toast.ok { border-color: rgba(34, 197, 94, 0.45); }
+        .app-toast.ok .app-toast-icon { background: var(--success); }
+        .app-toast.bad { border-color: rgba(248, 113, 113, 0.45); }
+        .app-toast.bad .app-toast-icon { background: var(--error); }
+        .app-toast-text { flex: 1; line-height: 1.35; }
+        .app-toast-close {
+            flex: 0 0 auto;
+            padding: 0 2px;
+            border: 0;
+            background: transparent;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .app-toast-close:hover { color: var(--text); }
+        @keyframes app-toast-in {
+            from { opacity: 0; transform: translate(-50%, 12px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
         }
         .brand {
             display: flex;
@@ -755,7 +1101,7 @@
             .filter-field { min-width: 0; }
             .filter-select, .filter-input, .ss { min-width: 0; width: 100%; }
             .filter-btn, .filter-reset { width: 100%; }
-            .flash { font-size: 13px; padding: 11px 13px; }
+            .flash { font-size: 13px; padding: 11px 42px 11px 12px; }
             .pagination-wrap nav a,
             .pagination-wrap nav span[aria-current="page"],
             .pagination-wrap nav span[aria-disabled="true"] { min-width: 36px; padding: 8px 12px; }
@@ -789,13 +1135,8 @@
             </a>
 
             <div class="header-actions">
-                <button type="button" class="theme-switch" role="switch" aria-checked="false" aria-label="Ganti tema terang/gelap" title="Mode Terang / Gelap">
-                    <span class="ts-track" aria-hidden="true">
-                        <span class="ts-thumb">
-                            <svg class="ts-icon ts-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                            <svg class="ts-icon ts-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-                        </span>
-                    </span>
+                <button type="button" class="settings-btn" data-bs-toggle="modal" data-bs-target="#settingsModal" aria-label="Pengaturan" title="Pengaturan">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                 </button>
                 <button class="toggler" type="button" aria-controls="navMenu" aria-expanded="false" aria-label="Open/sluit navigatie">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -834,18 +1175,14 @@
     </header>
 
     <main class="app-main">
-        @if (session('success'))
-            <div class="flash flash-success alert" role="status">
-                {{ session('success') }}
-                <button type="button" class="flash-x" data-bs-dismiss="alert" aria-label="Sluiten">&times;</button>
-            </div>
-        @endif
+        @include('partials.flash')
 
         @yield('content')
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/theme.js') }}"></script>
+    <script src="{{ asset('js/currency-format.js') }}"></script>
 <script>
         (function () {
             var path = window.location.pathname;
@@ -1093,6 +1430,585 @@
                     }
                 });
             });
+        })();
+    </script>
+    <!-- ===== Modal Pengaturan (centered) ===== -->
+    <div class="modal fade settings-modal" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-head">
+                    <h5 id="settingsModalLabel">Pengaturan</h5>
+                    <button type="button" class="modal-close" data-bs-dismiss="modal" aria-label="Tutup">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Menu utama -->
+                    <div id="settingsHome">
+                        <button type="button" class="settings-item" id="gotoPasswordBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            Ganti Password
+                            <span class="settings-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+                        </button>
+                        <div class="settings-divider"></div>
+                        <div class="settings-item theme-row">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                            <span>Mode Gelap</span>
+                            <span class="theme-state" id="themeState">Aktif</span>
+                            <button type="button" class="theme-switch" role="switch" aria-checked="false" aria-label="Mode Gelap / Terang">
+                                <span class="ts-track" aria-hidden="true">
+                                    <span class="ts-thumb">
+                                        <svg class="ts-icon ts-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                                        <svg class="ts-icon ts-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+                                    </span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Form ganti password (tersembunyi sampai menu diklik) -->
+                    {{-- novalidate: validasi ditangani JS (inline) + server sebagai sumber kebenaran. --}}
+                    <form id="passwordForm" class="settings-form d-none" action="{{ route('settings.password') }}" method="post" novalidate>
+                        @csrf
+                        @method('PUT')
+                        <div class="mb-3 pw-field">
+                            <label for="current_password" class="form-label">Password Saat Ini</label>
+                            <div class="pw-wrap">
+                                <input type="password" name="current_password" id="current_password"
+                                       class="form-control @error('current_password') is-invalid @enderror"
+                                       autocomplete="current-password" spellcheck="false" autocapitalize="off"
+                                       aria-describedby="currentPasswordError">
+                                <button type="button" class="pw-eye" data-eye-for="current_password" aria-label="Lihat password" title="Lihat / sembunyikan password">
+                                    <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    <svg class="eye-slash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                </button>
+                            </div>
+                            <div class="field-error" id="currentPasswordError" role="alert" @unless ($errors->has('current_password')) hidden @endunless>{{ $errors->first('current_password') }}</div>
+                        </div>
+                        <div class="mb-3 pw-field">
+                            <label for="password" class="form-label">Password Baru</label>
+                            <div class="pw-wrap">
+                                <input type="password" name="password" id="password"
+                                       class="form-control @error('password') is-invalid @enderror"
+                                       autocomplete="new-password" spellcheck="false" autocapitalize="off"
+                                       minlength="8" aria-describedby="passwordError passwordHint">
+                                <button type="button" class="pw-eye" data-eye-for="password" aria-label="Lihat password" title="Lihat / sembunyikan password">
+                                    <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    <svg class="eye-slash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                </button>
+                            </div>
+                            <div class="field-error" id="passwordError" role="alert" @unless ($errors->has('password')) hidden @endunless>{{ $errors->first('password') }}</div>
+                            <div class="form-hint" id="passwordHint">Minimal 8 karakter. Sebaiknya kombinasi huruf dan angka.</div>
+                        </div>
+                        <div class="mb-3 pw-field">
+                            <label for="password_confirmation" class="form-label">Ulangi Password Baru</label>
+                            <div class="pw-wrap">
+                                <input type="password" name="password_confirmation" id="password_confirmation"
+                                       class="form-control" autocomplete="new-password"
+                                       spellcheck="false" autocapitalize="off"
+                                       aria-describedby="passwordConfirmationError pwMatch">
+                                <button type="button" class="pw-eye" data-eye-for="password_confirmation" aria-label="Lihat password" title="Lihat / sembunyikan password">
+                                    <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    <svg class="eye-slash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                </button>
+                            </div>
+                            <div class="field-error" id="passwordConfirmationError" role="alert" hidden></div>
+                            <div class="pw-match" id="pwMatch" aria-live="polite" hidden></div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-cancel" id="backToSettingsBtn">Kembali</button>
+                            <button type="submit" class="btn btn-primary" id="passwordSubmitBtn">Simpan Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Toast global: dipakai modal pengaturan untuk pesan sukses/error tanpa reload -->
+    <div class="app-toast" id="appToast" role="status" aria-live="assertive" aria-atomic="true" hidden>
+        <span class="app-toast-icon" aria-hidden="true"></span>
+        <span class="app-toast-text" id="appToastText"></span>
+        <button type="button" class="app-toast-close" id="appToastClose" aria-label="Tutup notifikasi">&times;</button>
+    </div>
+
+    <!-- Modal konfirmasi hapus (pengganti window.confirm bawaan browser).
+         Form dengan atribut data-confirm akan dicegat oleh skrip di bawah. -->
+    <div class="modal fade confirm-modal" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <span class="confirm-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h18" />
+                            <path d="M8 6V4.5A1.5 1.5 0 0 1 9.5 3h5A1.5 1.5 0 0 1 16 4.5V6" />
+                            <path d="M6 6l1 13.5A1.5 1.5 0 0 0 8.5 21h7a1.5 1.5 0 0 0 1.5-1.5L18 6" />
+                            <path d="M10 10.5v6M14 10.5v6" />
+                        </svg>
+                    </span>
+                    <h5 class="confirm-title" id="confirmModalLabel">Hapus data ini?</h5>
+                    <p class="confirm-message" id="confirmModalText">Tindakan ini tidak bisa dibatalkan.</p>
+                    <div class="confirm-actions">
+                        <button type="button" class="btn-cancel" data-confirm-cancel>Batal</button>
+                        <button type="button" class="btn btn-danger" data-confirm-ok>Ya, hapus</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        /* Notifikasi flash: tombol tutup + auto-dismiss dengan progress bar.
+           Timer dijeda saat kursor/fokus berada di atas notifikasi agar pesan
+           sempat dibaca, lalu lanjut lagi setelah keluar. */
+        (function () {
+            var flashes = document.querySelectorAll('[data-flash]');
+            if (!flashes.length) return;
+
+            function dismiss(el) {
+                if (el.dataset.closing === '1') return;
+                el.dataset.closing = '1';
+                el.classList.add('is-leaving');
+                window.setTimeout(function () {
+                    if (el.parentNode) el.parentNode.removeChild(el);
+                }, 200);
+            }
+
+            Array.prototype.forEach.call(flashes, function (el) {
+                var delay = parseInt(el.getAttribute('data-auto-dismiss') || '0', 10);
+                var timer = null;
+
+                function start() {
+                    if (!delay) return;
+                    el.classList.remove('is-paused');
+                    timer = window.setTimeout(function () { dismiss(el); }, delay);
+                }
+
+                function pause() {
+                    el.classList.add('is-paused');
+                    if (timer) {
+                        window.clearTimeout(timer);
+                        timer = null;
+                    }
+                }
+
+                function resume() {
+                    if (el.dataset.closing === '1' || timer) return;
+                    start();
+                }
+
+                var closer = el.querySelector('[data-flash-close]');
+                if (closer) {
+                    closer.addEventListener('click', function () {
+                        pause();
+                        dismiss(el);
+                    });
+                }
+
+                el.addEventListener('mouseenter', pause);
+                el.addEventListener('mouseleave', resume);
+                el.addEventListener('focusin', pause);
+                el.addEventListener('focusout', resume);
+                start();
+            });
+        })();
+
+        /* Konfirmasi hapus: form dengan atribut data-confirm dicegat lalu
+           ditampilkan lewat modal bertema. Tanpa atribut → submit normal. */
+        (function () {
+            var modalEl = document.getElementById('confirmModal');
+            if (!modalEl || !window.bootstrap) return;
+
+            var titleEl = document.getElementById('confirmModalLabel');
+            var textEl = document.getElementById('confirmModalText');
+            var okBtn = modalEl.querySelector('[data-confirm-ok]');
+            var cancelBtn = modalEl.querySelector('[data-confirm-cancel]');
+            var pendingForm = null;
+            var instance = null;
+
+            function open(form) {
+                pendingForm = form;
+                var title = form.getAttribute('data-confirm-title') || 'Hapus data ini?';
+                var message = form.getAttribute('data-confirm') || 'Tindakan ini tidak bisa dibatalkan.';
+                var okLabel = form.getAttribute('data-confirm-label') || 'Ya, hapus';
+
+                if (titleEl) titleEl.textContent = title;
+                if (textEl) textEl.textContent = message;
+                if (okBtn) okBtn.textContent = okLabel;
+
+                instance = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+                instance.show();
+            }
+
+            /* Fase capture supaya form dicegat sebelum handler lain berjalan. */
+            document.addEventListener('submit', function (event) {
+                var form = event.target;
+
+                if (!form || !form.getAttribute || !form.getAttribute('data-confirm')) return;
+
+                /* Submit yang dipicu tombol konfirmasi (form.submit()) tidak
+                   memicu event ini, penanda di bawah hanya jaring pengaman. */
+                if (form.dataset.confirmed === '1') {
+                    delete form.dataset.confirmed;
+                    return;
+                }
+
+                event.preventDefault();
+                open(form);
+            }, true);
+
+            if (okBtn) {
+                okBtn.addEventListener('click', function () {
+                    var form = pendingForm;
+                    pendingForm = null;
+                    if (instance) instance.hide();
+                    if (!form) return;
+
+                    form.dataset.confirmed = '1';
+                    form.submit();
+                    window.setTimeout(function () { delete form.dataset.confirmed; }, 0);
+                });
+            }
+
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', function () {
+                    pendingForm = null;
+                    if (instance) instance.hide();
+                });
+            }
+
+            /* Tombol "Batal" langsung difokuskan: hindari Enter menghapus data. */
+            modalEl.addEventListener('shown.bs.modal', function () {
+                if (cancelBtn) cancelBtn.focus();
+            });
+
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                pendingForm = null;
+            });
+        })();
+    </script>
+
+
+    <script>
+        /* Modal "Pengaturan": navigasi menu <-> form ganti password, validasi inline
+           (wajib diisi / minimal 8 karakter / konfirmasi harus cocok), submit via
+           fetch() supaya modal TIDAK tertutup sebelum error atau sukses tampil,
+           lalu toast + tutup modal otomatis saat berhasil.
+           Bila fetch tidak tersedia, form tetap ter-submit normal ke server. */
+        (function () {
+            var modalEl = document.getElementById('settingsModal');
+            var home = document.getElementById('settingsHome');
+            var form = document.getElementById('passwordForm');
+            var gotoBtn = document.getElementById('gotoPasswordBtn');
+            var backBtn = document.getElementById('backToSettingsBtn');
+            if (!modalEl || !home || !form) return;
+
+            var pwCurrent = document.getElementById('current_password');
+            var pwNew = document.getElementById('password');
+            var pwConfirm = document.getElementById('password_confirmation');
+            var pwMatch = document.getElementById('pwMatch');
+            var submitBtn = document.getElementById('passwordSubmitBtn');
+            var submitLabel = submitBtn ? submitBtn.textContent : 'Simpan Password';
+            var minLength = parseInt((pwNew && pwNew.getAttribute('minlength')) || '', 10) || 8;
+            var inputs = {
+                current_password: pwCurrent,
+                password: pwNew,
+                password_confirmation: pwConfirm
+            };
+            var errorBoxes = {
+                current_password: document.getElementById('currentPasswordError'),
+                password: document.getElementById('passwordError'),
+                password_confirmation: document.getElementById('passwordConfirmationError')
+            };
+            var toastEl = document.getElementById('appToast');
+            var toastText = document.getElementById('appToastText');
+            var toastClose = document.getElementById('appToastClose');
+            var toastTimer = null;
+            var closeTimer = null;
+
+            function showForm() { home.classList.add('d-none'); form.classList.remove('d-none'); }
+            function showHome() { form.classList.add('d-none'); home.classList.remove('d-none'); }
+
+            function whenReady(fn) {
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', fn, { once: true });
+                } else {
+                    fn();
+                }
+            }
+
+            /* Bootstrap baru aman memanggil .show() setelah DOM siap, sehingga
+               backdrop tidak "nyangkut" saat modal dibuka otomatis. */
+            function openModal() {
+                whenReady(function () {
+                    if (window.bootstrap) window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                });
+            }
+
+            gotoBtn.addEventListener('click', showForm);
+            backBtn.addEventListener('click', showHome);
+
+            /* ---------- Toast pesan sukses / error ---------- */
+            function showToast(type, message) {
+                if (!toastEl || !toastText) return;
+                toastText.textContent = message;
+                toastEl.classList.remove('ok', 'bad');
+                toastEl.classList.add(type === 'success' ? 'ok' : 'bad');
+                toastEl.hidden = false;
+                if (toastTimer) clearTimeout(toastTimer);
+                toastTimer = setTimeout(hideToast, 5000);
+            }
+
+            function hideToast() {
+                if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+                if (toastEl) toastEl.hidden = true;
+            }
+
+            if (toastClose) toastClose.addEventListener('click', hideToast);
+
+            /* session()->regenerate() di server merotasi CSRF token, jadi semua
+               token di halaman (form ganti password & form Keluar) ikut disegarkan
+               agar submit berikutnya tidak terkena 419. Attribute `value` juga
+               diperbarui supaya tetap benar setelah form.reset(). */
+            function syncCsrfToken(token) {
+                if (!token) return;
+                document.querySelectorAll('input[name="_token"]').forEach(function (input) {
+                    input.value = token;
+                    input.setAttribute('value', token);
+                });
+                var meta = document.querySelector('meta[name="csrf-token"]');
+                if (meta) meta.setAttribute('content', token);
+            }
+
+            /* ---------- Mata: intip / sembunyikan password ---------- */
+            document.querySelectorAll('.pw-eye').forEach(function (eye) {
+                eye.addEventListener('click', function () {
+                    var input = document.getElementById(eye.getAttribute('data-eye-for'));
+                    if (!input) return;
+                    var show = input.type === 'password';
+                    input.type = show ? 'text' : 'password';
+                    eye.classList.toggle('showing', show);
+                    eye.setAttribute('aria-label', show ? 'Sembunyikan password' : 'Lihat password');
+                });
+            });
+
+            /* ---------- Pesan error inline per field ---------- */
+            function clearFieldError(name) {
+                var input = inputs[name];
+                var box = errorBoxes[name];
+                if (input) {
+                    input.classList.remove('is-invalid');
+                    input.removeAttribute('aria-invalid');
+                }
+                if (box) {
+                    box.textContent = '';
+                    box.hidden = true;
+                }
+            }
+
+            function clearFieldErrors() {
+                Object.keys(inputs).forEach(function (name) { clearFieldError(name); });
+            }
+
+            function setFieldError(name, message) {
+                var input = inputs[name];
+                var box = errorBoxes[name];
+                if (input) {
+                    input.classList.add('is-invalid');
+                    input.setAttribute('aria-invalid', 'true');
+                }
+                if (box) {
+                    box.textContent = message;
+                    box.hidden = false;
+                }
+            }
+
+            function applyServerErrors(errors) {
+                clearFieldErrors();
+                Object.keys(errors || {}).forEach(function (key) {
+                    if (!inputs[key]) return;
+                    var message = errors[key];
+                    setFieldError(key, Array.isArray(message) ? message[0] : String(message));
+                });
+            }
+
+            /* ---------- Indikator kecocokan password (real-time) ---------- */
+            function checkMatch() {
+                if (!pwNew || !pwConfirm || !pwMatch) return;
+
+                var baru = pwNew.value;
+                var ulangi = pwConfirm.value;
+                var text = '';
+                var state = '';
+
+                if (baru.length > 0 && baru.length < minLength) {
+                    text = 'Password baru minimal ' + minLength + ' karakter';
+                    state = 'bad';
+                } else if (baru.length > 0 && ulangi.length > 0) {
+                    state = baru === ulangi ? 'ok' : 'bad';
+                    text = state === 'ok' ? 'Password cocok' : 'Password belum cocok';
+                }
+
+                pwMatch.classList.remove('ok', 'bad');
+                if (!text) {
+                    pwMatch.textContent = '';
+                    pwMatch.hidden = true;
+                    return;
+                }
+
+                pwMatch.textContent = text;
+                pwMatch.classList.add(state);
+                pwMatch.hidden = false;
+            }
+
+            /* ---------- Validasi sisi klien (server tetap sumber kebenaran) ---------- */
+            function validate() {
+                clearFieldErrors();
+
+                var firstInvalid = null;
+                function fail(name, message) {
+                    setFieldError(name, message);
+                    if (!firstInvalid && inputs[name]) firstInvalid = inputs[name];
+                }
+
+                if (!pwCurrent || pwCurrent.value === '') {
+                    fail('current_password', 'Password saat ini wajib diisi.');
+                }
+                if (!pwNew || pwNew.value === '') {
+                    fail('password', 'Password baru wajib diisi.');
+                } else if (pwNew.value.length < minLength) {
+                    fail('password', 'Password baru minimal ' + minLength + ' karakter.');
+                }
+                if (!pwConfirm || pwConfirm.value === '') {
+                    fail('password_confirmation', 'Ulangi password baru wajib diisi.');
+                } else if (pwNew && pwNew.value !== '' && pwConfirm.value !== pwNew.value) {
+                    fail('password_confirmation', 'Password belum cocok.');
+                }
+
+                checkMatch();
+
+                if (firstInvalid) firstInvalid.focus();
+                return ! firstInvalid;
+            }
+
+            /* Error lama dibersihkan begitu pengguna mengetik ulang. */
+            [pwCurrent, pwNew, pwConfirm].forEach(function (input) {
+                if (!input) return;
+                input.addEventListener('input', function () {
+                    clearFieldError(input.name);
+                    /* Panjang minimum & kecocokan adalah sifat bersama kedua field baru. */
+                    if (input.name !== 'current_password') {
+                        clearFieldError('password');
+                        clearFieldError('password_confirmation');
+                    }
+                    checkMatch();
+                });
+            });
+            checkMatch();
+
+            /* ---------- Submit (AJAX, tanpa reload halaman) ---------- */
+            function setLoading(state) {
+                if (!submitBtn) return;
+                submitBtn.disabled = state;
+                submitBtn.textContent = state ? 'Menyimpan...' : submitLabel;
+            }
+
+            function closeModalSoon() {
+                if (!window.bootstrap) return;
+                var instance = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+                if (closeTimer) clearTimeout(closeTimer);
+                closeTimer = setTimeout(function () {
+                    closeTimer = null;
+                    instance.hide();
+                }, 1300);
+            }
+
+            function resetFields() {
+                form.reset();
+                clearFieldErrors();
+                checkMatch();
+            }
+
+            form.addEventListener('submit', function (event) {
+                /* Tanpa fetch: biarkan submit normal (redirect + flash) berjalan. */
+                if (!window.fetch || !window.FormData) return;
+
+                event.preventDefault();
+                hideToast();
+
+                if (! validate()) return;
+
+                var tokenInput = form.querySelector('input[name="_token"]');
+                setLoading(true);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': tokenInput ? tokenInput.value : ''
+                    },
+                    body: new FormData(form)
+                }).then(function (response) {
+                    return response.json().catch(function () { return {}; }).then(function (data) {
+                        return { status: response.status, ok: response.ok, data: data };
+                    });
+                }).then(function (result) {
+                    setLoading(false);
+
+                    if (result.ok) {
+                        /* Sukses: kosongkan form, sinkronkan token baru, tampilkan toast,
+                           lalu tutup modal otomatis. */
+                        resetFields();
+                        syncCsrfToken(result.data.csrf_token);
+                        showToast('success', result.data.message || 'Password berhasil diperbarui.');
+                        showHome();
+                        closeModalSoon();
+                        return;
+                    }
+
+                    if (result.status === 422) {
+                        /* Gagal validasi: modal tetap terbuka, error per field, form dikosongkan. */
+                        applyServerErrors(result.data.errors);
+                        [pwCurrent, pwNew, pwConfirm].forEach(function (input) {
+                            if (input) input.value = '';
+                        });
+                        checkMatch();
+                        showToast('error', result.data.message || 'Password belum bisa diperbarui.');
+                        var firstInvalid = form.querySelector('.form-control.is-invalid') || pwCurrent;
+                        if (firstInvalid) firstInvalid.focus();
+                        return;
+                    }
+
+                    if (result.status === 419) {
+                        showToast('error', 'Sesi berakhir. Muat ulang halaman lalu coba lagi.');
+                        return;
+                    }
+
+                    showToast('error', result.data.message || 'Terjadi kesalahan. Password belum diperbarui.');
+                }).catch(function () {
+                    setLoading(false);
+                    showToast('error', 'Koneksi bermasalah. Periksa jaringan lalu coba lagi.');
+                });
+            });
+
+            /* State modal direset saat ditutup agar tidak ada isi/error tertinggal. */
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+                resetFields();
+                setLoading(false);
+                showHome();
+            });
+
+
+            /* Fallback tanpa JS di atas ATAU setelah redirect server (validasi gagal):
+               tampilkan form ganti password lalu buka modal otomatis. */
+            @if ($errors->has('current_password') || $errors->has('password'))
+                showForm();
+                openModal();
+            @endif
         })();
     </script>
     @stack('scripts')

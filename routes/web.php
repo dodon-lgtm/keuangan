@@ -7,6 +7,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect halaman utama '/' ke dashboard
@@ -53,6 +54,10 @@ Route::middleware('auth')->group(function () {
         ->name('expenses.operational.update');
     Route::delete('expenses/operational/{operationalExpense}', [ExpenseController::class, 'destroyOperational'])
         ->name('expenses.operational.destroy');
+
+    // Pengaturan (modal setting navbar)
+    Route::put('/settings/password', [SettingController::class, 'updatePassword'])
+        ->name('settings.password');
 
     // Laporan
     Route::get('/reports/mer-roi', [ReportController::class, 'merRoi'])

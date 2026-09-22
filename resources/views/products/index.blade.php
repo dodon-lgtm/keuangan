@@ -25,14 +25,16 @@
                    class="filter-input" placeholder="Harga Maksimal">
         </div>
         <button type="submit" class="filter-btn">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="8" r="6.2" />
-                <rect x="3" y="4.5" width="10" height="2" /><rect x="3" y="11.5" width="10" height="2" /><rect x="3" y="4.5" width="2" height="7" /><rect x="11" y="4.5" width="2" height="7" />
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1.5 2.5h13l-5 5.9v4.1l-3 1.5V8.4z" />
             </svg>
             Filter
         </button>
         <a href="{{ route('products.index') }}" class="filter-reset">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h10M8 3v10" /></svg>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2.5 8a5.5 5.5 0 1 1 1.7 3.95" />
+                <path d="M2.5 13.5v-3h3" />
+            </svg>
             Reset
         </a>
         @if ($q !== '' || $hargaMin !== null || $hargaMax !== null)
@@ -102,7 +104,10 @@
                 </td>
                 <td class="text-end">
                     <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                    <form action="{{ route('products.destroy', $product) }}" method="post" class="d-inline" onsubmit="return confirm('Hapus produk ini?')">
+                    <form action="{{ route('products.destroy', $product) }}" method="post" class="d-inline"
+                          data-confirm="Produk {{ $product->nama_produk }} akan dihapus permanen dari daftar produk."
+                          data-confirm-title="Hapus produk?"
+                          data-confirm-label="Ya, hapus">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>

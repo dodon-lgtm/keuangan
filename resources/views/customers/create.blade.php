@@ -30,7 +30,25 @@
                     </div>
                 </div>
 
-                @include('partials.whatsapp-field', ['value' => old('no_whatsapp')])
+                <!-- No WhatsApp dan Domisili dibuat bersebelahan -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="no_whatsapp" class="form-label">No WhatsApp</label>
+                        <input type="text" name="no_whatsapp" id="no_whatsapp" value="{{ old('no_whatsapp') }}"
+                               class="form-control @error('no_whatsapp') is-invalid @enderror">
+                        @error('no_whatsapp')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label for="domisili" class="form-label">Domisili</label>
+                        <input type="text" name="domisili" id="domisili" value="{{ old('domisili') }}"
+                               class="form-control @error('domisili') is-invalid @enderror">
+                        @error('domisili')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
 
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
@@ -54,6 +72,29 @@
                     </div>
                 </div>
 
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="domisili" class="form-label">Domisili (optional)</label>
+                        <input type="text" name="domisili" id="domisili" value="{{ old('domisili') }}"
+                               class="form-control @error('domisili') is-invalid @enderror">
+                        @error('domisili')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label for="segment" class="form-label">Segment (optional)</label>
+                        <select name="segment" id="segment" class="form-select @error('segment') is-invalid @enderror">
+                            <option value="" @selected(! old('segment'))>— pilih —</option>
+                            @foreach (['A', 'B', 'C'] as $option)
+                                <option value="{{ $option }}" @selected(old('segment') === $option)>{{ $option }}</option>
+                            @endforeach
+                        </select>
+                        @error('segment')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label for="email" class="form-label">Email (optional)</label>
                     <input type="email" name="email" id="email" value="{{ old('email') }}"
@@ -71,7 +112,6 @@
                     @enderror
                 </div>
 
-                <!-- Diperbaiki menggunakan style var(--muted) agar terlihat jelas di dark mode -->
                 <div class="form-text mb-3" style="color: var(--muted) !important;">
                     Status Pelanggan dihitung otomatis: <strong style="color: var(--text) !important;">repeat</strong> (Pelanggan Aktif) jika memiliki lebih dari 1 transaksi order.
                 </div>

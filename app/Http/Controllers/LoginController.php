@@ -56,7 +56,7 @@ class LoginController extends Controller
         return redirect()
             ->route('login')
             ->withInput(['login' => $username])
-            ->withErrors(['login' => 'Kredensial tidak valid. Kontroleer email/username dan password.']);
+            ->withErrors(['login' => 'Email/username atau password tidak sesuai. Silakan periksa kembali.']);
     }
 
     /**

@@ -122,17 +122,19 @@ class CustomerController extends Controller
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'nama_brand' => ['required', 'string', 'max:255'],
             'no_whatsapp' => ['required', 'string', 'max:20'],
+            'domisili' => ['nullable', 'string', 'max:255'],
+            'segment' => ['nullable', Rule::in(['A', 'B', 'C'])],
             'sumber' => ['required', Rule::in(Customer::SUMBERS)],
             'tanggal_masuk_chat' => ['required', 'date'],
             'catatan' => ['nullable', 'string'],
             'email' => ['nullable', 'email', 'max:255'],
         ]);
 
-        Customer::create($data);
+        $customer = Customer::create($data);
 
         return redirect()
             ->route('customers.index')
-            ->with('success', 'Pelanggan berhasil ditambahkan.');
+            ->with('success', "Pelanggan {$customer->nama_lengkap} berhasil ditambahkan.");
     }
 
     /**
@@ -152,6 +154,8 @@ class CustomerController extends Controller
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'nama_brand' => ['required', 'string', 'max:255'],
             'no_whatsapp' => ['required', 'string', 'max:20'],
+            'domisili' => ['nullable', 'string', 'max:255'],
+            'segment' => ['nullable', Rule::in(['A', 'B', 'C'])],
             'sumber' => ['required', Rule::in(Customer::SUMBERS)],
             'tanggal_masuk_chat' => ['required', 'date'],
             'catatan' => ['nullable', 'string'],
@@ -162,7 +166,7 @@ class CustomerController extends Controller
 
         return redirect()
             ->route('customers.index')
-            ->with('success', 'Pelanggan berhasil diperbarui.');
+            ->with('success', "Pelanggan {$customer->nama_lengkap} berhasil diperbarui.");
     }
 
     /**
@@ -170,10 +174,12 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer): RedirectResponse
     {
+        $nama = $customer->nama_lengkap;
+
         $customer->delete();
 
         return redirect()
             ->route('customers.index')
-            ->with('success', 'Pelanggan berhasil dihapus.');
+            ->with('success', "Pelanggan {$nama} berhasil dihapus.");
     }
 }

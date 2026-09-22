@@ -124,11 +124,11 @@ class ProductController extends Controller
             'hpp' => ['required', 'integer', 'min:0'],
         ]);
 
-        Product::create($data);
+        $product = Product::create($data);
 
         return redirect()
             ->route('products.index')
-            ->with('success', 'Produk berhasil ditambahkan.');
+            ->with('success', "Produk {$product->nama_produk} berhasil ditambahkan.");
     }
 
     /**
@@ -154,7 +154,7 @@ class ProductController extends Controller
 
         return redirect()
             ->route('products.index')
-            ->with('success', 'Produk berhasil diperbarui.');
+            ->with('success', "Produk {$product->nama_produk} berhasil diperbarui.");
     }
 
     /**
@@ -162,10 +162,12 @@ class ProductController extends Controller
      */
     public function destroy(Product $product): RedirectResponse
     {
+        $nama = $product->nama_produk;
+
         $product->delete();
 
         return redirect()
             ->route('products.index')
-            ->with('success', 'Produk berhasil dihapus.');
+            ->with('success', "Produk {$nama} berhasil dihapus.");
     }
 }

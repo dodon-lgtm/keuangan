@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'nama_lengkap',
     'nama_brand',
     'no_whatsapp',
+    'domisili',
+    'segment',
     'sumber',
     'tanggal_masuk_chat',
     'catatan',

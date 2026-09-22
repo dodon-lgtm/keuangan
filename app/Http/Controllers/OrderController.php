@@ -192,7 +192,7 @@ $totalPcs = (int) DB::table('order_items')
 
         return redirect()
             ->route('orders.index')
-            ->with('success', 'Order berhasil ditambahkan.');
+            ->with('success', $this->orderLabel($order).' berhasil ditambahkan.');
     }
 
     /**
@@ -232,7 +232,7 @@ $totalPcs = (int) DB::table('order_items')
 
         return redirect()
             ->route('orders.index')
-            ->with('success', 'Order berhasil diperbarui.');
+            ->with('success', $this->orderLabel($order).' berhasil diperbarui.');
     }
 
     /**
@@ -240,11 +240,26 @@ $totalPcs = (int) DB::table('order_items')
      */
     public function destroy(Order $order): RedirectResponse
     {
+        $label = $this->orderLabel($order);
+
         $order->delete();
 
         return redirect()
             ->route('orders.index')
-            ->with('success', 'Order berhasil dihapus.');
+            ->with('success', "{$label} berhasil dihapus.");
+    }
+
+    /**
+     * Label order yang enak dibaca untuk pesan flash
+     * ("Order #12 (Fatimah Zahra)").
+     */
+    private function orderLabel(Order $order): string
+    {
+        $customer = $order->customer?->nama_lengkap;
+
+        return $customer
+            ? "Order #{$order->id} ({$customer})"
+            : "Order #{$order->id}";
     }
 
     /**

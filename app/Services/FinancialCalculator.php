@@ -232,6 +232,7 @@ class FinancialCalculator
         for ($month = 1; $month <= 12; $month++) {
             $series[$month] = [
                 'label' => Carbon::createFromDate($year, $month, 1)->format('M'),
+                'full' => Carbon::createFromDate($year, $month, 1)->format('F Y'),
                 'omset' => 0,
                 'hpp' => 0,
                 'ongkir' => 0,
@@ -297,6 +298,235 @@ class FinancialCalculator
     }
 
     /**
+     * Per-year financial breakdown across every year that has data ("Semua
+     * Tahun / All Time"). Years without any transaction between the first and
+     * the last data year are zero-filled so the chart line stays continuous.
+     * Returns an empty array when the database has no data at all.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function allTimeSeries(): array
+    {
+        $orders = DB::table('orders')->get(['tanggal', 'nominal', 'ongkir']);
+
+        $years = [];
+
+        foreach ($orders as $order) {
+            $years[] = static::yearOfDate((string) $order->tanggal);
+        }
+
+        foreach (OperationalExpense::query()->pluck('tahun') as $tahun) {
+            $years[] = (int) $tahun;
+        }
+
+        foreach (MarketingSpend::query()->pluck('tahun') as $tahun) {
+            $years[] = (int) $tahun;
+        }
+
+        $years = array_values(array_filter($years, fn ($year) => $year !== null));
+
+        if ($years === []) {
+            return [];
+        }
+
+        $years = array_values(array_unique($years));
+        sort($years);
+
+        $firstYear = $years[0];
+        $lastYear = $years[count($years) - 1];
+
+        $series = [];
+
+        for ($year = $firstYear; $year <= $lastYear; $year++) {
+            $series[$year] = [
+                'label' => (string) $year,
+                'full' => 'Tahun ' . $year,
+                'omset' => 0,
+                'hpp' => 0,
+                'ongkir' => 0,
+                'operacional' => 0,
+                'marketing' => 0,
+                'transaksi' => 0,
+            ];
+        }
+
+        foreach ($orders as $order) {
+            $year = static::yearOfDate((string) $order->tanggal);
+
+            if ($year === null || ! isset($series[$year])) {
+                continue;
+            }
+
+            $series[$year]['omset'] += (int) $order->nominal;
+            $series[$year]['ongkir'] += (int) $order->ongkir;
+            $series[$year]['transaksi']++;
+        }
+
+        foreach (DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->get(['orders.tanggal', 'order_items.hpp_satuan', 'order_items.jumlah_pcs']) as $row) {
+            $year = static::yearOfDate((string) $row->tanggal);
+
+            if ($year === null || ! isset($series[$year])) {
+                continue;
+            }
+
+            $series[$year]['hpp'] += (int) $row->hpp_satuan * (int) $row->jumlah_pcs;
+        }
+
+        foreach (OperationalExpense::query()->get() as $expense) {
+            $year = (int) $expense->tahun;
+
+            if (isset($series[$year])) {
+                $series[$year]['operacional'] += (int) $expense->nominal;
+            }
+        }
+
+        foreach (MarketingSpend::query()->get() as $spend) {
+            $year = (int) $spend->tahun;
+
+            if (isset($series[$year])) {
+                $series[$year]['marketing'] += (int) $spend->nominal;
+            }
+        }
+
+        foreach ($series as $year => $data) {
+            $data['total_operacional'] = $data['hpp'] + $data['ongkir'] + $data['operacional'] + $data['marketing'];
+            $data['net_profit'] = $data['omset'] - $data['total_operacional'];
+            $data['mer'] = $data['omset'] > 0
+                ? round((($data['marketing'] / $data['omset']) * 100) * 100) / 100
+                : 0.0;
+            $data['roi'] = $data['marketing'] > 0
+                ? round((($data['net_profit'] / $data['marketing']) * 100) * 100) / 100
+                : 0.0;
+
+            $series[$year] = $data;
+        }
+
+        return $series;
+    }
+
+    /**
+     * Per-day financial breakdown of the given month, used by the dashboard
+     * chart when a specific month is selected ("granularitas harian").
+     *
+     * Aggregation happens in PHP (same approach as monthlySeries) so the
+     * query stays portable between MySQL and SQLite. Every day of the month
+     * is present: days without transactions are zero-filled so the chart
+     * line stays continuous from day 1 until the end of the month.
+     *
+     * Costs that have no day-level date (Fix/Variable Cost and the marketing
+     * budget) are spread evenly across the days of the month - the rounding
+     * remainder lands on the last days - so summing the returned rows still
+     * reconciles exactly with the monthly totals.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function dailySeries(int $year, int $month): array
+    {
+        $daysInMonth = (int) Carbon::createFromDate($year, $month, 1)->daysInMonth;
+
+        $series = [];
+
+        for ($day = 1; $day <= $daysInMonth; $day++) {
+            $date = Carbon::createFromDate($year, $month, $day);
+
+            $series[$day] = [
+                'label' => $date->format('d M'),
+                'full' => $date->format('d F Y'),
+                'omset' => 0,
+                'hpp' => 0,
+                'ongkir' => 0,
+                'operacional' => 0,
+                'marketing' => 0,
+                'transaksi' => 0,
+            ];
+        }
+
+        [$start, $end] = static::periodRange($month, $year);
+
+        foreach (DB::table('orders')
+            ->whereBetween('tanggal', [$start, $end])
+            ->get(['tanggal', 'nominal', 'ongkir']) as $row) {
+            $day = static::dayOfDate((string) $row->tanggal);
+
+            if ($day === null || ! isset($series[$day])) {
+                continue;
+            }
+
+            $series[$day]['omset'] += (int) $row->nominal;
+            $series[$day]['ongkir'] += (int) $row->ongkir;
+            $series[$day]['transaksi']++;
+        }
+
+        foreach (DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->whereBetween('orders.tanggal', [$start, $end])
+            ->get(['orders.tanggal', 'order_items.hpp_satuan', 'order_items.jumlah_pcs']) as $row) {
+            $day = static::dayOfDate((string) $row->tanggal);
+
+            if ($day === null || ! isset($series[$day])) {
+                continue;
+            }
+
+            $series[$day]['hpp'] += (int) $row->hpp_satuan * (int) $row->jumlah_pcs;
+        }
+
+        // Fix/Variable Cost & budget iklan tidak memiliki tanggal: sebar rata.
+        $expenseParts = static::spreadPerDay((int) OperationalExpense::query()
+            ->where('bulan', $month)
+            ->where('tahun', $year)
+            ->sum('nominal'), $daysInMonth);
+
+        $marketingParts = static::spreadPerDay((int) MarketingSpend::query()
+            ->where('bulan', $month)
+            ->where('tahun', $year)
+            ->sum('nominal'), $daysInMonth);
+
+        foreach ($series as $day => $data) {
+            $data['operacional'] = $expenseParts[$day - 1] ?? 0;
+            $data['marketing'] = $marketingParts[$day - 1] ?? 0;
+
+            $data['total_operacional'] = $data['hpp'] + $data['ongkir'] + $data['operacional'] + $data['marketing'];
+            $data['net_profit'] = $data['omset'] - $data['total_operacional'];
+            $data['mer'] = $data['omset'] > 0
+                ? round((($data['marketing'] / $data['omset']) * 100) * 100) / 100
+                : 0.0;
+            $data['roi'] = $data['marketing'] > 0
+                ? round((($data['net_profit'] / $data['marketing']) * 100) * 100) / 100
+                : 0.0;
+
+            $series[$day] = $data;
+        }
+
+        return $series;
+    }
+
+    /**
+     * Split an amount evenly over $count buckets; the rounding remainder is
+     * added to the last buckets so the parts always sum up to the total.
+     *
+     * @return array<int, int>
+     */
+    protected static function spreadPerDay(int $total, int $count): array
+    {
+        if ($count <= 0) {
+            return [];
+        }
+
+        $base = intdiv($total, $count);
+        $remainder = $total - ($base * $count);
+
+        $parts = array_fill(0, $count, $base);
+
+        for ($i = $count - $remainder; $i < $count; $i++) {
+            $parts[$i]++;
+        }
+
+        return $parts;
+    }
+
+    /**
      * Resolve the month number (1 - 12) from a stored date value.
      *
      * The month always sits at offset 5 of a "YYYY-MM-DD" (or datetime)
@@ -308,6 +538,28 @@ class FinancialCalculator
         $month = (int) substr($date, 5, 2);
 
         return ($month >= 1 && $month <= 12) ? $month : null;
+    }
+
+    /**
+     * Resolve the day number (1 - 31) from a stored date value.
+     * Returns null when the value cannot be resolved.
+     */
+    protected static function dayOfDate(string $date): ?int
+    {
+        $day = (int) substr($date, 8, 2);
+
+        return ($day >= 1 && $day <= 31) ? $day : null;
+    }
+
+    /**
+     * Resolve the year from a stored date value.
+     * Returns null when the value cannot be resolved.
+     */
+    protected static function yearOfDate(string $date): ?int
+    {
+        $year = (int) substr($date, 0, 4);
+
+        return ($year >= 1000 && $year <= 9999) ? $year : null;
     }
 
     /**

@@ -22,7 +22,8 @@
     <label for="filter-year">Tahun</label>
     <input type="number" name="year" id="filter-year" class="filter-input" value="{{ $year }}"
         min="1900" max="9999" step="1" inputmode="numeric" autocomplete="off"
-        list="filter-year-options" placeholder="mis. 2026" required>
+        list="filter-year-options" placeholder="mis. 2026" required
+        @if (! empty($disableYear)) disabled aria-disabled="true" @endif>
     <datalist id="filter-year-options">
         @foreach ($years as $yearOption)
             <option value="{{ $yearOption }}"></option>

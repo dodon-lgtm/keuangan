@@ -13,7 +13,9 @@
 
     {{-- Filter Panel --}}
     <form action="{{ route('dashboard') }}" method="get" class="filter-panel">
-        @include('partials.period-filter')
+        @include('partials.period-filter', ['disableYear' => $chartMode === 'yearly'])
+
+        <input type="hidden" name="range" value="{{ $range ?? '1bln' }}">
 
         <button type="submit" class="filter-btn">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -30,6 +32,26 @@
             Reset
         </a>
     </form>
+
+    {{-- Grafik Rentang Waktu --}}
+    <div class="daterange-pills" role="group" aria-label="Filter rentang waktu grafik">
+        @foreach ($chartDaterange as $pill)
+            @php
+                $isActive = ((string) ($range ?? '') === $pill['value']);
+            @endphp
+            <a href="{{ route('dashboard', ['range' => $pill['value'], 'month' => $monthKey, 'year' => $year]) }}"
+               class="pill{{ $isActive ? ' pill-active' : '' }}"
+               data-range="{{ $pill['value'] }}"
+               data-mode="{{ $pill['mode'] }}"
+               onclick="event.preventDefault(); var f = document.querySelector('.filter-panel'); if(f) { f.querySelector('input[name=range]').value='{{ $pill['value'] }}'; f.submit(); }"
+               aria-pressed="{{ $isActive ? 'true' : 'false' }}">
+                {{ $pill['label'] }}
+                @if(isset($pill['count']) && $pill['count'] !== null)
+                    <span class="pill-count">({{ $pill['count'] }})</span>
+                @endif
+            </a>
+        @endforeach
+    </div>
 
     {{-- KPI Cards --}}
     <div class="kpi-grid">
@@ -81,7 +103,7 @@
         </div>
     </div>
 
-    {{-- Rincian Total Operasional (termasuk biaya marketing) --}}
+    {{-- Rincian Total Operasional --}}
     <div class="card mt-4">
         <div class="card-body">
             <span class="chart-eyebrow">Biaya</span>
@@ -126,6 +148,7 @@
 
     @php
         $chartMonths = [];
+        $chartFullLabels = [];
         $chartOmset = [];
         $chartOperasional = [];
         $chartNetProfit = [];
@@ -134,6 +157,7 @@
 
         foreach ($series as $item) {
             $chartMonths[] = $item['label'];
+            $chartFullLabels[] = $item['full'];
             $chartOmset[] = (int) $item['omset'];
             $chartOperasional[] = (int) $item['total_operacional'];
             $chartNetProfit[] = (int) $item['net_profit'];
@@ -151,6 +175,24 @@
         foreach ($chartMarketing as $v) {
             if ((int) $v > 0) { $chartEmptyMarketing = false; break; }
         }
+
+        $chartTrendTitle = match ($chartMode) {
+            'daily' => 'Tren Keuangan Harian',
+            'yearly' => 'Tren Keuangan Tahunan',
+            default => 'Tren Keuangan Bulanan',
+        };
+
+        $chartTrendDesc = match ($chartMode) {
+            'daily' => 'Omset vs Total Operasional dan Net Profit per tanggal (' . $periodLabel . ')',
+            'yearly' => 'Omset vs Total Operasional dan Net Profit per tahun',
+            default => 'Omset vs Total Operasional dan Net Profit per bulan',
+        };
+
+        $chartMerTitle = match ($chartMode) {
+            'daily' => 'Budget Iklan & MER Harian',
+            'yearly' => 'Budget Iklan & MER Tahunan',
+            default => 'Budget Iklan & MER Bulanan',
+        };
     @endphp
 
     {{-- Section Grafik --}}
@@ -162,55 +204,169 @@
         <div class="chart-grid">
             @include('partials.chart-card', [
                 'id' => 'chart-trend',
-                'title' => 'Tren Keuangan Bulanan',
-                'desc' => 'Omset vs Total Operasional dan Net Profit',
+                'title' => $chartTrendTitle,
+                'desc' => $chartTrendDesc,
                 'empty' => $chartEmptyTrend,
             ])
 
             @include('partials.chart-card', [
                 'id' => 'chart-mer',
-                'title' => 'Budget Iklan & MER',
-                'desc' => 'Budget Iklan per bulan (kolom) dan MER % (garis)',
+                'title' => $chartMerTitle,
+                'desc' => 'Budget Iklan per periode (kolom) dan MER % (garis)',
                 'empty' => array_sum($chartMarketing) === 0,
             ])
         </div>
     </div>
 
-    @push('scripts')
+   @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 var KC = window.KeuanganChart;
+                var chartFullLabels = @json($chartFullLabels);
+                var isDaily = @json($chartMode === 'daily');
 
+                function tipTitle(text) {
+                    return '<div style="font-weight:700;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.14);color:#f8fafc;font-size:12px">'
+                        + text
+                        + '</div>';
+                }
+
+                function tipRow(label, value, color) {
+                    var dot = color ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + color + ';margin-right:6px"></span>' : '';
+                    return '<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;line-height:1.8;color:#f8fafc;font-size:12px">'
+                        + '<span>' + dot + label + '</span>'
+                        + '<strong style="font-variant-numeric:tabular-nums">' + value + '</strong>'
+                        + '</div>';
+                }
+
+                // Konfigurasi Sumbu X Otomatis (Rapi & Tidak Berdesakan)
+                var commonXaxis = {
+                    categories: @json($chartMonths),
+                    tickAmount: isDaily ? 8 : undefined, // Batasi jumlah label tanggal di HP/Desktop
+                    labels: {
+                        rotate: 0,
+                        hideOverlappingLabels: true,
+                        style: { colors: '#94A3B8', fontSize: '11px', fontFamily: "'Inter', sans-serif" }
+                    },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false }
+                };
+
+                // Grid Halus Transparan
+                var commonGrid = {
+                    borderColor: 'rgba(255, 255, 255, 0.05)',
+                    strokeDashArray: 4,
+                    padding: { left: 10, right: 10 }
+                };
+
+                // --- 1. GRAFIK TREN KEUANGAN ---
                 if (document.getElementById('chart-trend')) {
                     new ApexCharts(document.getElementById('chart-trend'), KC.base({
-                        chart: { type: 'bar' },
+                        chart: { 
+                            type: isDaily ? 'area' : 'bar',
+                            height: 320,
+                            toolbar: { show: false }
+                        },
                         series: [
-                            { name: 'Omset', type: 'column', data: @json($chartOmset) },
-                            { name: 'Total Operasional', type: 'column', data: @json($chartOperasional) },
+                            { name: 'Omset', type: isDaily ? 'area' : 'column', data: @json($chartOmset) },
+                            { name: 'Total Operasional', type: isDaily ? 'area' : 'column', data: @json($chartOperasional) },
                             { name: 'Net Profit', type: 'line', data: @json($chartNetProfit) }
                         ],
-                        xaxis: { categories: @json($chartMonths) },
-                        stroke: { width: [0, 0, 2.4], curve: 'smooth' },
-                        colors: ['#E11D48', '#F5B524', '#22C55E'],
-                        legend: { show: true, position: 'bottom' }
+                        xaxis: commonXaxis,
+                        grid: commonGrid,
+                        stroke: { 
+                            width: isDaily ? [2, 2, 2.5] : [0, 0, 2.5], 
+                            curve: 'smooth' 
+                        },
+                        fill: {
+                            type: isDaily ? ['gradient', 'gradient', 'solid'] : 'solid',
+                            gradient: {
+                                shadeIntensity: 1,
+                                opacityFrom: 0.35,
+                                opacityTo: 0.03,
+                                stops: [0, 90, 100]
+                            }
+                        },
+                        plotOptions: { 
+                            bar: { columnWidth: isDaily ? '30%' : '45%', borderRadius: 4 } 
+                        },
+                        markers: { size: isDaily ? 0 : 3, hover: { size: 6 } },
+                        colors: ['#38BDF8', '#F59E0B', '#22C55E'], // Sky Blue (Omset), Amber (Operasional), Emerald (Profit)
+                        tooltip: {
+                            theme: 'dark',
+                            custom: function (opts) {
+                                var i = opts.dataPointIndex;
+                                if (i === undefined || chartFullLabels[i] === undefined) { return ''; }
+
+                                var omset = opts.series[0][i] || 0;
+                                var operasional = opts.series[1][i] || 0;
+                                var netProfit = opts.series[2][i] || 0;
+
+                                return '<div style="background:#0F172A;color:#F8FAFC;border:1px solid #334155;border-radius:8px;padding:10px 12px;min-width:210px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.5)">'
+                                    + tipTitle(chartFullLabels[i])
+                                    + tipRow('Omset', KC.rupiah(omset), '#38BDF8')
+                                    + tipRow('Total Operasional', KC.rupiah(operasional), '#F59E0B')
+                                    + tipRow('Net Profit', KC.rupiah(netProfit), '#22C55E')
+                                    + '</div>';
+                            }
+                        },
+                        legend: { show: true, position: 'bottom', labels: { colors: '#94A3B8' } }
                     })).render();
                 }
 
+                // --- 2. GRAFIK BUDGET IKLAN & MER ---
                 if (document.getElementById('chart-mer')) {
                     new ApexCharts(document.getElementById('chart-mer'), KC.base({
-                        chart: { type: 'bar' },
+                        chart: { 
+                            type: 'line',
+                            height: 320,
+                            toolbar: { show: false }
+                        },
                         series: [
-                            { name: 'Marketing Spend', type: 'column', data: @json($chartMarketing) },
+                            { name: 'Marketing Spend', type: isDaily ? 'area' : 'column', data: @json($chartMarketing) },
                             { name: 'MER %', type: 'line', data: @json($chartMer) }
                         ],
-                        xaxis: { categories: @json($chartMonths) },
-                        stroke: { width: [0, 2.4], curve: 'smooth' },
+                        xaxis: commonXaxis,
+                        grid: commonGrid,
+                        stroke: { 
+                            width: isDaily ? [1.8, 2.5] : [0, 2.5], 
+                            curve: 'smooth' 
+                        },
+                        fill: {
+                            type: isDaily ? ['gradient', 'solid'] : 'solid',
+                            gradient: {
+                                shadeIntensity: 1,
+                                opacityFrom: 0.25,
+                                opacityTo: 0.02,
+                                stops: [0, 90, 100]
+                            }
+                        },
+                        plotOptions: { 
+                            bar: { columnWidth: '35%', borderRadius: 4 } 
+                        },
+                        markers: { size: isDaily ? 0 : 3, hover: { size: 6 } },
                         yaxis: [
-                            { labels: { formatter: function (v) { return KC.rupiah(v); }, style: { colors: '#9AA1AB', fontFamily: "'Inter', sans-serif" } } },
-                            { opposite: true, labels: { formatter: function (v) { return KC.pct(v); }, style: { colors: '#9AA1AB', fontFamily: "'Inter', sans-serif" } } }
+                            { labels: { formatter: function (v) { return KC.rupiah(v); }, style: { colors: '#94A3B8', fontFamily: "'Inter', sans-serif" } } },
+                            { opposite: true, labels: { formatter: function (v) { return KC.pct(v); }, style: { colors: '#94A3B8', fontFamily: "'Inter', sans-serif" } } }
                         ],
-                        colors: ['#22D3EE', '#E11D48'],
-                        legend: { show: true, position: 'bottom' }
+                        colors: ['#06B6D4', '#F43F5E'], // Cyan & Rose
+                        tooltip: {
+                            theme: 'dark',
+                            custom: function (opts) {
+                                var i = opts.dataPointIndex;
+                                if (i === undefined || chartFullLabels[i] === undefined) { return ''; }
+
+                                var spend = opts.series[0][i] || 0;
+                                var mer = opts.series[1][i] || 0;
+
+                                return '<div style="background:#0F172A;color:#F8FAFC;border:1px solid #334155;border-radius:8px;padding:10px 12px;min-width:210px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.5)">'
+                                    + tipTitle(chartFullLabels[i])
+                                    + tipRow('Budget Iklan', KC.rupiah(spend), '#06B6D4')
+                                    + tipRow('MER', KC.pct(mer), '#F43F5E')
+                                    + '</div>';
+                            }
+                        },
+                        legend: { show: true, position: 'bottom', labels: { colors: '#94A3B8' } }
                     })).render();
                 }
             });

@@ -8,6 +8,11 @@ use Illuminate\Support\Carbon;
 abstract class Controller
 {
     /**
+     * The month key that means "Semua Tahun / All Time" in the filter form.
+     */
+    public const MONTH_ALL_TIME = 'alltime';
+
+    /**
      * The month key that means "Semua Bulan / Full Year" in the filter form.
      */
     public const MONTH_ALL = 'all';
@@ -26,11 +31,15 @@ abstract class Controller
      * Resolve the filter month / year from the request query parameters.
      *
      * The year is fully dynamic (1900 - 9999) so past and future periods can
-     * be inspected without extra configuration. The month is either a specific
-     * month (1 - 12) or "all" / empty / invalid, which means "Semua Bulan":
-     * every metric then spans January - December of the selected year.
+     * be inspected without extra configuration. Three chart granularities are
+     * supported (Google Analytics style):
+     *  - mode "daily":   a specific month (1 - 12), data aggregated per date.
+     *  - mode "monthly": "all" / empty / invalid ("Semua Bulan"), Jan - Dec of
+     *                    the selected year, data aggregated per month.
+     *  - mode "yearly":  MONTH_ALL_TIME ("Semua Tahun / All Time"), data
+     *                    aggregated per year.
      *
-     * @return array{month: int|null, monthKey: string, year: int}
+     * @return array{month: int|null, monthKey: string, year: int, mode: string}
      */
     protected function resolvePeriod(Request $request): array
     {
@@ -39,16 +48,25 @@ abstract class Controller
         $month = $request->get('month');
         $year = $request->get('year');
 
-        $isFullYear = ! is_numeric($month) || (int) $month < 1 || (int) $month > 12;
-        $month = $isFullYear ? null : (int) $month;
+        if ($month === self::MONTH_ALL_TIME) {
+            $mode = 'yearly';
+            $resolvedMonth = null;
+            $monthKey = self::MONTH_ALL_TIME;
+        } else {
+            $isSpecific = is_numeric($month) && (int) $month >= 1 && (int) $month <= 12;
+            $mode = $isSpecific ? 'daily' : 'monthly';
+            $resolvedMonth = $isSpecific ? (int) $month : null;
+            $monthKey = $isSpecific ? (string) $resolvedMonth : self::MONTH_ALL;
+        }
 
         $year = filled($year) && is_numeric($year) ? (int) $year : $now->year;
         $year = min(max($year, self::MIN_YEAR), self::MAX_YEAR);
 
         return [
-            'month' => $month,
-            'monthKey' => $isFullYear ? self::MONTH_ALL : (string) $month,
+            'month' => $resolvedMonth,
+            'monthKey' => $monthKey,
             'year' => $year,
+            'mode' => $mode,
         ];
     }
 

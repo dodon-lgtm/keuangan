@@ -101,6 +101,9 @@ class FinancialCalculatorTest extends AuthenticatedTestCase
 
         $this->assertSame(0, $split['roni']);
         $this->assertSame(0, $split['rizky']);
+
+        // All time tanpa data sama sekali: deret kosong, bukan error.
+        $this->assertSame([], FinancialCalculator::allTimeSeries());
     }
 
     public function test_mer_returns_zero_when_omset_is_zero_even_with_spend(): void
@@ -214,6 +217,99 @@ class FinancialCalculatorTest extends AuthenticatedTestCase
         $this->assertSame(1, FinancialCalculator::pelangganAktif(null, 2026));
         $this->assertSame(0, FinancialCalculator::pelangganAktif(9, 2026));
         $this->assertSame(1, FinancialCalculator::pelangganAktif());
+    }
+
+    public function test_daily_series_zero_fills_and_reconciles_with_monthly_totals(): void
+    {
+        $customer = $this->customer('Fatimah Zahra');
+        $product = Product::create([
+            'nama_produk' => 'Voal Test',
+            'harga_jual' => 20000,
+            'hpp' => 10000,
+        ]);
+
+        $this->createOrder($customer, $product, '2026-09-05');
+        $this->createOrder($customer, $product, '2026-09-27');
+
+        OperationalExpense::create([
+            'nama_pengeluaran' => 'Listrik',
+            'kategori' => OperationalExpense::KATEGORI_FIX_COST,
+            'nominal' => 10000,
+            'bulan' => 9,
+            'tahun' => 2026,
+        ]);
+
+        MarketingSpend::create(['bulan' => 9, 'tahun' => 2026, 'nominal' => 100000]);
+
+        $series = FinancialCalculator::dailySeries(2026, 9);
+
+        // September 2026 punya 30 hari: zero-fill dari tanggal 1 s/d akhir bulan.
+        $this->assertCount(30, $series);
+        $this->assertSame('01 Sep', $series[1]['label']);
+        $this->assertSame('30 Sep', $series[30]['label']);
+        $this->assertSame('05 September 2026', $series[5]['full']);
+        $this->assertSame(0, $series[1]['omset']);
+
+        // Transaksi jatuh pada tanggal yang tepat.
+        $this->assertSame(40000, $series[5]['omset']);
+        $this->assertSame(1, $series[5]['transaksi']);
+        $this->assertSame(40000, $series[27]['omset']);
+
+        // Rekonsiliasi: penjumlahan per hari == total bulanan.
+        $omset = 0;
+        $operasional = 0;
+        $profit = 0;
+
+        foreach ($series as $day) {
+            $omset += $day['omset'];
+            $operasional += $day['total_operacional'];
+            $profit += $day['net_profit'];
+        }
+
+        $this->assertSame(FinancialCalculator::totalOmset(9, 2026), $omset);
+        $this->assertSame(FinancialCalculator::totalOperasional(9, 2026), $operasional);
+        $this->assertSame(FinancialCalculator::netProfit(9, 2026), $profit);
+    }
+
+    public function test_all_time_series_aggregates_per_year_with_zero_filled_gaps(): void
+    {
+        $customer = $this->customer('Fatimah Zahra');
+        $product = Product::create([
+            'nama_produk' => 'Voal Test',
+            'harga_jual' => 20000,
+            'hpp' => 10000,
+        ]);
+
+        $this->createOrder($customer, $product, '2024-03-10');
+        $this->createOrder($customer, $product, '2026-09-05');
+
+        OperationalExpense::create([
+            'nama_pengeluaran' => 'Listrik',
+            'kategori' => OperationalExpense::KATEGORI_FIX_COST,
+            'nominal' => 10000,
+            'bulan' => 9,
+            'tahun' => 2026,
+        ]);
+
+        MarketingSpend::create(['bulan' => 9, 'tahun' => 2026, 'nominal' => 100000]);
+
+        $series = FinancialCalculator::allTimeSeries();
+
+        // 2024..2026: tahun 2025 tanpa transaksi tetap muncul dengan angka 0.
+        $this->assertSame(['2024', '2025', '2026'], array_column($series, 'label'));
+        $this->assertSame('Tahun 2025', $series[2025]['full']);
+        $this->assertSame(0, $series[2025]['omset']);
+        $this->assertSame(0, $series[2025]['total_operacional']);
+
+        // 2024: hanya order (ongkir 5.000 + HPP 20.000).
+        $this->assertSame(40000, $series[2024]['omset']);
+        $this->assertSame(25000, $series[2024]['total_operacional']);
+        $this->assertSame(15000, $series[2024]['net_profit']);
+
+        // 2026: order + Fix Cost 10.000 + marketing 100.000.
+        $this->assertSame(40000, $series[2026]['omset']);
+        $this->assertSame(135000, $series[2026]['total_operacional']);
+        $this->assertSame(-95000, $series[2026]['net_profit']);
     }
 
     public function test_arbitrary_years_without_data_return_zero(): void

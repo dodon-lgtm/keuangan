@@ -65,7 +65,40 @@ class ReportControllerTest extends AuthenticatedTestCase
         $response->assertSee('Rp -95.000'); // net profit
     }
 
-    public function test_mer_roi_report_renders_figures_and_profit_split(): void
+    public function test_dashboard_chart_supports_daily_monthly_and_yearly_granularity(): void
+    {
+        $this->prepareMonth();
+
+        // Harian: bulan tertentu -> label tanggal & periode lengkap di JSON grafik.
+        $daily = $this->get('/dashboard?month=9&year=2026');
+
+        $daily->assertStatus(200);
+        $daily->assertSee('Tren Keuangan Harian');
+        $daily->assertSee('01 Sep', false);
+        $daily->assertSee('05 September 2026', false);
+
+        // Bulanan: Semua Bulan / Full Year -> label bulan Jan-Des.
+        $monthly = $this->get('/dashboard?month=all&year=2026');
+
+        $monthly->assertStatus(200);
+        $monthly->assertSee('Tren Keuangan Bulanan');
+
+        // Tahunan: Semua Tahun / All Time -> label tahun & opsi filter terpilih.
+        $yearly = $this->get('/dashboard?month=alltime&year=2026');
+
+        $yearly->assertStatus(200);
+        $yearly->assertSee('Tren Keuangan Tahunan');
+        $yearly->assertSee('Semua Tahun (All Time)');
+        $yearly->assertSee('value="alltime" selected', false);
+        $yearly->assertSee('Tahun 2026', false);
+    }
+
+    public function test_dashboard_all_time_without_data_renders_empty_chart(): void
+    {
+        $this->get('/dashboard?month=alltime')->assertStatus(200);
+    }
+
+    public function test_mer_roi_report_renders_figures_and_cost_breakdown(): void
     {
         $this->prepareMonth();
 
@@ -87,15 +120,13 @@ class ReportControllerTest extends AuthenticatedTestCase
         $response->assertSee('Rp -95.000');
 
         // MER & ROI tampil dengan 2 angka di belakang koma.
-        // MER = 100.000 / 40.000 * 100 = 250.00%
-        // ROI = -95.000 / 100.000 * 100 = -95.00%
         $response->assertSee('250.00%');
         $response->assertSee('-95.00%');
 
-        $response->assertSee('A Roni');
-        $response->assertSee('Rizky');
-        $response->assertSee('Rp -57.000'); // pembagian profit A Roni (60%)
-        $response->assertSee('Rp -38.000'); // pembagian profit Rizky (40%)
+        // Pembagian profit sengaja dihapus dari halaman laporan (saat menyesuaikan tampilan).
+        $response->assertDontSee('Pembagian Profit');
+        $response->assertDontSee('A Roni');
+        $response->assertDontSee('Rizky');
     }
 
     public function test_hpp_profit_report_renders_per_product_breakdown(): void

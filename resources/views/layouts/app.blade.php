@@ -1182,6 +1182,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/theme.js') }}"></script>
+    <script src="{{ asset('js/currency-format.js') }}"></script>
 <script>
         (function () {
             var path = window.location.pathname;

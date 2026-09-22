@@ -56,6 +56,29 @@
                     </div>
                 </div>
 
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="domisili" class="form-label">Domisili (optional)</label>
+                        <input type="text" name="domisili" id="domisili" value="{{ old('domisili', $customer->domisili) }}"
+                               class="form-control @error('domisili') is-invalid @enderror">
+                        @error('domisili')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label for="segment" class="form-label">Segment (optional)</label>
+                        <select name="segment" id="segment" class="form-select @error('segment') is-invalid @enderror">
+                            <option value="" @selected(! old('segment', $customer->segment))>— pilih —</option>
+                            @foreach (['A', 'B', 'C'] as $option)
+                                <option value="{{ $option }}" @selected(old('segment', $customer->segment) === $option)>{{ $option }}</option>
+                            @endforeach
+                        </select>
+                        @error('segment')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label for="email" class="form-label">Email (optional)</label>
                     <input type="email" name="email" id="email" value="{{ old('email', $customer->email) }}"

@@ -102,7 +102,10 @@
                 </td>
                 <td class="text-end">
                     <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                    <form action="{{ route('products.destroy', $product) }}" method="post" class="d-inline" onsubmit="return confirm('Hapus produk ini?')">
+                    <form action="{{ route('products.destroy', $product) }}" method="post" class="d-inline"
+                          data-confirm="Produk {{ $product->nama_produk }} akan dihapus permanen dari daftar produk."
+                          data-confirm-title="Hapus produk?"
+                          data-confirm-label="Ya, hapus">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>

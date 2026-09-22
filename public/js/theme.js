@@ -12,12 +12,6 @@
         return t === 'light' ? 'light' : 'dark';
     }
 
-    function apply(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        try { localStorage.setItem(KEY, theme); } catch (e) {}
-        sync(theme);
-    }
-
     function sync(theme) {
         var light = theme === 'light';
         document.querySelectorAll('.theme-switch').forEach(function (btn) {
@@ -28,21 +22,40 @@
             btn.setAttribute('aria-pressed', light ? 'true' : 'false');
             btn.setAttribute('aria-label', light ? 'Aktifkan Dark Mode' : 'Aktifkan White Mode');
         });
+        /* Label status "Mode Gelap" di modal pengaturan */
+        var themeState = document.getElementById('themeState');
+        if (themeState) themeState.textContent = light ? 'Nonaktif' : 'Aktif';
+    }
+
+    function apply(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+        sync(theme);
     }
 
     function toggle() {
         apply(current() === 'light' ? 'dark' : 'light');
     }
 
-    document.querySelectorAll('.theme-switch, .theme-toggle').forEach(function (btn) {
-        btn.addEventListener('click', toggle);
+    /* Klik pakai delegation agar tombol di dalam modal (yang dirender
+       setelah skrip ini) tetap berfungsi. */
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest ? e.target.closest('.theme-switch, .theme-toggle') : null;
+        if (btn) toggle();
     });
-    sync(current());
+
+    /* Sinkronkan state saat DOM lengkap (termasuk elemen di modal) */
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () { sync(current()); });
+    } else {
+        sync(current());
+    }
 
     /* Sinkronkan antar-tab */
     window.addEventListener('storage', function (e) {
         if (e.key === KEY && e.newValue) {
             document.documentElement.setAttribute('data-theme', e.newValue === 'light' ? 'light' : 'dark');
+            sync(document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
         }
     });
 })();

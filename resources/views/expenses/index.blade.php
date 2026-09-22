@@ -168,7 +168,10 @@
                                 <button form="{{ $spendId }}" type="submit"
                                     class="btn btn-sm btn-outline-secondary">Simpan</button>
                                 <form action="{{ route('expenses.marketing.destroy', $marketingSpend) }}" method="post"
-                                    class="d-inline" onsubmit="return confirm('Hapus budget iklan ini?')">
+                                    class="d-inline"
+                                    data-confirm="Budget iklan {{ $months[$marketingSpend->bulan] ?? $marketingSpend->bulan }} {{ $marketingSpend->tahun }} akan dihapus permanen beserta pengaruhnya pada grafik MER/ROI."
+                                    data-confirm-title="Hapus budget iklan?"
+                                    data-confirm-label="Ya, hapus">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>
@@ -310,7 +313,10 @@
                                 <button form="{{ $opId }}" type="submit"
                                     class="btn btn-sm btn-outline-secondary">Simpan</button>
                                 <form action="{{ route('expenses.operational.destroy', $expense) }}" method="post"
-                                    class="d-inline" onsubmit="return confirm('Hapus pengeluaran ini?')">
+                                    class="d-inline"
+                                    data-confirm="Pengeluaran {{ $expense->nama_pengeluaran }} ({{ $months[$expense->bulan] ?? $expense->bulan }} {{ $expense->tahun }}) akan dihapus permanen."
+                                    data-confirm-title="Hapus pengeluaran?"
+                                    data-confirm-label="Ya, hapus">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>

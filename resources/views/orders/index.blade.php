@@ -132,7 +132,10 @@
                 <td>{{ $order->orderItems->sum('jumlah_pcs') }}</td>
                 <td class="text-end">
                     <a href="{{ route('orders.edit', $order) }}" class="btn btn-sm btn-outline-secondary">edit</a>
-                    <form action="{{ route('orders.destroy', $order) }}" method="post" class="d-inline" onsubmit="return confirm('Hapus order ini?')">
+                    <form action="{{ route('orders.destroy', $order) }}" method="post" class="d-inline"
+                          data-confirm="Order #{{ $order->id }} ({{ $order->customer?->nama_lengkap ?? 'Tanpa pelanggan' }}) beserta rincian produknya akan dihapus permanen."
+                          data-confirm-title="Hapus order?"
+                          data-confirm-label="Ya, hapus">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>

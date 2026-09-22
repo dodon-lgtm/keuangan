@@ -51,7 +51,7 @@
             Reset
         </a>
         @if ($q !== '' || $sumber !== '' || $status !== '' || $tanggalFrom !== '' || $tanggalTo !== '')
-            <span class="filter-active">Filter actief</span>
+            <span class="filter-active">Filter aktif</span>
         @endif
     </form>
 
@@ -88,7 +88,10 @@
                 </td>
                 <td class="text-end">
                     <a href="{{ route('customers.edit', $customer) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                    <form action="{{ route('customers.destroy', $customer) }}" method="post" class="d-inline" onsubmit="return confirm('Hapus pelanggan ini?')">
+                    <form action="{{ route('customers.destroy', $customer) }}" method="post" class="d-inline"
+                          data-confirm="Pelanggan {{ $customer->nama_lengkap }} beserta data terkait akan dihapus permanen."
+                          data-confirm-title="Hapus pelanggan?"
+                          data-confirm-label="Ya, hapus">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>

@@ -42,6 +42,23 @@
             -webkit-font-smoothing: antialiased;
         }
 
+        /* Cegah overflow horizontal yang memicu ruang kosong / scrollbar di sisi kanan.
+           Gunakan 'clip' (bukan 'hidden') agar html/body tidak menjadi scroll container,
+           sehingga header sticky tetap berfungsi normal. */
+        html, body { overflow-x: clip; }
+
+        /* Sembunyikan scrollbar visual (vertikal & horizontal) tanpa mematikan fungsi scroll.
+           Halaman tetap bisa digulir normal via mouse wheel, trackpad, keyboard, dan touch. */
+        html {
+            scrollbar-width: none;              /* Firefox */
+            -ms-overflow-style: none;           /* IE/Edge lama */
+        }
+        html::-webkit-scrollbar {               /* Chrome, Safari, Edge (WebKit) */
+            width: 0;
+            height: 0;
+            display: none;
+        }
+
         /* Subtle fixed grain + grid texture overlays */
         .bg-grain,
         .bg-grid {
@@ -53,7 +70,13 @@
         .bg-grain { opacity: 0.04; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
         .bg-grid { opacity: 0.05; background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 44px 44px; }
 
-        .app-main { max-width: 1240px; margin: 0 auto; padding: 26px 18px 46px; }
+        /* Konten utama full-width: mengikuti lebar layar penuh (tanpa max-width kaku) */
+        .app-main {
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            padding: 26px clamp(16px, 3vw, 40px) 46px;
+        }
 
         /* ---- Notifikasi flash (partials/flash.blade.php) ---- */
         .flash {
@@ -200,9 +223,9 @@
             pointer-events: none;
         }
         .app-header .inner {
-            max-width: 1240px;
-            margin: 0 auto;
-            padding: 0 20px;
+            max-width: none;
+            margin: 0;
+            padding: 0 clamp(16px, 3vw, 40px);
             min-height: 64px;
             display: flex;
             align-items: center;

@@ -54,11 +54,11 @@ class OrderController extends Controller
         }
 
         if ($tanggalFrom !== '') {
-            $base->where('tanggal', '>=', $tanggalFrom);
+            $base->whereDate('tanggal', '>=', $tanggalFrom);
         }
 
         if ($tanggalTo !== '') {
-            $base->where('tanggal', '<=', $tanggalTo);
+            $base->whereDate('tanggal', '<=', $tanggalTo);
         }
 
         if ($nominalMin !== null) {

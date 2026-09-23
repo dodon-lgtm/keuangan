@@ -152,9 +152,31 @@ class FinancialCalculatorTest extends AuthenticatedTestCase
 
     public function test_period_range_covers_a_single_month_and_the_full_year(): void
     {
-        $this->assertSame(['2026-09-01', '2026-09-30'], FinancialCalculator::periodRange(9, 2026));
-        $this->assertSame(['2026-01-01', '2026-12-31'], FinancialCalculator::periodRange(null, 2026));
-        $this->assertSame(['2024-02-01', '2024-02-29'], FinancialCalculator::periodRange(2, 2024));
+        // Batas memakai awal & akhir hari agar order di hari terakhir
+        // periode (mis. 30 September) tetap ikut terhitung.
+        $this->assertSame(['2026-09-01 00:00:00', '2026-09-30 23:59:59'], FinancialCalculator::periodRange(9, 2026));
+        $this->assertSame(['2026-01-01 00:00:00', '2026-12-31 23:59:59'], FinancialCalculator::periodRange(null, 2026));
+        $this->assertSame(['2024-02-01 00:00:00', '2024-02-29 23:59:59'], FinancialCalculator::periodRange(2, 2024));
+    }
+
+    public function test_orders_on_the_last_day_of_the_period_are_counted(): void
+    {
+        $customer = $this->customer('Fatimah Zahra');
+        $product = Product::create([
+            'nama_produk' => 'Voal Test',
+            'harga_jual' => 20000,
+            'hpp' => 10000,
+        ]);
+
+        // Order di hari terakhir bulan & hari terakhir tahun.
+        $this->createOrder($customer, $product, '2026-09-30');
+        $this->createOrder($customer, $product, '2026-12-31');
+
+        $this->assertSame(40000, FinancialCalculator::totalOmset(9, 2026));
+        $this->assertSame(1, FinancialCalculator::totalTransaksi(9, 2026));
+        $this->assertSame(80000, FinancialCalculator::totalOmset(null, 2026));
+        $this->assertSame(2, FinancialCalculator::totalTransaksi(null, 2026));
+        $this->assertSame(40000, FinancialCalculator::totalOmsetRange(9, 2026, 9, 2026));
     }
 
     public function test_null_month_accumulates_every_month_of_the_year(): void
@@ -330,6 +352,130 @@ class FinancialCalculatorTest extends AuthenticatedTestCase
 
         $this->assertSame(0, $split['roni']);
         $this->assertSame(0, $split['rizky']);
+    }
+
+    public function test_custom_range_bounds_cover_cross_year_months(): void
+    {
+        // November 2025 - Januari 2026: awal bulan pertama, akhir bulan
+        // terakhir (mencakup seluruh hari), termasuk lompat tahun.
+        $this->assertSame(
+            ['2025-11-01 00:00:00', '2026-01-31 23:59:59'],
+            FinancialCalculator::periodRangeCustom(11, 2025, 1, 2026)
+        );
+
+        // Pasangan (bulan, tahun) di dalam rentang, urut dari yang terlama.
+        $this->assertSame(
+            [
+                ['month' => 11, 'year' => 2025],
+                ['month' => 12, 'year' => 2025],
+                ['month' => 1, 'year' => 2026],
+            ],
+            FinancialCalculator::customRangeMonths(11, 2025, 1, 2026)
+        );
+
+        // Satu bulan saja: batas tetap awal sampai akhir bulan.
+        $this->assertSame(
+            ['2026-05-01 00:00:00', '2026-05-31 23:59:59'],
+            FinancialCalculator::periodRangeCustom(5, 2026, 5, 2026)
+        );
+    }
+
+    public function test_custom_range_totals_aggregate_across_years(): void
+    {
+        $customer = $this->customer('Fatimah Zahra');
+        $product = Product::create([
+            'nama_produk' => 'Voal Test',
+            'harga_jual' => 20000,
+            'hpp' => 10000,
+        ]);
+
+        // Order di dalam rentang: Nov 2025 & Jan 2026.
+        $this->createOrder($customer, $product, '2025-11-20');
+        $this->createOrder($customer, $product, '2026-01-10');
+
+        // Order di luar rentang tidak boleh ikut dihitung.
+        $this->createOrder($customer, $product, '2025-10-15');
+        $this->createOrder($customer, $product, '2026-02-05');
+
+        $this->assertSame(80000, FinancialCalculator::totalOmsetRange(11, 2025, 1, 2026));
+        $this->assertSame(2, FinancialCalculator::totalTransaksiRange(11, 2025, 1, 2026));
+        $this->assertSame(10000, FinancialCalculator::totalOngkirRange(11, 2025, 1, 2026));
+        $this->assertSame(40000, FinancialCalculator::totalHPPRange(11, 2025, 1, 2026));
+        $this->assertSame(40000.0, FinancialCalculator::averageOrderRange(11, 2025, 1, 2026));
+
+        // Fix/Variable Cost November 2025 dan marketing Januari 2026
+        // berada di tahun berbeda tetapi tetap terakumulasi.
+        OperationalExpense::create([
+            'nama_pengeluaran' => 'Listrik',
+            'kategori' => OperationalExpense::KATEGORI_FIX_COST,
+            'nominal' => 10000,
+            'bulan' => 11,
+            'tahun' => 2025,
+        ]);
+
+        MarketingSpend::create(['bulan' => 1, 'tahun' => 2026, 'nominal' => 50000]);
+
+        $this->assertSame(10000, FinancialCalculator::totalOperationalExpensesRange(11, 2025, 1, 2026));
+        $this->assertSame(50000, FinancialCalculator::marketingSpendRange(11, 2025, 1, 2026));
+
+        // Total operasional = ongkir 10.000 + HPP 40.000 + opex 10.000 + marketing 50.000.
+        $this->assertSame(110000, FinancialCalculator::totalOperasionalRange(11, 2025, 1, 2026));
+        $this->assertSame(-30000, FinancialCalculator::netProfitRange(11, 2025, 1, 2026));
+
+        // MER = 50.000 / 80.000 * 100.
+        $this->assertSame(62.5, FinancialCalculator::merRange(11, 2025, 1, 2026));
+        // ROI = net profit / marketing = -30.000 / 50.000 * 100.
+        $this->assertSame(-60.0, FinancialCalculator::roiRange(11, 2025, 1, 2026));
+
+        $split = FinancialCalculator::profitSplitRange(11, 2025, 1, 2026);
+
+        $this->assertSame(-18000, $split['roni']);
+        $this->assertSame(-12000, $split['rizky']);
+    }
+
+    public function test_monthly_range_series_covers_every_month_with_indonesian_labels(): void
+    {
+        $customer = $this->customer('Fatimah Zahra');
+        $product = Product::create([
+            'nama_produk' => 'Voal Test',
+            'harga_jual' => 20000,
+            'hpp' => 10000,
+        ]);
+
+        $this->createOrder($customer, $product, '2025-11-20');
+        $this->createOrder($customer, $product, '2026-01-10');
+
+        OperationalExpense::create([
+            'nama_pengeluaran' => 'Listrik',
+            'kategori' => OperationalExpense::KATEGORI_FIX_COST,
+            'nominal' => 10000,
+            'bulan' => 12,
+            'tahun' => 2025,
+        ]);
+
+        MarketingSpend::create(['bulan' => 1, 'tahun' => 2026, 'nominal' => 50000]);
+
+        $series = FinancialCalculator::monthlyRangeSeries(11, 2025, 1, 2026);
+
+        // Tiga titik data lintas tahun dengan label bahasa Indonesia.
+        $this->assertSame(['Nov 2025', 'Des 2025', 'Jan 2026'], array_column($series, 'label'));
+        $this->assertSame(['November 2025', 'Desember 2025', 'Januari 2026'], array_column($series, 'full'));
+
+        // Urutan kunci mengikuti rentang, bukan urutan numerik bulan.
+        $this->assertSame(['2025-11', '2025-12', '2026-01'], array_keys($series));
+
+        $this->assertSame(40000, $series['2025-11']['omset']);
+        $this->assertSame(0, $series['2025-12']['omset']);
+        $this->assertSame(40000, $series['2026-01']['omset']);
+
+        $this->assertSame(10000, $series['2025-12']['operacional']);
+        $this->assertSame(50000, $series['2026-01']['marketing']);
+        $this->assertSame(10000, $series['2025-12']['total_operacional']);
+        // Jan 2026 = HPP 20.000 + ongkir 5.000 + marketing 50.000.
+        $this->assertSame(75000, $series['2026-01']['total_operacional']);
+        $this->assertSame(5000, $series['2025-11']['ongkir']);
+        $this->assertSame(1, $series['2025-11']['transaksi']);
+        $this->assertSame(0, $series['2025-12']['transaksi']);
     }
 
     /**

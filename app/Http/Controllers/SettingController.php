@@ -63,6 +63,11 @@ class SettingController extends Controller
     /**
      * Send a field level error either as JSON (modal, no reload) or as a
      * redirect back with the error bag (progressive enhancement fallback).
+     *
+     * The plain fallback also flashes the field/message as simple strings
+     * ("password_update_error") because ViewErrorBag round-trips through
+     * JSON session serialization can arrive at the next view still empty;
+     * a scalar flash always survives the redirect for the no-JS flow.
      */
     protected function passwordError(Request $request, string $field, string $message): JsonResponse|RedirectResponse
     {
@@ -74,7 +79,9 @@ class SettingController extends Controller
             ], 422);
         }
 
-        return back()->withErrors([$field => $message]);
+        return back()
+            ->withErrors([$field => $message])
+            ->with('password_update_error', ['field' => $field, 'message' => $message]);
     }
 }
 

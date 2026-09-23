@@ -37,12 +37,21 @@
         @foreach ($chartDaterange as $pill)
             @php
                 $isActive = ((string) ($range ?? '') === $pill['value']);
+                $pillQuery = ['range' => $pill['value'], 'month' => $monthKey, 'year' => $year];
+                if (($filterMode ?? 'specific') === 'custom_range') {
+                    $pillQuery += [
+                        'filter_mode' => 'custom_range',
+                        'start_month' => $startMonth,
+                        'start_year' => $startYear,
+                        'end_month' => $endMonth,
+                        'end_year' => $endYear,
+                    ];
+                }
             @endphp
-            <a href="{{ route('dashboard', ['range' => $pill['value'], 'month' => $monthKey, 'year' => $year]) }}"
+            <a href="{{ route('dashboard', $pillQuery) }}"
                class="pill{{ $isActive ? ' pill-active' : '' }}"
                data-range="{{ $pill['value'] }}"
                data-mode="{{ $pill['mode'] }}"
-               onclick="event.preventDefault(); var f = document.querySelector('.filter-panel'); if(f) { f.querySelector('input[name=range]').value='{{ $pill['value'] }}'; f.submit(); }"
                aria-pressed="{{ $isActive ? 'true' : 'false' }}">
                 {{ $pill['label'] }}
                 @if(isset($pill['count']) && $pill['count'] !== null)
@@ -177,18 +186,21 @@
 
         $chartTrendTitle = match ($chartMode) {
             'daily' => 'Tren Keuangan Harian',
+            'custom' => 'Tren Keuangan Rentang Kustom',
             'yearly' => 'Tren Keuangan Tahunan',
             default => 'Tren Keuangan Bulanan',
         };
 
         $chartTrendDesc = match ($chartMode) {
             'daily' => 'Omset vs Total Operasional dan Net Profit per tanggal (' . $periodLabel . ')',
+            'custom' => 'Omset vs Total Operasional dan Net Profit per bulan (' . $periodLabel . ')',
             'yearly' => 'Omset vs Total Operasional dan Net Profit per tahun',
             default => 'Omset vs Total Operasional dan Net Profit per bulan',
         };
 
         $chartMerTitle = match ($chartMode) {
             'daily' => 'Budget Iklan & MER Harian',
+            'custom' => 'Budget Iklan & MER Rentang Kustom',
             'yearly' => 'Budget Iklan & MER Tahunan',
             default => 'Budget Iklan & MER Bulanan',
         };

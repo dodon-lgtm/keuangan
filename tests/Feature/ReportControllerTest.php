@@ -227,6 +227,98 @@ class ReportControllerTest extends AuthenticatedTestCase
         }
     }
 
+    public function test_dashboard_custom_month_range_accumulates_across_years(): void
+    {
+        $this->prepareCrossYearRange();
+
+        $response = $this->get('/dashboard?filter_mode=custom_range&start_month=11&start_year=2025&end_month=1&end_year=2026');
+
+        $response->assertStatus(200);
+        // Akumulasi dua order (Nov 2025 + Jan 2026) di luar rentang tidak ikut.
+        $response->assertSee('Rp 80.000');
+        // Label periode bahasa Indonesia dan judul grafik rentang kustom.
+        $response->assertSee('Periode November 2025 – Januari 2026');
+        $response->assertSee('Tren Keuangan Rentang Kustom');
+        $response->assertSee('Nov 2025', false);
+        $response->assertSee('Des 2025', false);
+        $response->assertSee('Jan 2026', false);
+    }
+
+    public function test_period_filter_forms_expose_custom_range_fields(): void
+    {
+        foreach (['/dashboard', '/reports/mer-roi', '/reports/hpp-profit'] as $url) {
+            $response = $this->get($url.'?filter_mode=custom_range&start_month=5&start_year=2026&end_month=7&end_year=2026');
+
+            $response->assertStatus(200);
+            $response->assertSee('Bulanan Spesifik');
+            $response->assertSee('Full Year');
+            $response->assertSee('Rentang Kustom');
+            $response->assertSee('value="custom_range" selected', false);
+            $response->assertSee('Bulan Mulai');
+            $response->assertSee('Tahun Mulai');
+            $response->assertSee('Bulan Selesai');
+            $response->assertSee('Tahun Selesai');
+            $response->assertSee('name="start_month"', false);
+            $response->assertSee('name="start_year"', false);
+            $response->assertSee('name="end_month"', false);
+            $response->assertSee('name="end_year"', false);
+            $response->assertSee('Mei 2026 – Juli 2026', false);
+        }
+    }
+
+    public function test_reports_follow_the_custom_month_range(): void
+    {
+        $this->prepareCrossYearRange();
+
+        $this->get('/reports/mer-roi?filter_mode=custom_range&start_month=11&start_year=2025&end_month=1&end_year=2026')
+            ->assertStatus(200)
+            ->assertSee('Rp 80.000')
+            ->assertSee('Periode November 2025 – Januari 2026');
+
+        $this->get('/reports/hpp-profit?filter_mode=custom_range&start_month=11&start_year=2025&end_month=1&end_year=2026')
+            ->assertStatus(200)
+            ->assertSee('Voal Test')
+            ->assertSee('Rp 80.000')
+            ->assertSee('Periode November 2025 – Januari 2026');
+    }
+
+    public function test_custom_range_mode_falls_back_gracefully_without_valid_range(): void
+    {
+        $this->prepareMonth();
+
+        // filter_mode custom_range tanpa parameter rentang yang valid:
+        // kembali ke perilaku bulan/tahun (September 2026) tanpa error.
+        $this->get('/dashboard?filter_mode=custom_range&month=9&year=2026')
+            ->assertStatus(200)
+            ->assertSee('Rp 40.000');
+    }
+
+    /**
+     * Seed two orders inside a cross-year custom range (Nov 2025 and
+     * Jan 2026) plus one order outside of it (Mar 2026), each 2 pcs
+     * x 20000 with ongkir 5000 and HPP 10000 per pcs.
+     */
+    private function prepareCrossYearRange(): void
+    {
+        $customer = Customer::create([
+            'nama_lengkap' => 'Fatimah Zahra',
+            'nama_brand' => 'Hijab Co',
+            'no_whatsapp' => '08123456789',
+            'sumber' => Customer::SUMBER_META_ADS,
+            'tanggal_masuk_chat' => '2025-11-01',
+        ]);
+
+        $product = Product::create([
+            'nama_produk' => 'Voal Test',
+            'harga_jual' => 20000,
+            'hpp' => 10000,
+        ]);
+
+        $this->createOrder($customer, $product, '2025-11-20');
+        $this->createOrder($customer, $product, '2026-01-10');
+        $this->createOrder($customer, $product, '2026-03-08');
+    }
+
     /**
      * Seed one order of 2 pcs (price 20000, hpp 10000, ongkir 5000),
      * an operational expense of 10000 and a marketing spend of 100000

@@ -224,8 +224,8 @@ class FinancialCalculator
      */
     public static function monthlySeries(int $year): array
     {
-        $start = Carbon::createFromDate($year, 1, 1)->format('Y-m-d');
-        $end = Carbon::createFromDate($year, 12, 31)->format('Y-m-d');
+        $start = Carbon::createFromDate($year, 1, 1)->startOfDay()->format('Y-m-d H:i:s');
+        $end = Carbon::createFromDate($year, 12, 31)->endOfDay()->format('Y-m-d H:i:s');
 
         $series = [];
 
@@ -563,9 +563,14 @@ class FinancialCalculator
     }
 
     /**
-     * First and last day of the resolved period as Y-m-d strings.
-     * A null month resolves to the whole year (1 January - 31 December),
-     * which powers the "Semua Bulan / Full Year" filter option.
+     * First and last day of the resolved period as datetime strings
+     * ("Y-m-d H:i:s"). A null month resolves to the whole year
+     * (1 January - 31 December), which powers the "Semua Bulan / Full Year"
+     * filter option.
+     *
+     * Kedua batas memakai awal/akhir hari: kolom `tanggal` menyimpan nilai
+     * "Y-m-d 00:00:00", sehingga batas akhir "Y-m-d" saja akan MENGEcualikan
+     * order yang jatuh di hari terakhir periode (mis. 30 September).
      *
      * @return array{0: string, 1: string}
      */
@@ -573,14 +578,14 @@ class FinancialCalculator
     {
         if ($month === null) {
             return [
-                Carbon::createFromDate($year, 1, 1)->format('Y-m-d'),
-                Carbon::createFromDate($year, 12, 31)->format('Y-m-d'),
+                Carbon::createFromDate($year, 1, 1)->startOfDay()->format('Y-m-d H:i:s'),
+                Carbon::createFromDate($year, 12, 31)->endOfDay()->format('Y-m-d H:i:s'),
             ];
         }
 
         return [
-            Carbon::createFromDate($year, $month, 1)->format('Y-m-d'),
-            Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('Y-m-d'),
+            Carbon::createFromDate($year, $month, 1)->startOfMonth()->startOfDay()->format('Y-m-d H:i:s'),
+            Carbon::createFromDate($year, $month, 1)->endOfMonth()->endOfDay()->format('Y-m-d H:i:s'),
         ];
     }
 
@@ -592,5 +597,372 @@ class FinancialCalculator
     {
         return Order::query()
             ->whereBetween('tanggal', static::periodRange($month, $year));
+    }
+
+    /*
+     * ------------------------------------------------------------------
+     *  Custom month range support ("Rentang Kustom")
+     * ------------------------------------------------------------------
+     *  The helpers below accept an explicit start month/year and end
+     *  month/year (e.g. November 2025 - January 2026) and aggregate every
+     *  metric over that whole period, cross-year ranges included.
+     */
+
+    /**
+     * Indonesian short month names (index 1 => Jan).
+     */
+    public const MONTHS_SHORT_ID = [
+        1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+        'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+    ];
+
+    /**
+     * Indonesian full month names (index 1 => Januari).
+     */
+    public const MONTHS_FULL_ID = [
+        1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+    ];
+
+    /**
+     * First day of the start month and last day of the end month as datetime
+     * strings ("Y-m-d H:i:s"). Cross-year ranges (e.g. 2025-11-01 ..
+     * 2026-01-31) resolve correctly because both bounds are derived
+     * independently from their own year, and the end bound covers the whole
+     * last day so month-end orders are included.
+     *
+     * @return array{0: string, 1: string}
+     */
+    public static function periodRangeCustom(int $startMonth, int $startYear, int $endMonth, int $endYear): array
+    {
+        return [
+            Carbon::createFromDate($startYear, $startMonth, 1)->startOfMonth()->startOfDay()->format('Y-m-d H:i:s'),
+            Carbon::createFromDate($endYear, $endMonth, 1)->endOfMonth()->endOfDay()->format('Y-m-d H:i:s'),
+        ];
+    }
+
+    /**
+     * Every [month, year] pair inside the custom range, oldest first.
+     * Used to match operational expenses / marketing spends that are stored
+     * per (bulan, tahun) columns instead of a date.
+     *
+     * @return array<int, array{month: int, year: int}>
+     */
+    public static function customRangeMonths(int $startMonth, int $startYear, int $endMonth, int $endYear): array
+    {
+        $months = [];
+
+        // startOfMonth() menormalkan jam/menit/detik/mikrodetik sehingga
+        // perbandingan batas rentang tidak pernah meleset.
+        $cursor = Carbon::createFromDate($startYear, $startMonth, 1)->startOfMonth();
+        $end = Carbon::createFromDate($endYear, $endMonth, 1)->startOfMonth();
+
+        while ($cursor->lessThanOrEqualTo($end)) {
+            $months[] = ['month' => (int) $cursor->month, 'year' => (int) $cursor->year];
+            $cursor->addMonth();
+        }
+
+        return $months;
+    }
+
+    /**
+     * Scope a bulan/tahun based expense query to the given month pairs.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder $query
+     * @param  array<int, array{month: int, year: int}> $monthPairs
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected static function expensesWithinMonths($query, array $monthPairs)
+    {
+        return $query->where(function ($outer) use ($monthPairs) {
+            foreach ($monthPairs as $pair) {
+                $outer->orWhere(function ($inner) use ($pair) {
+                    $inner->where('bulan', $pair['month'])->where('tahun', $pair['year']);
+                });
+            }
+        });
+    }
+
+    /**
+     * Total revenue (sum of orders.nominal) over a custom month range.
+     */
+    public static function totalOmsetRange(int $startMonth, int $startYear, int $endMonth, int $endYear): int
+    {
+        [$start, $end] = static::periodRangeCustom($startMonth, $startYear, $endMonth, $endYear);
+
+        return (int) Order::query()->whereBetween('tanggal', [$start, $end])->sum('nominal');
+    }
+
+    /**
+     * Number of transactions over a custom month range.
+     */
+    public static function totalTransaksiRange(int $startMonth, int $startYear, int $endMonth, int $endYear): int
+    {
+        [$start, $end] = static::periodRangeCustom($startMonth, $startYear, $endMonth, $endYear);
+
+        return (int) Order::query()->whereBetween('tanggal', [$start, $end])->count();
+    }
+
+    /**
+     * Total shipping fees over a custom month range.
+     */
+    public static function totalOngkirRange(int $startMonth, int $startYear, int $endMonth, int $endYear): int
+    {
+        [$start, $end] = static::periodRangeCustom($startMonth, $startYear, $endMonth, $endYear);
+
+        return (int) Order::query()->whereBetween('tanggal', [$start, $end])->sum('ongkir');
+    }
+
+    /**
+     * Total cost of goods sold over a custom month range.
+     */
+    public static function totalHPPRange(int $startMonth, int $startYear, int $endMonth, int $endYear): int
+    {
+        [$start, $end] = static::periodRangeCustom($startMonth, $startYear, $endMonth, $endYear);
+
+        return (int) DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->whereBetween('orders.tanggal', [$start, $end])
+            ->sum(DB::raw('order_items.hpp_satuan * order_items.jumlah_pcs'));
+    }
+
+    /**
+     * Total realtime operational expenses over a custom month range. Records
+     * are matched by the (bulan, tahun) column pairs of the range, so ranges
+     * crossing into another year stay accurate.
+     */
+    public static function totalOperationalExpensesRange(int $startMonth, int $startYear, int $endMonth, int $endYear): int
+    {
+        return (int) static::expensesWithinMonths(
+            OperationalExpense::query(),
+            static::customRangeMonths($startMonth, $startYear, $endMonth, $endYear)
+        )->sum('nominal');
+    }
+
+    /**
+     * Total marketing spend over a custom month range.
+     */
+    public static function marketingSpendRange(int $startMonth, int $startYear, int $endMonth, int $endYear): int
+    {
+        return (int) static::expensesWithinMonths(
+            MarketingSpend::query(),
+            static::customRangeMonths($startMonth, $startYear, $endMonth, $endYear)
+        )->sum('nominal');
+    }
+
+    /**
+     * Total operating costs over a custom month range.
+     */
+    public static function totalOperasionalRange(int $startMonth, int $startYear, int $endMonth, int $endYear): int
+    {
+        return static::totalOngkirRange($startMonth, $startYear, $endMonth, $endYear)
+            + static::totalHPPRange($startMonth, $startYear, $endMonth, $endYear)
+            + static::totalOperationalExpensesRange($startMonth, $startYear, $endMonth, $endYear)
+            + static::marketingSpendRange($startMonth, $startYear, $endMonth, $endYear);
+    }
+
+    /**
+     * Net profit over a custom month range.
+     */
+    public static function netProfitRange(int $startMonth, int $startYear, int $endMonth, int $endYear): int
+    {
+        return static::totalOmsetRange($startMonth, $startYear, $endMonth, $endYear)
+            - static::totalOperasionalRange($startMonth, $startYear, $endMonth, $endYear);
+    }
+
+    /**
+     * Average order value over a custom month range.
+     */
+    public static function averageOrderRange(int $startMonth, int $startYear, int $endMonth, int $endYear): float
+    {
+        $transaksi = static::totalTransaksiRange($startMonth, $startYear, $endMonth, $endYear);
+
+        if ($transaksi === 0) {
+            return 0.0;
+        }
+
+        return static::totalOmsetRange($startMonth, $startYear, $endMonth, $endYear) / $transaksi;
+    }
+
+    /**
+     * Marketing Efficiency Ratio over a custom month range.
+     */
+    public static function merRange(int $startMonth, int $startYear, int $endMonth, int $endYear): float
+    {
+        $omset = static::totalOmsetRange($startMonth, $startYear, $endMonth, $endYear);
+
+        if ($omset === 0) {
+            return 0.0;
+        }
+
+        return (static::marketingSpendRange($startMonth, $startYear, $endMonth, $endYear) / $omset) * 100.0;
+    }
+
+    /**
+     * Return On Investment over a custom month range.
+     */
+    public static function roiRange(int $startMonth, int $startYear, int $endMonth, int $endYear): float
+    {
+        $spend = static::marketingSpendRange($startMonth, $startYear, $endMonth, $endYear);
+
+        if ($spend === 0) {
+            return 0.0;
+        }
+
+        return (static::netProfitRange($startMonth, $startYear, $endMonth, $endYear) / $spend) * 100.0;
+    }
+
+    /**
+     * Profit split over a custom month range.
+     *
+     * @return array<string, int>
+     */
+    public static function profitSplitRange(int $startMonth, int $startYear, int $endMonth, int $endYear): array
+    {
+        $netProfit = static::netProfitRange($startMonth, $startYear, $endMonth, $endYear);
+
+        return [
+            'roni' => (int) round($netProfit * static::SHARE_RONI),
+            'rizky' => (int) round($netProfit * static::SHARE_RIZKY),
+        ];
+    }
+
+    /**
+     * "Repeat customer" count over a custom month range.
+     */
+    public static function pelangganAktifRange(int $startMonth, int $startYear, int $endMonth, int $endYear): int
+    {
+        $range = static::periodRangeCustom($startMonth, $startYear, $endMonth, $endYear);
+
+        return Customer::query()
+            ->withCount(['orders' => fn ($orders) => $orders->whereBetween('orders.tanggal', $range)])
+            ->get()
+            ->where('orders_count', '>', 1)
+            ->count();
+    }
+
+    /**
+     * Indonesian label of a month inside a custom range series,
+     * e.g. "Nov 2025" / "Des 2025" / "Jan 2026".
+     */
+    public static function customMonthLabel(int $month, int $year, bool $full = false): string
+    {
+        $names = $full ? static::MONTHS_FULL_ID : static::MONTHS_SHORT_ID;
+
+        return ($names[$month] ?? (string) $month).' '.$year;
+    }
+
+    /**
+     * Series key ("Y-m") for a stored date value; null when malformed.
+     */
+    protected static function seriesKeyOfDate(string $date): ?string
+    {
+        $year = static::yearOfDate($date);
+        $month = $year === null ? null : static::monthOfDate($date);
+
+        if ($year === null || $month === null) {
+            return null;
+        }
+
+        return static::seriesKey($year, $month);
+    }
+
+    /**
+     * Normalised "Y-m" series key.
+     */
+    protected static function seriesKey(int $year, int $month): string
+    {
+        return $year.'-'.str_pad((string) $month, 2, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Per-month financial breakdown for a custom month range, used by the
+     * dashboard & report charts when "Rentang Kustom" is active. Every month
+     * between start and end (cross-year included) is present and zero-filled:
+     * Nov 2025 - Jan 2026 produces three data points ("Nov 2025", "Des 2025",
+     * "Jan 2026"). Aggregation happens in PHP (same approach as
+     * monthlySeries) so the query stays portable between MySQL and SQLite.
+     *
+     * @return array<string, array<string, mixed>> keyed by "Y-m"
+     */
+    public static function monthlyRangeSeries(int $startMonth, int $startYear, int $endMonth, int $endYear): array
+    {
+        [$start, $end] = static::periodRangeCustom($startMonth, $startYear, $endMonth, $endYear);
+        $monthPairs = static::customRangeMonths($startMonth, $startYear, $endMonth, $endYear);
+
+        $series = [];
+
+        foreach ($monthPairs as $pair) {
+            $series[static::seriesKey($pair['year'], $pair['month'])] = [
+                'label' => static::customMonthLabel($pair['month'], $pair['year']),
+                'full' => static::customMonthLabel($pair['month'], $pair['year'], true),
+                'omset' => 0,
+                'hpp' => 0,
+                'ongkir' => 0,
+                'operacional' => 0,
+                'marketing' => 0,
+                'transaksi' => 0,
+            ];
+        }
+
+        foreach (DB::table('orders')
+            ->whereBetween('tanggal', [$start, $end])
+            ->get(['tanggal', 'nominal', 'ongkir']) as $row) {
+            $key = static::seriesKeyOfDate((string) $row->tanggal);
+
+            if ($key === null || ! isset($series[$key])) {
+                continue;
+            }
+
+            $series[$key]['omset'] += (int) $row->nominal;
+            $series[$key]['ongkir'] += (int) $row->ongkir;
+            $series[$key]['transaksi']++;
+        }
+
+        foreach (DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->whereBetween('orders.tanggal', [$start, $end])
+            ->get(['orders.tanggal', 'order_items.hpp_satuan', 'order_items.jumlah_pcs']) as $row) {
+            $key = static::seriesKeyOfDate((string) $row->tanggal);
+
+            if ($key === null || ! isset($series[$key])) {
+                continue;
+            }
+
+            $series[$key]['hpp'] += (int) $row->hpp_satuan * (int) $row->jumlah_pcs;
+        }
+
+        // Fix/Variable Cost & budget iklan tidak memiliki tanggal: cocokkan
+        // lewat pasangan (bulan, tahun) di dalam rentang yang dipilih.
+        foreach (static::expensesWithinMonths(OperationalExpense::query(), $monthPairs)->get() as $expense) {
+            $key = static::seriesKey((int) $expense->tahun, (int) $expense->bulan);
+
+            if (isset($series[$key])) {
+                $series[$key]['operacional'] += (int) $expense->nominal;
+            }
+        }
+
+        foreach (static::expensesWithinMonths(MarketingSpend::query(), $monthPairs)->get() as $spend) {
+            $key = static::seriesKey((int) $spend->tahun, (int) $spend->bulan);
+
+            if (isset($series[$key])) {
+                $series[$key]['marketing'] += (int) $spend->nominal;
+            }
+        }
+
+        foreach ($series as $key => $data) {
+            $data['total_operacional'] = $data['hpp'] + $data['ongkir'] + $data['operacional'] + $data['marketing'];
+            $data['net_profit'] = $data['omset'] - $data['total_operacional'];
+            $data['mer'] = $data['omset'] > 0
+                ? round((($data['marketing'] / $data['omset']) * 100) * 100) / 100
+                : 0.0;
+            $data['roi'] = $data['marketing'] > 0
+                ? round((($data['net_profit'] / $data['marketing']) * 100) * 100) / 100
+                : 0.0;
+
+            $series[$key] = $data;
+        }
+
+        return $series;
     }
 }

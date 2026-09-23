@@ -18,28 +18,67 @@ class ReportController extends Controller
         $month = $period['month'];
         $monthKey = $period['monthKey'];
         $year = $period['year'];
+        $filterMode = $period['filterMode'];
+        $startMonth = $period['startMonth'];
+        $startYear = $period['startYear'];
+        $endMonth = $period['endMonth'];
+        $endYear = $period['endYear'];
 
-        $totalOmset = FinancialCalculator::totalOmset($month, $year);
-        $totalHPP = FinancialCalculator::totalHPP($month, $year);
-        $totalOngkir = FinancialCalculator::totalOngkir($month, $year);
-        $totalOperasionalExpenses = FinancialCalculator::totalOperationalExpenses($month, $year);
-        $totalOperasional = FinancialCalculator::totalOperasional($month, $year);
-        $netProfit = FinancialCalculator::netProfit($month, $year);
-        $marketingSpend = FinancialCalculator::marketingSpend($month, $year);
-        $averageOrder = FinancialCalculator::averageOrder($month, $year);
-        $mer = FinancialCalculator::mer($month, $year);
-        $roi = FinancialCalculator::roi($month, $year);
-        $profitSplit = FinancialCalculator::profitSplit($month, $year);
+        $isCustom = $this->isCustomRange($period);
 
-        // Grafik: trend mer & roi over het hele jaar
-        $series = FinancialCalculator::monthlySeries($year);
+        // Pada mode rentang kustom seluruh metrik dihitung dari rentang
+        // bulan lintas tahun yang dipilih (mis. Nov 2025 - Jan 2026).
+        $totalOmset = $isCustom
+            ? FinancialCalculator::totalOmsetRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::totalOmset($month, $year);
+        $totalHPP = $isCustom
+            ? FinancialCalculator::totalHPPRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::totalHPP($month, $year);
+        $totalOngkir = $isCustom
+            ? FinancialCalculator::totalOngkirRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::totalOngkir($month, $year);
+        $totalOperasionalExpenses = $isCustom
+            ? FinancialCalculator::totalOperationalExpensesRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::totalOperationalExpenses($month, $year);
+        $totalOperasional = $isCustom
+            ? FinancialCalculator::totalOperasionalRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::totalOperasional($month, $year);
+        $netProfit = $isCustom
+            ? FinancialCalculator::netProfitRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::netProfit($month, $year);
+        $marketingSpend = $isCustom
+            ? FinancialCalculator::marketingSpendRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::marketingSpend($month, $year);
+        $averageOrder = $isCustom
+            ? FinancialCalculator::averageOrderRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::averageOrder($month, $year);
+        $mer = $isCustom
+            ? FinancialCalculator::merRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::mer($month, $year);
+        $roi = $isCustom
+            ? FinancialCalculator::roiRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::roi($month, $year);
+        $profitSplit = $isCustom
+            ? FinancialCalculator::profitSplitRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::profitSplit($month, $year);
+
+        // Grafik: trend mer & roi. Rentang kustom menampilkan satu titik
+        // data per bulan dalam rentang (lintas tahun), selebihnya per bulan
+        // sepanjang tahun yang dipilih.
+        $series = $isCustom
+            ? FinancialCalculator::monthlyRangeSeries($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::monthlySeries($year);
 
         $months = $this->monthFilterOptions();
-        $years = $this->yearOptions($year);
-        $periodLabel = $this->periodLabel($month, $year);
+        $monthsId = FinancialCalculator::MONTHS_FULL_ID;
+        $years = $this->yearOptionsFor([$year, $startYear, $endYear]);
+        $periodLabel = $isCustom
+            ? $this->customRangeLabel($startMonth, $startYear, $endMonth, $endYear)
+            : $this->periodLabel($month, $year);
 
         return view('reports.mer-roi', compact(
-            'month', 'monthKey', 'year', 'months', 'years', 'periodLabel',
+            'month', 'monthKey', 'year', 'filterMode', 'months', 'monthsId', 'years', 'periodLabel',
+            'startMonth', 'startYear', 'endMonth', 'endYear',
             'totalOmset', 'totalHPP', 'totalOngkir', 'totalOperasionalExpenses',
             'totalOperasional', 'netProfit',
             'marketingSpend', 'averageOrder', 'mer', 'roi', 'profitSplit',
@@ -56,8 +95,19 @@ class ReportController extends Controller
         $month = $period['month'];
         $monthKey = $period['monthKey'];
         $year = $period['year'];
+        $filterMode = $period['filterMode'];
+        $startMonth = $period['startMonth'];
+        $startYear = $period['startYear'];
+        $endMonth = $period['endMonth'];
+        $endYear = $period['endYear'];
 
-        [$start, $end] = FinancialCalculator::periodRange($month, $year);
+        $isCustom = $this->isCustomRange($period);
+
+        // Rentang kustom: batas periode dari pasangan bulan/tahun awal & akhir
+        // (lintas tahun didukung). Selebihnya memakai periode bulan/tahun.
+        [$start, $end] = $isCustom
+            ? FinancialCalculator::periodRangeCustom($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::periodRange($month, $year);
 
         $rows = DB::table('order_items')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
@@ -88,9 +138,15 @@ class ReportController extends Controller
             ];
         }
 
-        $totalOmset = FinancialCalculator::totalOmset($month, $year);
-        $totalOperasional = FinancialCalculator::totalOperasional($month, $year);
-        $netProfit = FinancialCalculator::netProfit($month, $year);
+        $totalOmset = $isCustom
+            ? FinancialCalculator::totalOmsetRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::totalOmset($month, $year);
+        $totalOperasional = $isCustom
+            ? FinancialCalculator::totalOperasionalRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::totalOperasional($month, $year);
+        $netProfit = $isCustom
+            ? FinancialCalculator::netProfitRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::netProfit($month, $year);
 
         // Grafik: omset vs hpp vs margin per produk (top 10)
         $chartNama = [];
@@ -115,11 +171,15 @@ class ReportController extends Controller
         }
 
         $months = $this->monthFilterOptions();
-        $years = $this->yearOptions($year);
-        $periodLabel = $this->periodLabel($month, $year);
+        $monthsId = FinancialCalculator::MONTHS_FULL_ID;
+        $years = $this->yearOptionsFor([$year, $startYear, $endYear]);
+        $periodLabel = $isCustom
+            ? $this->customRangeLabel($startMonth, $startYear, $endMonth, $endYear)
+            : $this->periodLabel($month, $year);
 
         return view('reports.hpp-profit', compact(
-            'month', 'monthKey', 'year', 'months', 'years', 'periodLabel', 'products',
+            'month', 'monthKey', 'year', 'filterMode', 'months', 'monthsId', 'years', 'periodLabel',
+            'startMonth', 'startYear', 'endMonth', 'endYear', 'products',
             'totalOmset', 'totalOperasional', 'netProfit',
             'chartNama', 'chartOmset', 'chartHpp', 'chartMargin',
             'shareNama', 'shareValue'

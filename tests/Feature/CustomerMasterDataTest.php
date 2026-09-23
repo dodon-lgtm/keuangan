@@ -36,9 +36,11 @@ class CustomerMasterDataTest extends AuthenticatedTestCase
 
         $this->assertSame(Customer::SUMBER_META_ADS, $customer->sumber);
         $this->assertSame('08123456789', $customer->no_whatsapp);
-        // Kolom lama sudah tidak ada di skema.
-        $this->assertFalse(Schema::hasColumn('customers', 'domisili'));
-        $this->assertFalse(Schema::hasColumn('customers', 'segment'));
+        // Kolom warisan tetap ada di skema namun nullable (lihat migrasi
+        // make_customers_domisili_segment_nullable), sehingga create() tanpa
+        // field tersebut selalu berhasil.
+        $this->assertTrue(Schema::hasColumn('customers', 'domisili'));
+        $this->assertTrue(Schema::hasColumn('customers', 'segment'));
         $this->assertFalse(Schema::hasColumn('customers', 'status_pelanggan'));
         $this->assertFalse(Schema::hasColumn('customers', 'tanggal_order_pertama'));
     }

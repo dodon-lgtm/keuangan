@@ -40,14 +40,16 @@ class LoginController extends Controller
         ];
 
         if (Str::contains($username, '@')) {
-            // Login with email address.
-            $credentials['email'] = $username;
+            // Login with email address (case-insensitive across databases).
+            $credentials['email'] = Str::lower($username);
         } else {
             // Login with username (the user's name).
             $credentials['name'] = $username;
         }
 
-        if (auth()->attempt($credentials, $request->get('remember') === 'on')) {
+        // Checkbox "Ingat saya" mengirim value "1" (bukan "on"), sehingga
+        // boolean() dipakai agar remember-me benar-benar aktif.
+        if (auth()->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
             return redirect()->intended('/dashboard');

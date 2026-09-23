@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -75,15 +75,76 @@ class LoginFlowTest extends TestCase
         $this->get('/dashboard')->assertRedirectToRoute('login');
     }
 
+    public function test_seeded_admin_can_login_with_the_seeder_credentials(): void
+    {
+        $this->seed(UserSeeder::class);
+
+        $this->post('/login', [
+            'login' => 'admin@vendorhijabbandung.com',
+            'password' => 'password123',
+        ])->assertRedirect('/dashboard');
+
+        $this->assertAuthenticated();
+    }
+
+    public function test_login_with_email_is_case_insensitive(): void
+    {
+        $this->seedAdmin();
+
+        $this->post('/login', [
+            'login' => 'ADMIN@VendorHijabBandung.com',
+            'password' => 'password123',
+        ])->assertRedirect('/dashboard');
+
+        $this->assertAuthenticated();
+    }
+
+    public function test_seeded_admin_can_login_with_username(): void
+    {
+        $this->seedAdmin();
+
+        $this->post('/login', [
+            'login' => 'Admin Vendor Hijab Bandung',
+            'password' => 'password123',
+        ])->assertRedirect('/dashboard');
+
+        $this->assertAuthenticated();
+    }
+
+    public function test_remember_me_checkbox_issues_a_remember_cookie(): void
+    {
+        $this->seedAdmin();
+
+        // Checkbox mengirim value "1", sehingga remember-me harus aktif.
+        $response = $this->post('/login', [
+            'login' => 'admin@vendorhijabbandung.com',
+            'password' => 'password123',
+            'remember' => '1',
+        ]);
+
+        $response->assertRedirect('/dashboard');
+        $response->assertCookie(auth()->guard('web')->getRecallerName());
+    }
+
+    public function test_user_seeder_is_idempotent(): void
+    {
+        $this->seed(UserSeeder::class);
+        $this->seed(UserSeeder::class);
+
+        $this->assertSame(
+            1,
+            User::query()->where('email', 'admin@vendorhijabbandung.com')->count()
+        );
+    }
+
     /**
-     * Create the seeded-style admin account used by the login test.
+     * Seed the admin account exactly like production seeding does, so these
+     * tests fail if the seeder credentials and the login flow ever drift.
      */
     private function seedAdmin(): User
     {
-        return User::create([
-            'name' => 'Admin Vendor Hijab Bandung',
-            'email' => 'admin@vendorhijabbandung.com',
-            'password' => Hash::make('password123'),
-        ]);
+        $this->seed(UserSeeder::class);
+
+        return User::query()->where('email', 'admin@vendorhijabbandung.com')->sole();
     }
 }

@@ -907,6 +907,7 @@
         }
         .filter-active::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.22); }
         .filter-panel .filter-field { display: flex; flex-direction: column; gap: 8px; min-width: 150px; }
+        .filter-panel .filter-field[hidden] { display: none; }
 
         /* ---- Typeable searchable select (.ss) ---- */
         .ss { position: relative; min-width: 158px; }
@@ -1471,6 +1472,17 @@
                     <form id="passwordForm" class="settings-form d-none" action="{{ route('settings.password') }}" method="post" novalidate>
                         @csrf
                         @method('PUT')
+                        @php
+                            $legacyPasswordError = session('password_update_error');
+                            $cpError = $errors->first('current_password')
+                                ?: (is_array($legacyPasswordError) && ($legacyPasswordError['field'] ?? '') === 'current_password'
+                                    ? ($legacyPasswordError['message'] ?? '')
+                                    : session('errors')?->first('current_password'));
+                            $newPasswordError = $errors->first('password')
+                                ?: (is_array($legacyPasswordError) && ($legacyPasswordError['field'] ?? '') === 'password'
+                                    ? ($legacyPasswordError['message'] ?? '')
+                                    : session('errors')?->first('password'));
+                        @endphp
                         <div class="mb-3 pw-field">
                             <label for="current_password" class="form-label">Password Saat Ini</label>
                             <div class="pw-wrap">
@@ -1483,7 +1495,9 @@
                                     <svg class="eye-slash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                                 </button>
                             </div>
-                            <div class="field-error" id="currentPasswordError" role="alert" @unless ($errors->has('current_password')) hidden @endunless>{{ $errors->first('current_password') }}</div>
+                            <div class="field-error" id="currentPasswordError" role="alert"
+                                @unless (filled($cpError)) hidden @endunless
+                            >{{ $cpError }}</div>
                         </div>
                         <div class="mb-3 pw-field">
                             <label for="password" class="form-label">Password Baru</label>
@@ -1497,7 +1511,9 @@
                                     <svg class="eye-slash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                                 </button>
                             </div>
-                            <div class="field-error" id="passwordError" role="alert" @unless ($errors->has('password')) hidden @endunless>{{ $errors->first('password') }}</div>
+                            <div class="field-error" id="passwordError" role="alert"
+                                @unless (filled($newPasswordError)) hidden @endunless
+                            >{{ $newPasswordError }}</div>
                             <div class="form-hint" id="passwordHint">Minimal 8 karakter. Sebaiknya kombinasi huruf dan angka.</div>
                         </div>
                         <div class="mb-3 pw-field">
@@ -2005,7 +2021,7 @@
 
             /* Fallback tanpa JS di atas ATAU setelah redirect server (validasi gagal):
                tampilkan form ganti password lalu buka modal otomatis. */
-            @if ($errors->has('current_password') || $errors->has('password'))
+            @if (filled($cpError) || filled($newPasswordError))
                 showForm();
                 openModal();
             @endif

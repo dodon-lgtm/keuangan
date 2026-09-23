@@ -98,57 +98,10 @@
             html[data-theme="light"] .filter-field { width: 100%; }
         }
 
-        /* ---------- White mode: teks grafik & elemen chart tetap kontras ---------- */
-        html[data-theme="light"] .chart-card {
-            background: #FFFFFF;
-            border: 1px solid #E5E0D8;
-            border-top: 1px solid #D1C9BF;
-            box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
-        }
-        html[data-theme="light"] .chart-head {
-            padding: 14px 16px 6px;
-            border-bottom: 1px solid #EFEAE2;
-            margin-bottom: 10px;
-        }
-        html[data-theme="light"] .chart-title {
-            color: #14161A;
-            font-size: 16px;
-        }
-        html[data-theme="light"] .chart-desc {
-            color: #5C6675;
-            font-size: 13px;
-            margin-top: 2px;
-        }
-        html[data-theme="light"] .chart-empty {
-            color: #8A94A3;
-            background: #F7F5F2;
-            border: 1px dashed #D9D3CD;
-            border-radius: 8px;
-            padding: 16px;
-            font-size: 13px;
-        }
-        html[data-theme="light"] .chart-note {
-            color: #8A94A3;
-            font-size: 12px;
-            margin-top: 8px;
-        }
-        html[data-theme="light"] .chart-canvas svg text,
-        html[data-theme="light"] .chart-canvas svg text,
-        html[data-theme="light"] .chart-canvas svg .apexcharts-legend-text,
-        html[data-theme="light"] .chart-canvas svg .apexcharts-xaxis-label,
-        html[data-theme="light"] .chart-canvas svg .apexcharts-yaxis-label {
-            color: #5C6675 !important;
-            fill: #5C6675 !important;
-        }
-        html[data-theme="light"] .chart-canvas svg .apexcharts-tooltip {
-            background: #0F172A !important;
-            color: #F8FAFC !important;
-            border: 1px solid #334155 !important;
-        }
-        html[data-theme="light"] .chart-canvas svg .apexcharts-tooltip-title {
-            color: #F8FAFC !important;
-            fill: #F8FAFC !important;
-        }
+        /* ---------- White mode: styling kartu grafik ----------
+           Gaya light mode komponen grafik (.chart-card, label sumbu, dst.)
+           ada di public/css/theme.css agar dipakai bersama semua halaman
+           (termasuk /customers) - nilainya sama, dashboard tidak berubah. */
 
     </style>
 

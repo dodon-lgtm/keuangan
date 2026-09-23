@@ -315,6 +315,25 @@ html[data-theme="light"] .filter-panel {
 html[data-theme="light"] .filter-select option,
 html[data-theme="light"] .form-select option { background: #FFFFFF; color: var(--text); }
 
+/* Kontrol filter lain (tombol Reset & badge "Filter aktif").
+   Basis gayanya gelap, jadi di white mode teks terangnya nyaris tak terbaca
+   bila tidak ditimpa di sini. */
+html[data-theme="light"] .filter-reset {
+    color: #5C6675;
+    background: rgba(0, 0, 0, 0.035);
+    border: 1px solid rgba(0, 0, 0, 0.14);
+}
+html[data-theme="light"] .filter-reset:hover {
+    color: var(--text);
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.22);
+}
+html[data-theme="light"] .filter-active {
+    color: #B3123B;
+    background: rgba(225, 29, 72, 0.08);
+    border: 1px solid rgba(225, 29, 72, 0.35);
+}
+
 /* ---------- Grafik Rentang Waktu (Timeframe Pills) ---------- */
 html[data-theme="dark"] .daterange-pills {
     display: inline-flex;
@@ -572,6 +591,52 @@ html[data-theme="light"] .pagination-wrap nav span[aria-disabled="true"] span {
     background: #F3F4F6;
     border-color: rgba(0, 0, 0, 0.06);
     color: #A7AFBB;
+}
+
+/* ---------- Grafik / Chart (White Mode) ----------
+   Kartu grafik ikut putih bersih di white mode — nilai identik dengan
+   dashboard agar tampilan antar halaman nyambung (bukan kotak hitam lagi).
+   Warna label, legend, grid dan tooltip diselaraskan lewat KeuanganChart.palette(). */
+html[data-theme="light"] .chart-card {
+    background: #FFFFFF;
+    border: 1px solid #E5E0D8;
+    border-top: 1px solid #D1C9BF;
+    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+}
+html[data-theme="light"] .chart-head {
+    padding: 14px 16px 6px;
+    border-bottom: 1px solid #EFEAE2;
+    margin-bottom: 10px;
+}
+html[data-theme="light"] .chart-title {
+    color: #14161A;
+    font-size: 16px;
+}
+html[data-theme="light"] .chart-desc {
+    color: #5C6675;
+    font-size: 13px;
+    margin-top: 2px;
+}
+html[data-theme="light"] .chart-empty {
+    color: #8A94A3;
+    background: #F7F5F2;
+    border: 1px dashed #D9D3CD;
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 13px;
+}
+html[data-theme="light"] .chart-note {
+    color: #8A94A3;
+    font-size: 12px;
+    margin-top: 8px;
+}
+/* Teks sumbu & legend tetap gelap di atas kartu putih
+   (di-scope ke label saja agar label data donut tetap terbaca) */
+html[data-theme="light"] .chart-canvas .apexcharts-xaxis-label,
+html[data-theme="light"] .chart-canvas .apexcharts-yaxis-label,
+html[data-theme="light"] .chart-canvas .apexcharts-legend-text {
+    color: #5C6675 !important;
+    fill: #5C6675 !important;
 }
 
 /* ==========================================================================

@@ -8,53 +8,50 @@
         <a href="{{ route('customers.create') }}" class="btn btn-primary">+ Pelanggan Hijab</a>
     </div>
 
+    {{-- Filter langsung (tanpa tombol): setiap perubahan langsung mengirim form --}}
     <form action="{{ route('customers.index') }}" method="get" class="filter-panel">
-        <div class="filter-field">
-            <label for="q">Ketikan untuk mencari</label>
-            <input type="text" name="q" id="q" value="{{ $q }}" class="filter-input"
-                   placeholder="Nama, brand, whatsapp, email...">
+        <div class="filter-fields">
+            <div class="filter-field">
+                <label for="q">Ketikan untuk mencari</label>
+                <input type="text" name="q" id="q" value="{{ $q }}" class="filter-input"
+                       placeholder="Nama, brand, whatsapp, email..." autocomplete="off">
+            </div>
+            <div class="filter-field">
+                <label for="sumber">Sumber</label>
+                <select name="sumber" id="sumber" class="filter-select form-select custom-dropdown-fix" data-searchable onchange="this.form.submit()">
+                    <option value="">Sumber</option>
+                    @foreach (['Instagram Organik', 'Meta Ads', 'CRM Whatsapp'] as $option)
+                        <option value="{{ $option }}" @selected($sumber === $option)>{{ $option }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="filter-field">
+                <label for="status">Status</label>
+                <select name="status" id="status" class="filter-select form-select custom-dropdown-fix" data-searchable onchange="this.form.submit()">
+                    <option value="">Semua Status</option>
+                    <option value="new" @selected($status === 'new')>New</option>
+                    <option value="repeat" @selected($status === 'repeat')>Repeat</option>
+                </select>
+            </div>
+            <div class="filter-field">
+                <label for="tanggal_from">Tanggal Masuk Van</label>
+                <input type="date" name="tanggal_from" id="tanggal_from" value="{{ $tanggalFrom }}" class="filter-input" onchange="this.form.submit()">
+            </div>
+            <div class="filter-field">
+                <label for="tanggal_to">Tanggal Masuk Tot</label>
+                <input type="date" name="tanggal_to" id="tanggal_to" value="{{ $tanggalTo }}" class="filter-input" onchange="this.form.submit()">
+            </div>
+            <a href="{{ route('customers.index') }}" class="filter-reset">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2.5 8a5.5 5.5 0 1 1 1.7 3.95" />
+                    <path d="M2.5 13.5v-3h3" />
+                </svg>
+                Reset
+            </a>
+            @if ($q !== '' || $sumber !== '' || $status !== '' || $tanggalFrom !== '' || $tanggalTo !== '')
+                <span class="filter-active">Filter aktif</span>
+            @endif
         </div>
-        <div class="filter-field">
-            <label for="sumber">Sumber</label>
-            <select name="sumber" id="sumber" class="filter-select" data-searchable>
-                <option value="">Sumber</option>
-                @foreach (['Instagram Organik', 'Meta Ads', 'CRM Whatsapp'] as $option)
-                    <option value="{{ $option }}" @selected($sumber === $option)>{{ $option }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="filter-field">
-            <label for="status">Status</label>
-            <select name="status" id="status" class="filter-select" data-searchable>
-                <option value="">Semua Status</option>
-                <option value="new" @selected($status === 'new')>New</option>
-                <option value="repeat" @selected($status === 'repeat')>Repeat</option>
-            </select>
-        </div>
-        <div class="filter-field">
-            <label for="tanggal_from">Tanggal Masuk Van</label>
-            <input type="date" name="tanggal_from" id="tanggal_from" value="{{ $tanggalFrom }}" class="filter-input">
-        </div>
-        <div class="filter-field">
-            <label for="tanggal_to">Tanggal Masuk Tot</label>
-            <input type="date" name="tanggal_to" id="tanggal_to" value="{{ $tanggalTo }}" class="filter-input">
-        </div>
-        <button type="submit" class="filter-btn">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1.5 2.5h13l-5 5.9v4.1l-3 1.5V8.4z" />
-            </svg>
-            Filter
-        </button>
-        <a href="{{ route('customers.index') }}" class="filter-reset">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2.5 8a5.5 5.5 0 1 1 1.7 3.95" />
-                <path d="M2.5 13.5v-3h3" />
-            </svg>
-            Reset
-        </a>
-        @if ($q !== '' || $sumber !== '' || $status !== '' || $tanggalFrom !== '' || $tanggalTo !== '')
-            <span class="filter-active">Filter aktif</span>
-        @endif
     </form>
 
     <table class="table table-striped align-middle">
@@ -118,7 +115,7 @@
     <div class="chart-section">
         <span class="chart-eyebrow">Analisis</span>
         <h2 class="chart-heading">Analisis Grafik</h2>
-        <p class="chart-sub">Distributie pelanggan per sumber dan status (new vs repeat).</p>
+        <p class="chart-sub">Distribusi pelanggan per sumber dan status (new vs repeat).</p>
 
         <div class="chart-grid">
             @include('partials.chart-card', [
@@ -137,31 +134,56 @@
         </div>
     </div>
 
+
+
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 var KC = window.KeuanganChart;
 
+                var searchInput = document.getElementById('q');
+
+                if (searchInput && searchInput.form) {
+                    var searchTimer = null;
+                    var cancelSearchTimer = function () { clearTimeout(searchTimer); };
+
+                    searchInput.addEventListener('input', function () {
+                        clearTimeout(searchTimer);
+                        searchTimer = setTimeout(function () { searchInput.form.submit(); }, 500);
+                    });
+
+                    searchInput.addEventListener('keydown', function (event) {
+                        if (event.key !== 'Enter') { return; }
+                        event.preventDefault();
+                        clearTimeout(searchTimer);
+                        searchInput.form.submit();
+                    });
+
+                    document.addEventListener('mousedown', function (event) {
+                        if (event.target !== searchInput) { cancelSearchTimer(); }
+                    }, true);
+                }
+
                 if (document.getElementById('chart-sumber')) {
-                    new ApexCharts(document.getElementById('chart-sumber'), KC.base({
+                    KC.register(new ApexCharts(document.getElementById('chart-sumber'), KC.base({
                         chart: { type: 'bar' },
                         series: [{ name: 'Pelanggan', data: @json($chartSumberValue) }],
                         xaxis: { categories: @json($chartSumber) },
-                        yaxis: { labels: { style: { colors: '#9AA1AB', fontFamily: "'Inter', sans-serif" }, formatter: function (v) { return String(Math.round(v)); } } },
+                        yaxis: { labels: { formatter: function (v) { return String(Math.round(v)); } } },
                         colors: ['#E11D48']
-                    })).render();
+                    }))).render();
                 }
 
                 if (document.getElementById('chart-status')) {
-                    new ApexCharts(document.getElementById('chart-status'), KC.base({
+                    KC.register(new ApexCharts(document.getElementById('chart-status'), KC.base({
                         chart: { type: 'donut' },
                         series: @json($chartStatusValue),
                         labels: @json($chartStatus),
                         plotOptions: { pie: { donut: { size: '68%' } } },
                         dataLabels: { enabled: true, formatter: function (val) { return KC.pct(val); } },
-                        legend: { show: true, position: 'bottom' },
+                        legend: { show: true, position: 'bottom', labels: { colors: KC.palette().legendColor } },
                         colors: ['#22C55E', '#E11D48']
-                    })).render();
+                    }))).render();
                 }
             });
         </script>

@@ -909,6 +909,20 @@
         .filter-panel .filter-field { display: flex; flex-direction: column; gap: 8px; min-width: 150px; }
         .filter-panel .filter-field[hidden] { display: none; }
 
+        .filter-panel .filter-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        @media (max-width: 576px) {
+            .filter-panel .filter-fields {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .filter-panel .filter-field { width: 100%; }
+        }
+
         /* ---- Typeable searchable select (.ss) ---- */
         .ss { position: relative; min-width: 158px; }
         .ss-btn {
@@ -928,7 +942,7 @@
             text-align: left;
             transition: border-color 0.18s ease, box-shadow 0.18s ease;
         }
-        .ss-btn:hover { border-color: rgba(255, 255, 255, 0.22); }
+        .ss-btn:hover { border-color: var(--border); }
         .ss-btn.open, .ss-btn:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.18); }
         .ss-btn svg { width: 13px; height: 13px; opacity: 0.65; flex: 0 0 auto; }
         .ss-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 auto; }
@@ -939,8 +953,8 @@
             width: max-content;
             max-width: 330px;
             min-width: 100%;
-            background: #0F1114;
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: var(--input);
+            border: 1px solid var(--border);
             border-radius: 12px;
             box-shadow: 0 18px 40px rgba(0, 0, 0, 0.48);
             padding: 8px;
@@ -950,8 +964,8 @@
         .ss-menu.open { display: block; }
         .ss-search {
             width: 100%;
-            background: #12141A;
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: var(--input);
+            border: 1px solid var(--border);
             color: var(--text);
             padding: 8px 10px;
             border-radius: 9px;
@@ -974,7 +988,43 @@
         }
         .ss-list li:hover, .ss-list li.hover { background: rgba(225, 29, 72, 0.10); color: #fff; }
         .ss-list li.selected { background: rgba(225, 29, 72, 0.16); color: #fff; box-shadow: inset 0 0 0 1px rgba(225, 29, 72, 0.4); }
-        .ss-empty { padding: 9px 11px; font-size: 12.5px; color: #9AA1AB; }
+        .ss-empty { padding: 9px 11px; font-size: 12.5px; color: var(--muted); }
+
+        /* Dropdown searchable (.ss) — WHITE MODE.
+           Tombol penutup, kotak pencarian, dan daftar opsi dibuat putih bersih
+           agar identitas hitam-merah-putih tetap konsisten di halaman apa pun. */
+        html[data-theme="light"] .ss-btn {
+            background: #FFFFFF;
+            border-color: #DDE2E9;
+            color: #14161A;
+        }
+        html[data-theme="light"] .ss-btn:hover { border-color: #C9C2B8; }
+        html[data-theme="light"] .ss-btn svg { opacity: 0.55; }
+        html[data-theme="light"] .ss-menu {
+            background: #FFFFFF;
+            border-color: rgba(0, 0, 0, 0.10);
+            box-shadow: 0 16px 34px rgba(16, 24, 40, 0.14);
+        }
+        html[data-theme="light"] .ss-search {
+            background: #FFFFFF;
+            border-color: rgba(0, 0, 0, 0.12);
+            color: #14161A;
+        }
+        html[data-theme="light"] .ss-search::placeholder { color: #9AA1AB; }
+        html[data-theme="light"] .ss-list li {
+            color: #1A1D23;
+        }
+        html[data-theme="light"] .ss-list li:hover,
+        html[data-theme="light"] .ss-list li.hover {
+            background: rgba(225, 29, 72, 0.08);
+            color: #E11D48;
+        }
+        html[data-theme="light"] .ss-list li.selected {
+            background: rgba(225, 29, 72, 0.13);
+            color: #E11D48;
+            box-shadow: inset 0 0 0 1px rgba(225, 29, 72, 0.40);
+        }
+        html[data-theme="light"] .ss-empty { color: #6B7280; }
 
         /* ---- Analysis charts ---- */
         .chart-section { margin-top: 40px; padding-top: 6px; }
@@ -1261,14 +1311,56 @@
                 // Konsisten dengan number_format($x, 2) di sisi Blade.
                 return num.toFixed(2) + '%';
             },
+            /* Palet warna grafik mengikuti tema aktif (Dark/White Mode).
+               Nilai dark = default lama (tampilan tidak berubah), nilai light
+               disamakan dengan palet dashboard agar tampilan nyambung. */
+            palette: function () {
+                var light = document.documentElement.getAttribute('data-theme') === 'light';
+                return light ? {
+                    labelColor: '#5C6675',
+                    legendColor: '#5C6675',
+                    gridBorder: 'rgba(0, 0, 0, 0.08)',
+                    gridRowColor: 'rgba(0, 0, 0, 0.04)',
+                    tooltipTheme: 'light'
+                } : {
+                    labelColor: '#C3CAD4',
+                    legendColor: '#C9CED6',
+                    gridBorder: 'rgba(255, 255, 255, 0.08)',
+                    gridRowColor: 'rgba(255, 255, 255, 0.06)',
+                    tooltipTheme: 'dark'
+                };
+            },
+            /* Chart yang didaftarkan ikut menyesuaikan warna saat tema ditukar
+               (tanpa reload). Pakai: KC.register(new ApexCharts(el, opts)).render() */
+            charts: [],
+            register: function (chart) {
+                if (chart) { this.charts.push(chart); }
+                return chart;
+            },
+            syncTheme: function () {
+                var p = this.palette();
+                this.charts.forEach(function (chart) {
+                    try {
+                        chart.updateOptions({
+                            chart: { foreColor: p.labelColor },
+                            xaxis: { labels: { style: { colors: p.labelColor } } },
+                            yaxis: { labels: { style: { colors: p.labelColor } } },
+                            grid: { borderColor: p.gridBorder, colors: [p.gridRowColor] },
+                            legend: { labels: { colors: p.legendColor } },
+                            tooltip: { theme: p.tooltipTheme }
+                        });
+                    } catch (e) {}
+                });
+            },
             base: function (extra) {
-                var labels = { colors: '#C3CAD4', fontSize: '12px', fontFamily: "'Inter', sans-serif", fontWeight: 500 };
+                var p = window.KeuanganChart.palette();
+                var labels = { colors: p.labelColor, fontSize: '12px', fontFamily: "'Inter', sans-serif", fontWeight: 500 };
                 var defaults = {
-                    chart: { type: 'bar', background: 'transparent', foreColor: '#C3CAD4', fontFamily: "'Inter', sans-serif", toolbar: { show: false } },
+                    chart: { type: 'bar', background: 'transparent', foreColor: p.labelColor, fontFamily: "'Inter', sans-serif", toolbar: { show: false } },
                     dataLabels: { enabled: false },
-                    grid: { padding: { left: 10, right: 10 }, strokeDashArray: 4, borderColor: 'rgba(255,255,255,0.08)', colors: ['rgba(255,255,255,0.06)'] },
-                    tooltip: { theme: 'dark', style: { fontSize: '12.5px', fontFamily: "'Inter', sans-serif" } },
-                    legend: { show: false, position: 'bottom', labels: { colors: '#C9CED6' }, markers: { size: 4 } },
+                    grid: { padding: { left: 10, right: 10 }, strokeDashArray: 4, borderColor: p.gridBorder, colors: [p.gridRowColor] },
+                    tooltip: { theme: p.tooltipTheme, style: { fontSize: '12.5px', fontFamily: "'Inter', sans-serif" } },
+                    legend: { show: false, position: 'bottom', labels: { colors: p.legendColor }, markers: { size: 4 } },
                     stroke: { width: 2, curve: 'smooth' },
                     xaxis: { labels: labels, axisBorder: { show: false }, axisTicks: { show: false } },
                     yaxis: { labels: Object.assign({}, labels, { formatter: window.KeuanganChart.rupiah }) },
@@ -1283,6 +1375,14 @@
                 return Object.assign(defaults, extra);
             }
         };
+
+        /* Selaraskan warna chart saat tema ditukar (White <-> Dark).
+           Hanya berlaku untuk chart yang didaftarkan via KeuanganChart.register(). */
+        if (window.MutationObserver) {
+            new MutationObserver(function () {
+                window.KeuanganChart.syncTheme();
+            }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        }
     </script>
     <script id="keuangan-ss-upgrade">
         /* Turn filter selects into typeable / searchable dropdowns (progressive enhancement). */

@@ -73,23 +73,11 @@
                 </div>
 
                 <div class="row g-3 mb-3">
-                    <div class="col-md-6">
+                                    <div class="col-md-12">
                         <label for="domisili" class="form-label">Domisili (optional)</label>
                         <input type="text" name="domisili" id="domisili" value="{{ old('domisili') }}"
                                class="form-control @error('domisili') is-invalid @enderror">
                         @error('domisili')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="col-md-6">
-                        <label for="segment" class="form-label">Segment (optional)</label>
-                        <select name="segment" id="segment" class="form-select @error('segment') is-invalid @enderror">
-                            <option value="" @selected(! old('segment'))>— pilih —</option>
-                            @foreach (['A', 'B', 'C'] as $option)
-                                <option value="{{ $option }}" @selected(old('segment') === $option)>{{ $option }}</option>
-                            @endforeach
-                        </select>
-                        @error('segment')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>

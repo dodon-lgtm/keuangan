@@ -3,6 +3,108 @@
 @section('title', 'Dashboard')
 
 @section('content')
+    <style>
+        /* ---------- Judul bold di seluruh section ---------- */
+        .dash-title,
+        .kpi-label,
+        .chart-heading,
+        .chart-title,
+        .chart-eyebrow,
+        .card-title,
+        .section-title {
+            font-weight: 700;
+        }
+
+        /* ---------- Label KPI (Total Omset, Total Transaksi, Rata-rata, Pelanggan Aktif) ---------- */
+        /* Label KPI diperbesar + tebal supaya tampak seperti judul di atas tiap card */
+        .kpi-label {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 0.25px;
+        }
+
+        /* ---------- White mode: filter panel & kontrol harus jelas/tajam ---------- */
+        html[data-theme="light"] .filter-panel {
+            background: #FBFAF7;
+            border: 1px solid #D9D3CD;
+            border-top-color: #C9C2B8;
+            box-shadow: 0 4px 14px rgba(16, 24, 40, 0.05);
+        }
+        html[data-theme="light"] .filter-panel .filter-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        html[data-theme="light"] .filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+        html[data-theme="light"] .filter-field label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #5C6675;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
+        }
+        html[data-theme="light"] .filter-select,
+        html[data-theme="light"] .filter-input {
+            background: #FFFFFF;
+            border: 1px solid #C9C2B8;
+            border-radius: 8px;
+            color: #14161A;
+            padding: 9px 12px;
+            font-size: 14px;
+            font-family: inherit;
+            line-height: 1.4;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        html[data-theme="light"] .filter-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235C6675' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 32px;
+        }
+        html[data-theme="light"] .filter-select:hover,
+        html[data-theme="light"] .filter-input:hover {
+            border-color: #A69F96;
+        }
+        html[data-theme="light"] .filter-select:focus,
+        html[data-theme="light"] .filter-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
+        }
+        html[data-theme="light"] .filter-select:disabled,
+        html[data-theme="light"] .filter-input:disabled {
+            background: #EEF0F3;
+            color: #8A94A3;
+            border-color: #D9D3CD;
+            cursor: not-allowed;
+        }
+        html[data-theme="light"] .filter-select option {
+            background: #FFFFFF;
+            color: #14161A;
+        }
+        @media (max-width: 576px) {
+            html[data-theme="light"] .filter-panel .filter-fields {
+                flex-direction: column;
+                gap: 10px;
+            }
+            html[data-theme="light"] .filter-field { width: 100%; }
+        }
+
+        /* ---------- White mode: styling kartu grafik ----------
+           Gaya light mode komponen grafik (.chart-card, label sumbu, dst.)
+           ada di public/css/theme.css agar dipakai bersama semua halaman
+           (termasuk /customers) - nilainya sama, dashboard tidak berubah. */
+
+    </style>
+
     <div class="dash-head">
         <span class="dash-eyebrow">Ringkasan</span>
         <div>
@@ -11,25 +113,11 @@
         </div>
     </div>
 
-    {{-- Filter Panel --}}
-    <form action="{{ route('dashboard') }}" method="get" class="filter-panel">
+    {{-- Filter Panel (horizontal, auto-submit) --}}
+    <form action="{{ route('dashboard') }}" method="get" class="filter-panel" id="filterForm">
         @include('partials.period-filter', ['disableYear' => $chartMode === 'yearly'])
 
         <input type="hidden" name="range" value="{{ $range ?? '1bln' }}">
-
-        <button type="submit" class="filter-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-            </svg>
-            Filter
-        </button>
-        <a href="{{ route('dashboard') }}" class="filter-reset">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                <path d="M3 3v5h5"></path>
-            </svg>
-            Reset
-        </a>
     </form>
 
     {{-- Grafik Rentang Waktu --}}
@@ -237,27 +325,55 @@
                 var isDaily = @json($chartMode === 'daily');
 
                 function tipTitle(text) {
-                    return '<div style="font-weight:700;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.14);color:#f8fafc;font-size:12px">'
+                    var bg = chartPalette.tooltipTheme === 'light' ? 'background:#FFFFFF;color:#14161A;border:1px solid #D1C9BF;border-radius:8px;padding:10px 12px;min-width:210px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.08)' : 'background:#0F172A;color:#F8FAFC;border:1px solid #334155;border-radius:8px;padding:10px 12px;min-width:210px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.5)';
+                    var borderColor = chartPalette.tooltipTheme === 'light' ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.14)';
+                    return '<div style="' + bg + ';border-bottom:1px solid ' + borderColor + ';font-weight:700;margin-bottom:6px;padding-bottom:4px;font-size:12px">'
                         + text
                         + '</div>';
                 }
 
-                function tipRow(label, value, color) {
+function tipRow(label, value, color) {
                     var dot = color ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + color + ';margin-right:6px"></span>' : '';
-                    return '<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;line-height:1.8;color:#f8fafc;font-size:12px">'
+                    var textColor = chartPalette.tooltipTheme === 'light' ? '#14161A' : '#F8FAFC';
+                    return '<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;line-height:1.8;color:' + textColor + ';font-size:12px">'
                         + '<span>' + dot + label + '</span>'
-                        + '<strong style="font-variant-numeric:tabular-nums">' + value + '</strong>'
+                        + '<strong style="font-variant-numeric:tabular-nums;color:' + textColor + '">' + value + '</strong>'
                         + '</div>';
                 }
+
+
+
+                function tipContainer() {
+                    var bg = chartPalette.tooltipTheme === 'light' ? 'background:#FFFFFF;color:#14161A;border:1px solid #D1C9BF;border-radius:8px;padding:10px 12px;min-width:210px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.08)' : 'background:#0F172A;color:#F8FAFC;border:1px solid #334155;border-radius:8px;padding:10px 12px;min-width:210px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.5)';
+                    return '<div style="' + bg + '">';
+                }// Palet warna per tema — di-refresh otomatis bila pengguna
+                // menukar White/Dark Mode (tanpa reload halaman).
+                var chartInstances = [];
+                var chartPalette = (function () {
+                    var light = document.documentElement.getAttribute('data-theme') === 'light';
+                    return light ? {
+                        axisLabelColor: '#5C6675',
+                        gridBorder: 'rgba(0, 0, 0, 0.08)',
+                        gridDash: 4,
+                        legendColor: '#5C6675',
+                        tooltipTheme: 'light',
+                    } : {
+                        axisLabelColor: '#94A3B8',
+                        gridBorder: 'rgba(255, 255, 255, 0.05)',
+                        gridDash: 4,
+                        legendColor: '#94A3B8',
+                        tooltipTheme: 'dark',
+                    };
+                })();
 
                 // Konfigurasi Sumbu X Otomatis (Rapi & Tidak Berdesakan)
                 var commonXaxis = {
                     categories: @json($chartMonths),
-                    tickAmount: isDaily ? 8 : undefined, // Batasi jumlah label tanggal di HP/Desktop
+                    tickAmount: isDaily ? 8 : undefined,
                     labels: {
                         rotate: 0,
                         hideOverlappingLabels: true,
-                        style: { colors: '#94A3B8', fontSize: '11px', fontFamily: "'Inter', sans-serif" }
+                        style: { colors: chartPalette.axisLabelColor, fontSize: '11px', fontFamily: "'Inter', sans-serif" }
                     },
                     axisBorder: { show: false },
                     axisTicks: { show: false }
@@ -265,10 +381,45 @@
 
                 // Grid Halus Transparan
                 var commonGrid = {
-                    borderColor: 'rgba(255, 255, 255, 0.05)',
-                    strokeDashArray: 4,
+                    borderColor: chartPalette.gridBorder,
+                    strokeDashArray: chartPalette.gridDash,
                     padding: { left: 10, right: 10 }
                 };
+
+                // Sinkronisasi warna grafik bila tema berubah (White <-> Dark).
+                function syncChartTheme() {
+                    var light = document.documentElement.getAttribute('data-theme') === 'light';
+                    var next = light ? {
+                        axisLabelColor: '#5C6675',
+                        gridBorder: 'rgba(0, 0, 0, 0.08)',
+                        gridDash: 4,
+                        legendColor: '#5C6675',
+                        tooltipTheme: 'light',
+                    } : {
+                        axisLabelColor: '#94A3B8',
+                        gridBorder: 'rgba(255, 255, 255, 0.05)',
+                        gridDash: 4,
+                        legendColor: '#94A3B8',
+                        tooltipTheme: 'dark',
+                    };
+                    if (next.axisLabelColor === chartPalette.axisLabelColor) { return; }
+                    chartPalette = next;
+                    chartInstances.forEach(function (chart) {
+                        chart.updateOptions({
+                            xaxis: { labels: { style: { colors: next.axisLabelColor } } },
+                            yaxis: { labels: { style: { colors: next.axisLabelColor } } },
+                            grid: { borderColor: next.gridBorder, strokeDashArray: next.gridDash },
+                            legend: { labels: { colors: next.legendColor } },
+                            tooltip: { theme: next.tooltipTheme }
+                        });
+                    });
+                }
+                if (window.MutationObserver) {
+                    new MutationObserver(syncChartTheme).observe(document.documentElement, {
+                        attributes: true,
+                        attributeFilter: ['data-theme']
+                    });
+                }
 
                 // --- 1. GRAFIK TREN KEUANGAN ---
                 if (document.getElementById('chart-trend')) {
@@ -304,7 +455,7 @@
                         markers: { size: isDaily ? 0 : 3, hover: { size: 6 } },
                         colors: ['#38BDF8', '#F59E0B', '#22C55E'], // Sky Blue (Omset), Amber (Operasional), Emerald (Profit)
                         tooltip: {
-                            theme: 'dark',
+                            theme: chartPalette.tooltipTheme,
                             custom: function (opts) {
                                 var i = opts.dataPointIndex;
                                 if (i === undefined || chartFullLabels[i] === undefined) { return ''; }
@@ -313,7 +464,7 @@
                                 var operasional = opts.series[1][i] || 0;
                                 var netProfit = opts.series[2][i] || 0;
 
-                                return '<div style="background:#0F172A;color:#F8FAFC;border:1px solid #334155;border-radius:8px;padding:10px 12px;min-width:210px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.5)">'
+                                return tipContainer()
                                     + tipTitle(chartFullLabels[i])
                                     + tipRow('Omset', KC.rupiah(omset), '#38BDF8')
                                     + tipRow('Total Operasional', KC.rupiah(operasional), '#F59E0B')
@@ -321,7 +472,7 @@
                                     + '</div>';
                             }
                         },
-                        legend: { show: true, position: 'bottom', labels: { colors: '#94A3B8' } }
+                        legend: { show: true, position: 'bottom', labels: { colors: chartPalette.legendColor } }
                     })).render();
                 }
 
@@ -357,12 +508,12 @@
                         },
                         markers: { size: isDaily ? 0 : 3, hover: { size: 6 } },
                         yaxis: [
-                            { labels: { formatter: function (v) { return KC.rupiah(v); }, style: { colors: '#94A3B8', fontFamily: "'Inter', sans-serif" } } },
-                            { opposite: true, labels: { formatter: function (v) { return KC.pct(v); }, style: { colors: '#94A3B8', fontFamily: "'Inter', sans-serif" } } }
+                            { labels: { formatter: function (v) { return KC.rupiah(v); }, style: { colors: chartPalette.axisLabelColor, fontFamily: "'Inter', sans-serif" } } },
+                            { opposite: true, labels: { formatter: function (v) { return KC.pct(v); }, style: { colors: chartPalette.axisLabelColor, fontFamily: "'Inter', sans-serif" } } }
                         ],
                         colors: ['#06B6D4', '#F43F5E'], // Cyan & Rose
                         tooltip: {
-                            theme: 'dark',
+                            theme: chartPalette.tooltipTheme,
                             custom: function (opts) {
                                 var i = opts.dataPointIndex;
                                 if (i === undefined || chartFullLabels[i] === undefined) { return ''; }
@@ -370,14 +521,14 @@
                                 var spend = opts.series[0][i] || 0;
                                 var mer = opts.series[1][i] || 0;
 
-                                return '<div style="background:#0F172A;color:#F8FAFC;border:1px solid #334155;border-radius:8px;padding:10px 12px;min-width:210px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.5)">'
+                                return tipContainer()
                                     + tipTitle(chartFullLabels[i])
                                     + tipRow('Budget Iklan', KC.rupiah(spend), '#06B6D4')
                                     + tipRow('MER', KC.pct(mer), '#F43F5E')
                                     + '</div>';
                             }
                         },
-                        legend: { show: true, position: 'bottom', labels: { colors: '#94A3B8' } }
+                        legend: { show: true, position: 'bottom', labels: { colors: chartPalette.legendColor } }
                     })).render();
                 }
             });

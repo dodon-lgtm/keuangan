@@ -965,4 +965,74 @@ class FinancialCalculator
 
         return $series;
     }
+
+    /*
+     * ------------------------------------------------------------------
+     *  Rincian HPP & profit per produk
+     * ------------------------------------------------------------------
+     *  Dipakai bersama oleh halaman Dashboard dan halaman Laporan HPP &
+     *  Profit supaya keduanya selalu menampilkan angka yang identik.
+     */
+
+    /**
+     * Per-product sales breakdown (quantity, revenue, HPP and margin) for a
+     * single month or the whole year, ordered by revenue descending.
+     *
+     * @return array<int, array{nama_produk: string, total_pcs: int, total_omset: int, total_hpp: int, margin: int, margin_pct: float}>
+     */
+    public static function productProfitBreakdown(?int $month, int $year): array
+    {
+        return static::productProfitRows(static::periodRange($month, $year));
+    }
+
+    /**
+     * Same per-product breakdown for a custom month range (cross-year
+     * supported, e.g. Nov 2025 - Jan 2026).
+     *
+     * @return array<int, array{nama_produk: string, total_pcs: int, total_omset: int, total_hpp: int, margin: int, margin_pct: float}>
+     */
+    public static function productProfitBreakdownRange(int $startMonth, int $startYear, int $endMonth, int $endYear): array
+    {
+        return static::productProfitRows(static::periodRangeCustom($startMonth, $startYear, $endMonth, $endYear));
+    }
+
+    /**
+     * Shared aggregation behind both productProfitBreakdown variants.
+     *
+     * @param  array{0: string, 1: string}  $range
+     * @return array<int, array{nama_produk: string, total_pcs: int, total_omset: int, total_hpp: int, margin: int, margin_pct: float}>
+     */
+    protected static function productProfitRows(array $range): array
+    {
+        $rows = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->join('products', 'products.id', '=', 'order_items.product_id')
+            ->whereBetween('orders.tanggal', $range)
+            ->select(['products.id', 'products.nama_produk'])
+            ->selectRaw('SUM(order_items.jumlah_pcs) as total_pcs')
+            ->selectRaw('SUM(order_items.subtotal) as total_omset')
+            ->selectRaw('SUM(order_items.hpp_satuan * order_items.jumlah_pcs) as total_hpp')
+            ->groupBy('products.id', 'products.nama_produk')
+            ->orderByDesc('total_omset')
+            ->get();
+
+        $products = [];
+
+        foreach ($rows as $row) {
+            $omset = (int) ($row->total_omset ?? 0);
+            $hpp = (int) ($row->total_hpp ?? 0);
+            $margin = $omset - $hpp;
+
+            $products[] = [
+                'nama_produk' => (string) $row->nama_produk,
+                'total_pcs' => (int) ($row->total_pcs ?? 0),
+                'total_omset' => $omset,
+                'total_hpp' => $hpp,
+                'margin' => $margin,
+                'margin_pct' => $omset > 0 ? round(($margin / $omset) * 100 * 100) / 100 : 0.0,
+            ];
+        }
+
+        return $products;
+    }
 }

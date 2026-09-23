@@ -3,6 +3,30 @@
 @section('title', 'Produk')
 
 @section('content')
+    <style>
+        /* ---------- Label Kartu KPI (Judul di paling atas kartu) ---------- */
+        /* Dibuat LEBIH BESAR & BOLD, serta menyesuaikan Light/Dark Mode */
+        .card-title {
+            font-size: 20px !important;
+            font-weight: 800 !important;
+            color: var(--text-main, #000000) !important;
+            letter-spacing: 0.25px;
+        }
+
+        html[data-theme="light"] .card-title {
+            color: #000000 !important;
+        }
+        html[data-theme="dark"] .card-title {
+            color: #FFFFFF !important;
+        }
+
+        /* ---------- Isi/Nilai Kartu KPI (Angka/Nominal) ---------- */
+        /* Dibuat BIASA (TIDAK BOLD) */
+        .card-text {
+            font-weight: 400 !important;
+        }
+    </style>
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Produk</h1>
         <a href="{{ route('products.create') }}" class="btn btn-primary">+ Produk Hijab</a>
@@ -46,7 +70,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title" style="color: var(--muted) !important;">Total Jenis Produk</h5>
+                    <h5 class="card-title">Total Jenis Produk</h5>
                     <p class="card-text fs-4">{{ $stats['total_produk'] }}</p>
                 </div>
             </div>
@@ -54,7 +78,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title" style="color: var(--muted) !important;">Rata-rata Harga Jual</h5>
+                    <h5 class="card-title">Rata-rata Harga Jual</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $stats['avg_harga_jual']])</p>
                 </div>
             </div>
@@ -62,7 +86,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title" style="color: var(--muted) !important;">Rata-rata HPP</h5>
+                    <h5 class="card-title">Rata-rata HPP</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $stats['avg_hpp']])</p>
                 </div>
             </div>
@@ -70,7 +94,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title" style="color: var(--muted) !important;">Rata-rata Keuntungan</h5>
+                    <h5 class="card-title">Rata-rata Keuntungan</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $stats['avg_keuntungan']])</p>
                 </div>
             </div>
@@ -93,7 +117,7 @@
         @foreach ($products as $product)
             <tr>
                 <td>{{ $product->id }}</td>
-                <td>{{ $product->nama_produk }}</td>
+                <td><strong>{{ $product->nama_produk }}</strong></td>
                 <td>@include('partials.rupiah', ['value' => $product->harga_jual])</td>
                 <td>@include('partials.rupiah', ['value' => $product->hpp])</td>
                 <td>

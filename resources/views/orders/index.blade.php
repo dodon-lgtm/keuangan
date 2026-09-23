@@ -3,6 +3,30 @@
 @section('title', 'Log Order')
 
 @section('content')
+    <style>
+        /* ---------- Label Kartu KPI (Judul di paling atas kartu) ---------- */
+        /* Dibuat LEBIH BESAR & BOLD, serta menyesuaikan Light/Dark Mode */
+        .card-title {
+            font-size: 20px !important;
+            font-weight: 800 !important;
+            color: var(--text-main, #000000) !important;
+            letter-spacing: 0.25px;
+        }
+
+        html[data-theme="light"] .card-title {
+            color: #000000 !important;
+        }
+        html[data-theme="dark"] .card-title {
+            color: #FFFFFF !important;
+        }
+
+        /* ---------- Isi/Nilai Kartu KPI (Angka/Nominal) ---------- */
+        /* Dibuat BIASA (TIDAK BOLD) */
+        .card-text {
+            font-weight: 400 !important;
+        }
+    </style>
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Log Order</h1>
         <a href="{{ route('orders.create') }}" class="btn btn-primary">+ Order Hijab</a>
@@ -82,8 +106,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <!-- Diubah menggunakan style var(--muted) agar adaptif di dark mode -->
-                    <h5 class="card-title" style="color: var(--muted) !important;">Total Keseluruhan Omset</h5>
+                    <h5 class="card-title">Total Keseluruhan Omset</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalOmset])</p>
                 </div>
             </div>
@@ -91,8 +114,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <!-- Diubah menggunakan style var(--muted) agar adaptif di dark mode -->
-                    <h5 class="card-title" style="color: var(--muted) !important;">Total Keseluruhan Pcs Terjual</h5>
+                    <h5 class="card-title">Total Keseluruhan Pcs Terjual</h5>
                     <p class="card-text fs-4">{{ $totalPcs }} pcs</p>
                 </div>
             </div>
@@ -118,7 +140,7 @@
         @foreach ($orders as $order)
             <tr>
                 <td>{{ $order->id }}</td>
-                <td>{{ $order->customer->nama_lengkap }}</td>
+                <td><strong>{{ $order->customer->nama_lengkap }}</strong></td>
                 <td>
                     @if ($order->orderItems->isEmpty())
                         <span style="color: var(--muted);">—</span>

@@ -6,21 +6,33 @@
     <style>
         /* ---------- Judul bold di seluruh section ---------- */
         .dash-title,
-        .kpi-label,
         .chart-heading,
-        .chart-title,
         .chart-eyebrow,
-        .card-title,
         .section-title {
             font-weight: 700;
         }
 
-        /* ---------- Label KPI (Total Omset, Total Transaksi, Rata-rata, Pelanggan Aktif) ---------- */
-        /* Label KPI diperbesar + tebal supaya tampak seperti judul di atas tiap card */
+        /* ---------- Label KPI (Total Omset, Total Transaksi, dll) ---------- */
+        /* Menggunakan variabel warna tema agar merespons dark/light mode */
         .kpi-label {
-            font-size: 17px;
-            font-weight: 700;
+            font-size: 22px !important;
+            font-weight: 800 !important;
+            color: var(--text-main, #000000) !important;
             letter-spacing: 0.25px;
+        }
+
+        /* Pengaturan spesifik bila menggunakan data-theme */
+        html[data-theme="light"] .kpi-label {
+            color: #000000 !important;
+        }
+        html[data-theme="dark"] .kpi-label {
+            color: #FFFFFF !important;
+        }
+
+        /* ---------- Nilai KPI (Angka / Nominal di bawahnya) ---------- */
+        /* Dibuat BIASA (TIDAK BOLD) */
+        .kpi-value {
+            font-weight: 400 !important;
         }
 
         /* ---------- White mode: filter panel & kontrol harus jelas/tajam ---------- */
@@ -250,6 +262,7 @@
         $chartNetProfit = [];
         $chartMarketing = [];
         $chartMer = [];
+        $chartRoi = [];
 
         foreach ($series as $item) {
             $chartMonths[] = $item['label'];
@@ -259,6 +272,7 @@
             $chartNetProfit[] = (int) $item['net_profit'];
             $chartMarketing[] = (int) $item['marketing'];
             $chartMer[] = (float) $item['mer'];
+            $chartRoi[] = (float) $item['roi'];
         }
 
         $chartEmptyTrend = true;
@@ -271,6 +285,10 @@
         foreach ($chartMarketing as $v) {
             if ((int) $v > 0) { $chartEmptyMarketing = false; break; }
         }
+
+        // Kesiapan data grafik HPP & profit per produk (digabung dari laporan).
+        $chartEmptyProduct = count($productChartNama) === 0;
+        $chartEmptyShare = count($productShareNama) === 0;
 
         $chartTrendTitle = match ($chartMode) {
             'daily' => 'Tren Keuangan Harian',
@@ -317,6 +335,128 @@
         </div>
     </div>
 
+    {{-- Efisiensi Marketing: MER & ROI (digabung dari Laporan MER & ROI) --}}
+    <div class="chart-section">
+        <span class="chart-eyebrow">Efisiensi Marketing</span>
+        <h2 class="chart-heading">MER &amp; ROI</h2>
+        <p class="chart-sub">Seberapa efektif budget iklan menghasilkan omset dan profit untuk {{ $periodLabel }}.</p>
+
+        <div class="kpi-grid">
+            <div class="kpi">
+                <div class="kpi-label">MER (Spend / Omset)</div>
+                <div class="kpi-icon" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="5" x2="5" y2="19" />
+                        <circle cx="6.5" cy="6.5" r="2.5" />
+                        <circle cx="17.5" cy="17.5" r="2.5" />
+                    </svg>
+                </div>
+                <div class="kpi-value">{{ number_format($mer, 2) }}%</div>
+            </div>
+
+            <div class="kpi">
+                <div class="kpi-label">ROI (Net Profit / Spend)</div>
+                <div class="kpi-icon" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                        <polyline points="17 6 23 6 23 12" />
+                    </svg>
+                </div>
+                <div class="kpi-value">{{ number_format($roi, 2) }}%</div>
+            </div>
+
+            <div class="kpi">
+                <div class="kpi-label">Marketing Spend</div>
+                <div class="kpi-icon" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 11l18-8-8 18-2-8-8-2z" />
+                    </svg>
+                </div>
+                <div class="kpi-value">@include('partials.rupiah', ['value' => $marketingSpend])</div>
+            </div>
+
+            <div class="kpi">
+                <div class="kpi-label">Net Profit</div>
+                <div class="kpi-icon" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="6" width="20" height="14" rx="2" />
+                        <path d="M2 10h20" />
+                    </svg>
+                </div>
+                <div class="kpi-value">@include('partials.rupiah', ['value' => $netProfit])</div>
+            </div>
+        </div>
+
+        <div class="chart-grid">
+            @include('partials.chart-card', [
+                'id' => 'chart-mer-spend',
+                'title' => 'Budget Iklan vs Omset & MER%',
+                'desc' => 'Marketing spend (batang), Omset (garis), dan MER% (garis)',
+                'empty' => $chartEmptyMarketing,
+            ])
+
+            @include('partials.chart-card', [
+                'id' => 'chart-mer-roi',
+                'title' => 'Tren MER% & ROI%',
+                'desc' => 'Efisiensi marketing per periode',
+                'empty' => $chartEmptyMarketing,
+            ])
+        </div>
+    </div>
+
+    {{-- HPP & Profit per Produk (digabung dari Laporan HPP & Profit) --}}
+    <div class="chart-section">
+        <span class="chart-eyebrow">HPP &amp; Profit</span>
+        <h2 class="chart-heading">HPP &amp; Profit per Produk</h2>
+        <p class="chart-sub">Rincian omset, HPP, dan margin tiap produk untuk {{ $periodLabel }}.</p>
+
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Produk</th>
+                    <th>Qty Terjual</th>
+                    <th>Total Omset</th>
+                    <th>Total HPP</th>
+                    <th>Margin Profit</th>
+                    <th>Margin %</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach ($products as $product)
+                <tr>
+                    <td>{{ $product['nama_produk'] }}</td>
+                    <td>{{ $product['total_pcs'] }}</td>
+                    <td>@include('partials.rupiah', ['value' => $product['total_omset']])</td>
+                    <td>@include('partials.rupiah', ['value' => $product['total_hpp']])</td>
+                    <td>@include('partials.rupiah', ['value' => $product['margin']])</td>
+                    <td>{{ number_format((float) $product['margin_pct'], 2) }}%</td>
+                </tr>
+            @endforeach
+            @if (empty($products))
+                <tr>
+                    <td colspan="6" class="text-center text-muted">Belum ada transaksi untuk periode ini.</td>
+                </tr>
+            @endif
+            </tbody>
+        </table>
+
+        <div class="chart-grid">
+            @include('partials.chart-card', [
+                'id' => 'chart-hpp-bar',
+                'title' => 'Omset vs HPP vs Margin',
+                'desc' => 'Top 10 produk (per omset)',
+                'empty' => $chartEmptyProduct,
+            ])
+
+            @include('partials.chart-card', [
+                'id' => 'chart-hpp-share',
+                'title' => 'Pembagian Margin',
+                'desc' => 'Margin per produk (top 8)',
+                'empty' => $chartEmptyShare,
+            ])
+        </div>
+    </div>
+
    @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
@@ -332,7 +472,7 @@
                         + '</div>';
                 }
 
-function tipRow(label, value, color) {
+                function tipRow(label, value, color) {
                     var dot = color ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + color + ';margin-right:6px"></span>' : '';
                     var textColor = chartPalette.tooltipTheme === 'light' ? '#14161A' : '#F8FAFC';
                     return '<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;line-height:1.8;color:' + textColor + ';font-size:12px">'
@@ -341,13 +481,11 @@ function tipRow(label, value, color) {
                         + '</div>';
                 }
 
-
-
                 function tipContainer() {
                     var bg = chartPalette.tooltipTheme === 'light' ? 'background:#FFFFFF;color:#14161A;border:1px solid #D1C9BF;border-radius:8px;padding:10px 12px;min-width:210px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.08)' : 'background:#0F172A;color:#F8FAFC;border:1px solid #334155;border-radius:8px;padding:10px 12px;min-width:210px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.5)';
                     return '<div style="' + bg + '">';
-                }// Palet warna per tema — di-refresh otomatis bila pengguna
-                // menukar White/Dark Mode (tanpa reload halaman).
+                }
+
                 var chartInstances = [];
                 var chartPalette = (function () {
                     var light = document.documentElement.getAttribute('data-theme') === 'light';
@@ -366,7 +504,6 @@ function tipRow(label, value, color) {
                     };
                 })();
 
-                // Konfigurasi Sumbu X Otomatis (Rapi & Tidak Berdesakan)
                 var commonXaxis = {
                     categories: @json($chartMonths),
                     tickAmount: isDaily ? 8 : undefined,
@@ -379,14 +516,12 @@ function tipRow(label, value, color) {
                     axisTicks: { show: false }
                 };
 
-                // Grid Halus Transparan
                 var commonGrid = {
                     borderColor: chartPalette.gridBorder,
                     strokeDashArray: chartPalette.gridDash,
                     padding: { left: 10, right: 10 }
                 };
 
-                // Sinkronisasi warna grafik bila tema berubah (White <-> Dark).
                 function syncChartTheme() {
                     var light = document.documentElement.getAttribute('data-theme') === 'light';
                     var next = light ? {
@@ -421,7 +556,6 @@ function tipRow(label, value, color) {
                     });
                 }
 
-                // --- 1. GRAFIK TREN KEUANGAN ---
                 if (document.getElementById('chart-trend')) {
                     new ApexCharts(document.getElementById('chart-trend'), KC.base({
                         chart: { 
@@ -453,7 +587,7 @@ function tipRow(label, value, color) {
                             bar: { columnWidth: isDaily ? '30%' : '45%', borderRadius: 4 } 
                         },
                         markers: { size: isDaily ? 0 : 3, hover: { size: 6 } },
-                        colors: ['#38BDF8', '#F59E0B', '#22C55E'], // Sky Blue (Omset), Amber (Operasional), Emerald (Profit)
+                        colors: ['#38BDF8', '#F59E0B', '#22C55E'],
                         tooltip: {
                             theme: chartPalette.tooltipTheme,
                             custom: function (opts) {
@@ -476,7 +610,6 @@ function tipRow(label, value, color) {
                     })).render();
                 }
 
-                // --- 2. GRAFIK BUDGET IKLAN & MER ---
                 if (document.getElementById('chart-mer')) {
                     new ApexCharts(document.getElementById('chart-mer'), KC.base({
                         chart: { 
@@ -511,7 +644,7 @@ function tipRow(label, value, color) {
                             { labels: { formatter: function (v) { return KC.rupiah(v); }, style: { colors: chartPalette.axisLabelColor, fontFamily: "'Inter', sans-serif" } } },
                             { opposite: true, labels: { formatter: function (v) { return KC.pct(v); }, style: { colors: chartPalette.axisLabelColor, fontFamily: "'Inter', sans-serif" } } }
                         ],
-                        colors: ['#06B6D4', '#F43F5E'], // Cyan & Rose
+                        colors: ['#06B6D4', '#F43F5E'],
                         tooltip: {
                             theme: chartPalette.tooltipTheme,
                             custom: function (opts) {
@@ -530,6 +663,141 @@ function tipRow(label, value, color) {
                         },
                         legend: { show: true, position: 'bottom', labels: { colors: chartPalette.legendColor } }
                     })).render();
+                }
+
+                if (document.getElementById('chart-mer-spend')) {
+                    KC.register(new ApexCharts(document.getElementById('chart-mer-spend'), KC.base({
+                        chart: {
+                            type: 'bar',
+                            height: 320,
+                            toolbar: { show: false }
+                        },
+                        series: [
+                            { name: 'Marketing Spend', type: 'column', data: @json($chartMarketing) },
+                            { name: 'Omset', type: 'line', data: @json($chartOmset) },
+                            { name: 'MER %', type: 'line', data: @json($chartMer) }
+                        ],
+                        xaxis: commonXaxis,
+                        grid: commonGrid,
+                        stroke: { width: [0, 2.4, 2.4], curve: 'smooth' },
+                        plotOptions: { bar: { columnWidth: '35%', borderRadius: 4 } },
+                        markers: { size: isDaily ? 0 : 3, hover: { size: 6 } },
+                        yaxis: [
+                            { seriesName: 'Marketing Spend', labels: { formatter: function (v) { return KC.rupiah(v); }, style: { colors: chartPalette.axisLabelColor, fontFamily: "'Inter', sans-serif" } } },
+                            { seriesName: 'Omset', show: false },
+                            { opposite: true, seriesName: 'MER %', labels: { formatter: function (v) { return KC.pct(v); }, style: { colors: chartPalette.axisLabelColor, fontFamily: "'Inter', sans-serif" } } }
+                        ],
+                        colors: ['#06B6D4', '#38BDF8', '#F59E0B'],
+                        tooltip: {
+                            theme: chartPalette.tooltipTheme,
+                            custom: function (opts) {
+                                var i = opts.dataPointIndex;
+                                if (i === undefined || chartFullLabels[i] === undefined) { return ''; }
+
+                                var spend = opts.series[0][i] || 0;
+                                var omset = opts.series[1][i] || 0;
+                                var mer = opts.series[2][i] || 0;
+
+                                return tipContainer()
+                                    + tipTitle(chartFullLabels[i])
+                                    + tipRow('Budget Iklan', KC.rupiah(spend), '#06B6D4')
+                                    + tipRow('Omset', KC.rupiah(omset), '#38BDF8')
+                                    + tipRow('MER %', KC.pct(mer), '#F59E0B')
+                                    + '</div>';
+                            }
+                        },
+                        legend: { show: true, position: 'bottom', labels: { colors: chartPalette.legendColor } }
+                    }))).render();
+                }
+
+                if (document.getElementById('chart-mer-roi')) {
+                    KC.register(new ApexCharts(document.getElementById('chart-mer-roi'), KC.base({
+                        chart: {
+                            type: 'line',
+                            height: 320,
+                            toolbar: { show: false }
+                        },
+                        series: [
+                            { name: 'MER %', data: @json($chartMer) },
+                            { name: 'ROI %', data: @json($chartRoi) }
+                        ],
+                        xaxis: commonXaxis,
+                        grid: commonGrid,
+                        stroke: { width: 2.5, curve: 'smooth' },
+                        markers: { size: isDaily ? 0 : 3, hover: { size: 6 } },
+                        yaxis: { labels: { formatter: function (v) { return KC.pct(v); }, style: { colors: chartPalette.axisLabelColor, fontFamily: "'Inter', sans-serif" } } },
+                        colors: ['#F43F5E', '#22C55E'],
+                        tooltip: {
+                            theme: chartPalette.tooltipTheme,
+                            custom: function (opts) {
+                                var i = opts.dataPointIndex;
+                                if (i === undefined || chartFullLabels[i] === undefined) { return ''; }
+
+                                var mer = opts.series[0][i] || 0;
+                                var roi = opts.series[1][i] || 0;
+
+                                return tipContainer()
+                                    + tipTitle(chartFullLabels[i])
+                                    + tipRow('MER %', KC.pct(mer), '#F43F5E')
+                                    + tipRow('ROI %', KC.pct(roi), '#22C55E')
+                                    + '</div>';
+                            }
+                        },
+                        legend: { show: true, position: 'bottom', labels: { colors: chartPalette.legendColor } }
+                    }))).render();
+                }
+
+                if (document.getElementById('chart-hpp-bar')) {
+                    KC.register(new ApexCharts(document.getElementById('chart-hpp-bar'), KC.base({
+                        chart: {
+                            type: 'bar',
+                            height: 320,
+                            toolbar: { show: false }
+                        },
+                        series: [
+                            { name: 'Omset', data: @json($productChartOmset) },
+                            { name: 'HPP', data: @json($productChartHpp) },
+                            { name: 'Margin', data: @json($productChartMargin) }
+                        ],
+                        xaxis: {
+                            categories: @json($productChartNama),
+                            labels: {
+                                rotate: -28,
+                                hideOverlappingLabels: true,
+                                style: { colors: chartPalette.axisLabelColor, fontSize: '11px', fontFamily: "'Inter', sans-serif" }
+                            },
+                            axisBorder: { show: false },
+                            axisTicks: { show: false }
+                        },
+                        grid: commonGrid,
+                        plotOptions: { bar: { columnWidth: '55%', borderRadius: 4 } },
+                        colors: ['#E11D48', '#F5B524', '#22C55E'],
+                        tooltip: {
+                            theme: chartPalette.tooltipTheme,
+                            y: { formatter: function (v) { return KC.rupiah(v); } }
+                        },
+                        legend: { show: true, position: 'bottom', labels: { colors: chartPalette.legendColor } }
+                    }))).render();
+                }
+
+                if (document.getElementById('chart-hpp-share')) {
+                    KC.register(new ApexCharts(document.getElementById('chart-hpp-share'), KC.base({
+                        chart: {
+                            type: 'donut',
+                            height: 320,
+                            toolbar: { show: false }
+                        },
+                        series: @json($productShareValue),
+                        labels: @json($productShareNama),
+                        plotOptions: { pie: { donut: { size: '68%' } } },
+                        dataLabels: { enabled: true, formatter: function (val) { return KC.pct(val); } },
+                        legend: { show: true, position: 'bottom', labels: { colors: chartPalette.legendColor } },
+                        tooltip: {
+                            theme: chartPalette.tooltipTheme,
+                            y: { formatter: function (v) { return KC.rupiah(v); } }
+                        },
+                        colors: KC.colors.slice()
+                    }))).render();
                 }
             });
         </script>

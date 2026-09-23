@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Services\FinancialCalculator;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ReportController extends Controller
@@ -103,40 +102,12 @@ class ReportController extends Controller
 
         $isCustom = $this->isCustomRange($period);
 
-        // Rentang kustom: batas periode dari pasangan bulan/tahun awal & akhir
-        // (lintas tahun didukung). Selebihnya memakai periode bulan/tahun.
-        [$start, $end] = $isCustom
-            ? FinancialCalculator::periodRangeCustom($startMonth, $startYear, $endMonth, $endYear)
-            : FinancialCalculator::periodRange($month, $year);
-
-        $rows = DB::table('order_items')
-            ->join('orders', 'orders.id', '=', 'order_items.order_id')
-            ->join('products', 'products.id', '=', 'order_items.product_id')
-            ->whereBetween('orders.tanggal', [$start, $end])
-            ->select(['products.id', 'products.nama_produk'])
-            ->selectRaw('SUM(order_items.jumlah_pcs) as total_pcs')
-            ->selectRaw('SUM(order_items.subtotal) as total_omset')
-            ->selectRaw('SUM(order_items.hpp_satuan * order_items.jumlah_pcs) as total_hpp')
-            ->groupBy('products.id', 'products.nama_produk')
-            ->orderByDesc('total_omset')
-            ->get();
-
-        $products = [];
-
-        foreach ($rows as $row) {
-            $omset = (int) ($row->total_omset ?? 0);
-            $hpp = (int) ($row->total_hpp ?? 0);
-            $margin = $omset - $hpp;
-
-            $products[] = [
-                'nama_produk' => $row->nama_produk,
-                'total_pcs' => (int) ($row->total_pcs ?? 0),
-                'total_omset' => $omset,
-                'total_hpp' => $hpp,
-                'margin' => $margin,
-                'margin_pct' => $omset > 0 ? round(($margin / $omset) * 100 * 100) / 100 : 0.0,
-            ];
-        }
+        // Rincian per produk dipakai bersama halaman Dashboard. Rentang kustom
+        // memakai batas bulan/tahun awal & akhir (lintas tahun didukung),
+        // selebihnya periode bulan/tahun yang dipilih.
+        $products = $isCustom
+            ? FinancialCalculator::productProfitBreakdownRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::productProfitBreakdown($month, $year);
 
         $totalOmset = $isCustom
             ? FinancialCalculator::totalOmsetRange($startMonth, $startYear, $endMonth, $endYear)

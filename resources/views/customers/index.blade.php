@@ -72,7 +72,7 @@
         @foreach ($customers as $customer)
             <tr>
                 <td>{{ $customer->id }}</td>
-                <td>{{ $customer->nama_lengkap }}</td>
+                <td><strong>{{ $customer->nama_lengkap }}</strong></td>
                 <td>{{ $customer->nama_brand }}</td>
                 <td>{{ $customer->no_whatsapp }}</td>
                 <td>{{ $customer->sumber }}</td>
@@ -133,8 +133,6 @@
             ])
         </div>
     </div>
-
-
 
     @push('scripts')
         <script>

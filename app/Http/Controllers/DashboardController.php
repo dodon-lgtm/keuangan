@@ -81,6 +81,34 @@ class DashboardController extends Controller
             ? FinancialCalculator::profitSplitRange($startMonth, $startYear, $endMonth, $endYear)
             : FinancialCalculator::profitSplit($month, $year);
 
+        // Rincian HPP & profit per produk beserta titik grafiknya. Datanya
+        // digabung dari Laporan HPP & Profit supaya dashboard menjadi satu
+        // tempat pemantauan (tidak perlu pindah ke halaman laporan).
+        $products = $isCustom
+            ? FinancialCalculator::productProfitBreakdownRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::productProfitBreakdown($month, $year);
+
+        $productChartNama = [];
+        $productChartOmset = [];
+        $productChartHpp = [];
+        $productChartMargin = [];
+        $productShareNama = [];
+        $productShareValue = [];
+
+        foreach ($products as $index => $product) {
+            if ($index < 10) {
+                $productChartNama[] = $product['nama_produk'];
+                $productChartOmset[] = (int) $product['total_omset'];
+                $productChartHpp[] = (int) $product['total_hpp'];
+                $productChartMargin[] = (int) $product['margin'];
+            }
+
+            if ($index < 8 && (int) $product['margin'] > 0) {
+                $productShareNama[] = $product['nama_produk'];
+                $productShareValue[] = (int) $product['margin'];
+            }
+        }
+
         $months = $this->monthFilterOptions() + [self::MONTH_ALL_TIME => 'Semua Tahun (All Time)'];
         $monthsId = FinancialCalculator::MONTHS_FULL_ID;
         $years = $this->yearOptionsFor([$year, $startYear, $endYear]);
@@ -96,7 +124,9 @@ class DashboardController extends Controller
             'totalOmset', 'totalTransaksi', 'averageOrder', 'pelangganAktif',
             'totalHPP', 'totalOngkir', 'totalOperasionalExpenses', 'marketingSpend',
             'totalOperasional', 'netProfit',
-            'series', 'mer', 'roi', 'profitSplit', 'chartDaterange'
+            'series', 'mer', 'roi', 'profitSplit', 'chartDaterange',
+            'products', 'productChartNama', 'productChartOmset', 'productChartHpp',
+            'productChartMargin', 'productShareNama', 'productShareValue'
         ));
     }
 

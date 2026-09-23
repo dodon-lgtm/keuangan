@@ -909,6 +909,20 @@
         .filter-panel .filter-field { display: flex; flex-direction: column; gap: 8px; min-width: 150px; }
         .filter-panel .filter-field[hidden] { display: none; }
 
+        .filter-panel .filter-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        @media (max-width: 576px) {
+            .filter-panel .filter-fields {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .filter-panel .filter-field { width: 100%; }
+        }
+
         /* ---- Typeable searchable select (.ss) ---- */
         .ss { position: relative; min-width: 158px; }
         .ss-btn {

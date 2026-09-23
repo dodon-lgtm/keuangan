@@ -1,0 +1,11 @@
+auth
+customers
+dashboard
+dashboard.blade.php
+expenses
+layouts
+orders
+partials
+products
+reports
+welcome.blade.php

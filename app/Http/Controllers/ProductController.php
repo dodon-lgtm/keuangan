@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -34,6 +35,10 @@ class ProductController extends Controller
             'avg_keuntungan' => (int) round((float) ($statsQuery
                 ->selectRaw('AVG(harga_jual - hpp) as avg_keuntungan')
                 ->value('avg_keuntungan') ?? 0)),
+            // Rata-rata margin % (per produk) sebagai pembanding kolom Margin %.
+            'avg_margin_percent' => round((float) ($this->applyFilters($filters, Product::query())
+                ->selectRaw('AVG(CASE WHEN harga_jual > 0 THEN ((harga_jual - hpp) * 1.0 / harga_jual) * 100 ELSE 0 END) as avg_margin_percent')
+                ->value('avg_margin_percent') ?? 0), 2),
         ];
 
         // Grafik: Harga Jual vs HPP (top 10 produk oleh keuntungan)
@@ -82,7 +87,7 @@ class ProductController extends Controller
      * Apply the shared index filters to the given product query.
      *
      * @param  array<string, mixed>  $filters
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     private function applyFilters(array $filters, $query)
     {
@@ -124,6 +129,9 @@ class ProductController extends Controller
             'hpp' => ['required', 'integer', 'min:0'],
         ]);
 
+        // Margin profit dihitung otomatis (tidak diinput manual oleh user).
+        $data['margin_profit'] = (int) $data['harga_jual'] - (int) $data['hpp'];
+
         $product = Product::create($data);
 
         return redirect()
@@ -149,6 +157,9 @@ class ProductController extends Controller
             'harga_jual' => ['required', 'integer', 'min:0'],
             'hpp' => ['required', 'integer', 'min:0'],
         ]);
+
+        // Margin profit selalu dihitung ulang dari harga jual & HPP.
+        $data['margin_profit'] = (int) $data['harga_jual'] - (int) $data['hpp'];
 
         $product->update($data);
 

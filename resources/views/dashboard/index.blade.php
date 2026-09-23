@@ -98,7 +98,7 @@
         </div>
 
         <div class="kpi">
-            <div class="kpi-label">Pelanggan Aktif</div>
+            <div class="kpi-label">Pelanggan Repeat</div>
             <div class="kpi-icon" aria-hidden="true">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />

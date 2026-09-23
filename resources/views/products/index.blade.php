@@ -84,7 +84,8 @@
                 <th>Nama Produk</th>
                 <th>Harga Jual</th>
                 <th>HPP</th>
-                <th>Keuntungan</th>
+                <th>Margin Profit</th>
+                <th>Margin %</th>
                 <th class="text-end">Aksi</th>
             </tr>
         </thead>
@@ -96,12 +97,13 @@
                 <td>@include('partials.rupiah', ['value' => $product->harga_jual])</td>
                 <td>@include('partials.rupiah', ['value' => $product->hpp])</td>
                 <td>
-                    @if ($product->harga_jual - $product->hpp > 0)
-                        <span class="text-success">+@include('partials.rupiah', ['value' => $product->harga_jual - $product->hpp])</span>
+                    @if ($product->margin_profit > 0)
+                        <span class="text-success">+@include('partials.rupiah', ['value' => $product->margin_profit])</span>
                     @else
-                        @include('partials.rupiah', ['value' => $product->harga_jual - $product->hpp])
+                        @include('partials.rupiah', ['value' => $product->margin_profit])
                     @endif
                 </td>
+                <td>{{ number_format($product->margin_percent, 2) }}%</td>
                 <td class="text-end">
                     <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                     <form action="{{ route('products.destroy', $product) }}" method="post" class="d-inline"
@@ -122,6 +124,7 @@
                 <td>@include('partials.rupiah', ['value' => $stats['avg_harga_jual']])</td>
                 <td>@include('partials.rupiah', ['value' => $stats['avg_hpp']])</td>
                 <td>@include('partials.rupiah', ['value' => $stats['avg_keuntungan']])</td>
+                <td>{{ number_format($stats['avg_margin_percent'], 2) }}%</td>
                 <td></td>
             </tr>
         </tfoot>

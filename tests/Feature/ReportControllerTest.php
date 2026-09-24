@@ -145,6 +145,41 @@ class ReportControllerTest extends AuthenticatedTestCase
         $response->assertSee('50.00%');    // margin pct dengan 2 angka di belakang koma
     }
 
+    public function test_dashboard_merges_mer_roi_and_hpp_profit_reports(): void
+    {
+        $this->prepareMonth();
+
+        $response = $this->get('/dashboard?month=9&year=2026');
+
+        $response->assertStatus(200);
+
+        // Ringkasan efisiensi marketing yang semula hanya ada di Laporan MER & ROI.
+        $response->assertSee('MER &amp; ROI', false);
+        $response->assertSee('MER (Spend / Omset)');
+        $response->assertSee('250.00%');
+        $response->assertSee('ROI (Net Profit / Spend)');
+        $response->assertSee('-95.00%');
+        $response->assertSee('Rp 100.000'); // marketing spend
+
+        // Rincian per produk yang semula hanya ada di Laporan HPP & Profit.
+        $response->assertSee('HPP &amp; Profit per Produk', false);
+        $response->assertSee('Voal Test');
+        $response->assertSee('Margin Profit');
+        $response->assertSee('50.00%'); // margin pct
+
+        // Grafik lama tetap ada dan grafik gabungan ikut dirender.
+        foreach ([
+            'chart-trend',
+            'chart-mer',
+            'chart-mer-spend',
+            'chart-mer-roi',
+            'chart-hpp-bar',
+            'chart-hpp-share',
+        ] as $chartId) {
+            $response->assertSee('id="'.$chartId.'"', false);
+        }
+    }
+
     public function test_reports_handle_empty_periods_without_errors(): void
     {
         $this->get('/dashboard?month=1&year=2020')->assertStatus(200);

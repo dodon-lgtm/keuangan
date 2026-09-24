@@ -3,6 +3,30 @@
 @section('title', 'Pengeluaran')
 
 @section('content')
+    <style>
+        /* ---------- Label Kartu KPI (Judul di paling atas kartu) ---------- */
+        /* Dibuat LEBIH BESAR & BOLD, serta menyesuaikan Light/Dark Mode */
+        .card-title {
+            font-size: 20px !important;
+            font-weight: 800 !important;
+            color: var(--text-main, #000000) !important;
+            letter-spacing: 0.25px;
+        }
+
+        html[data-theme="light"] .card-title {
+            color: #000000 !important;
+        }
+        html[data-theme="dark"] .card-title {
+            color: #FFFFFF !important;
+        }
+
+        /* ---------- Isi/Nilai Kartu KPI (Angka/Nominal) ---------- */
+        /* Dibuat BIASA (TIDAK BOLD) */
+        .card-text {
+            font-weight: 400 !important;
+        }
+    </style>
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Pengeluaran</h1>
         <span style="color: var(--muted) !important;">Kelola seluruh biaya bulanan (Budget Iklan &amp; Operasional) dalam satu halaman.</span>
@@ -61,8 +85,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title" style="color: var(--muted) !important;">Total Budget Iklan (Marketing Spend)
-                    </h5>
+                    <h5 class="card-title">Total Budget Iklan (Marketing Spend)</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalMarketing])</p>
                 </div>
             </div>
@@ -70,7 +93,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title" style="color: var(--muted) !important;">Total Fix Cost</h5>
+                    <h5 class="card-title">Total Fix Cost</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalFixCost])</p>
                 </div>
             </div>
@@ -78,7 +101,7 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title" style="color: var(--muted) !important;">Total Variable Cost</h5>
+                    <h5 class="card-title">Total Variable Cost</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalVariableCost])</p>
                 </div>
             </div>

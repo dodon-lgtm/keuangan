@@ -1,14 +1,34 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Log Order & Laporan HPP & Profit')
 
 @section('content')
     <style>
-        /* Judul KPI tetap terbaca pada kedua tema (seperti laporan HPP). */
-        .card-title.text-muted { color: var(--text) !important; }
+
+        /* ---------- Label Kartu KPI (Judul di paling atas kartu) ---------- */
+        /* Dibuat LEBIH BESAR & BOLD, serta menyesuaikan Light/Dark Mode */
+        .card-title {
+            font-size: 20px !important;
+            font-weight: 800 !important;
+            color: var(--text-main, #000000) !important;
+            letter-spacing: 0.25px;
+        }
+
+        html[data-theme="light"] .card-title {
+            color: #000000 !important;
+        }
+        html[data-theme="dark"] .card-title {
+            color: #FFFFFF !important;
+        }
+
+        /* ---------- Isi/Nilai Kartu KPI (Angka/Nominal) ---------- */
+        /* Dibuat BIASA (TIDAK BOLD) */
+        .card-text {
+            font-weight: 400 !important;
+        }
     </style>
 
-    {{-- ================= SECTION 1: LOG ORDER ================= --}}
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Log Order</h1>
         <a href="{{ route('orders.create') }}" class="btn btn-primary">+ Order Hijab</a>

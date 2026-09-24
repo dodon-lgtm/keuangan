@@ -1064,7 +1064,7 @@
         }
         .chart-card > * { position: relative; z-index: 1; }
         .chart-head { display: flex; flex-direction: column; gap: 6px; }
-        .chart-title { font-size: 15px; font-weight: 700; color: var(--text); margin: 0; }
+        .chart-title { font-size: 15px; font-weight: 400; color: var(--text); margin: 0; }
         .chart-desc { font-size: 12.5px; color: var(--muted); margin: 0; }
         .chart-canvas { min-height: 300px; margin-top: 14px; }
         .chart-empty {

@@ -84,4 +84,76 @@ class ReportController extends Controller
             'series'
         ));
     }
+
+    /**
+     * Read-only HPP & profit breakdown of sales per product.
+     */
+    public function hppProfit(Request $request): View
+    {
+        $period = $this->resolvePeriod($request);
+        $month = $period['month'];
+        $monthKey = $period['monthKey'];
+        $year = $period['year'];
+        $filterMode = $period['filterMode'];
+        $startMonth = $period['startMonth'];
+        $startYear = $period['startYear'];
+        $endMonth = $period['endMonth'];
+        $endYear = $period['endYear'];
+
+        $isCustom = $this->isCustomRange($period);
+
+        // Rincian per produk dipakai bersama halaman Dashboard. Rentang kustom
+        // memakai batas bulan/tahun awal & akhir (lintas tahun didukung),
+        // selebihnya periode bulan/tahun yang dipilih.
+        $products = $isCustom
+            ? FinancialCalculator::productProfitBreakdownRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::productProfitBreakdown($month, $year);
+
+        $totalOmset = $isCustom
+            ? FinancialCalculator::totalOmsetRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::totalOmset($month, $year);
+        $totalOperasional = $isCustom
+            ? FinancialCalculator::totalOperasionalRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::totalOperasional($month, $year);
+        $netProfit = $isCustom
+            ? FinancialCalculator::netProfitRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::netProfit($month, $year);
+
+        // Grafik: omset vs hpp vs margin per produk (top 10)
+        $chartNama = [];
+        $chartOmset = [];
+        $chartHpp = [];
+        $chartMargin = [];
+        $shareNama = [];
+        $shareValue = [];
+
+        foreach ($products as $index => $product) {
+            if ($index < 10) {
+                $chartNama[] = $product['nama_produk'];
+                $chartOmset[] = (int) $product['total_omset'];
+                $chartHpp[] = (int) $product['total_hpp'];
+                $chartMargin[] = (int) $product['margin'];
+            }
+
+            if ($index < 8 && (int) $product['margin'] > 0) {
+                $shareNama[] = $product['nama_produk'];
+                $shareValue[] = (int) $product['margin'];
+            }
+        }
+
+        $months = $this->monthFilterOptions();
+        $monthsId = FinancialCalculator::MONTHS_FULL_ID;
+        $years = $this->yearOptionsFor([$year, $startYear, $endYear]);
+        $periodLabel = $isCustom
+            ? $this->customRangeLabel($startMonth, $startYear, $endMonth, $endYear)
+            : $this->periodLabel($month, $year);
+
+        return view('reports.hpp-profit', compact(
+            'month', 'monthKey', 'year', 'filterMode', 'months', 'monthsId', 'years', 'periodLabel',
+            'startMonth', 'startYear', 'endMonth', 'endYear', 'products',
+            'totalOmset', 'totalOperasional', 'netProfit',
+            'chartNama', 'chartOmset', 'chartHpp', 'chartMargin',
+            'shareNama', 'shareValue'
+        ));
+    }
 }

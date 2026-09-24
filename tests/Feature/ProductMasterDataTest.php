@@ -57,7 +57,8 @@ class ProductMasterDataTest extends AuthenticatedTestCase
 
     public function test_product_validation_rejects_missing_name(): void
     {
-        $response = $this->from('/products/create')->post('/products', [
+        // Form produk kini modal di /products, jadi halaman asal (referer) adalah index.
+        $response = $this->from('/products')->post('/products', [
             'nama_produk' => '',
             'harga_jual' => 50000,
             'hpp' => 20000,
@@ -69,6 +70,115 @@ class ProductMasterDataTest extends AuthenticatedTestCase
             0,
             Product::query()->where('harga_jual', 50000)->count()
         );
+    }
+
+    public function test_products_index_renders_create_modal(): void
+    {
+        $response = $this->get('/products');
+
+        $response->assertStatus(200);
+        $response->assertSee('+ Produk Hijab');
+        $response->assertSee('id="productModal"', false);
+        $response->assertSee('Tambah Produk');
+        $response->assertDontSee('products/create"', false);
+    }
+
+    public function test_products_index_opens_edit_modal_prefilled_from_query(): void
+    {
+        $product = Product::create([
+            'nama_produk' => 'Voal Modal Edit',
+            'harga_jual' => 30000,
+            'hpp' => 20000,
+        ]);
+
+        $response = $this->get("/products?open=edit&product={$product->id}");
+
+        $response->assertStatus(200);
+        $response->assertSee('Edit Produk');
+        $response->assertSee('value="Voal Modal Edit"', false);
+        $response->assertSee('value="30000"', false);
+        $response->assertSee('value="20000"', false);
+        $response->assertSee(route('products.update', $product), false);
+    }
+
+    public function test_products_index_reopens_edit_modal_with_old_input_after_error(): void
+    {
+        $product = Product::create([
+            'nama_produk' => 'Voal Modal Lama',
+            'harga_jual' => 30000,
+            'hpp' => 20000,
+        ]);
+
+        $this->from('/products')->put("/products/{$product->id}", [
+            'nama_produk' => '',
+            'harga_jual' => 25000,
+            'hpp' => 10000,
+            '_modal_mode' => 'edit',
+            '_modal_product_id' => $product->id,
+        ])->assertRedirectBackWithErrors(['nama_produk']);
+
+        $this->get('/products')
+            ->assertStatus(200)
+            ->assertSee('Edit Produk')
+            ->assertSee('value="25000"', false)
+            ->assertSee('value="10000"', false);
+    }
+
+    public function test_product_can_be_created_from_modal_via_json_request(): void
+    {
+        $response = $this->postJson('/products', [
+            'nama_produk' => 'Voal Modal Baru',
+            'harga_jual' => 50000,
+            'hpp' => 20000,
+        ]);
+
+        // Modal memakai fetch + Accept: application/json.
+        $response->assertOk()->assertJson([
+            'success' => true,
+            'redirect' => route('products.index'),
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'nama_produk' => 'Voal Modal Baru',
+            'margin_profit' => 30000,
+        ]);
+    }
+
+    public function test_product_modal_validation_errors_are_returned_as_json(): void
+    {
+        $this->postJson('/products', [
+            'nama_produk' => '',
+            'harga_jual' => 50000,
+            'hpp' => 20000,
+        ])->assertStatus(422)->assertJsonValidationErrors('nama_produk');
+
+        $this->assertSame(0, Product::query()->count());
+    }
+
+    public function test_product_can_be_updated_from_modal_via_json_request(): void
+    {
+        $product = Product::create([
+            'nama_produk' => 'Voal Modal Update',
+            'harga_jual' => 30000,
+            'hpp' => 12000,
+        ]);
+
+        $response = $this->putJson("/products/{$product->id}", [
+            'nama_produk' => 'Voal Modal Update Fix',
+            'harga_jual' => 45000,
+            'hpp' => 25000,
+        ]);
+
+        $response->assertOk()->assertJson([
+            'success' => true,
+            'redirect' => route('products.index'),
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->id,
+            'nama_produk' => 'Voal Modal Update Fix',
+            'margin_profit' => 20000,
+        ]);
     }
 
     public function test_product_can_be_updated(): void

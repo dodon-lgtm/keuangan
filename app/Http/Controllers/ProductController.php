@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -75,11 +76,19 @@ class ProductController extends Controller
             }
         }
 
+        // State awal modal Tambah/Edit Produk (dirender di dalam index).
+        [$formMode, $formProduct] = $this->resolveModalState($request);
+
+        // Modal dibuka otomatis ketika halaman dipanggil lewat ?open=... atau
+        // setelah submit form gagal validasi (agar pesan error tetap terlihat).
+        $formAutoOpen = $request->filled('open') || old('_modal_mode') !== null;
+
         return view('products.index', compact(
             'products', 'stats',
             'q', 'hargaMin', 'hargaMax',
             'chartNama', 'chartJual', 'chartHpp', 'chartMargin',
-            'shareNama', 'shareValue'
+            'shareNama', 'shareValue',
+            'formMode', 'formProduct', 'formAutoOpen'
         ));
     }
 
@@ -111,17 +120,52 @@ class ProductController extends Controller
     }
 
     /**
-     * Show the form for creating a new product.
+     * Resolve the initial state of the Tambah/Edit Produk modal that is now
+     * rendered together with the index page.
+     *
+     * Priorities:
+     * 1. old('_modal_mode') — the modal form was submitted and validation failed
+     *    (redirect back), so the earlier input/mode must be restored.
+     * 2. ?open=create / ?open=edit&product={id} — old products.create /
+     *    products.edit links (kept as redirects) and the "+ Produk Hijab" button.
+     *
+     * @return array{0: string, 1: Product|null}
      */
-    public function create(): View
+    private function resolveModalState(Request $request): array
     {
-        return view('products.create');
+        $mode = old('_modal_mode');
+        $productId = old('_modal_product_id');
+
+        // Tanpa old input: mode dibaca dari query string (?open=...&product=...).
+        if (! is_string($mode)) {
+            $mode = $request->query('open');
+            $productId = $request->query('product');
+        }
+
+        if ($mode !== 'edit' || ! is_scalar($productId) || blank($productId)) {
+            return ['create', null];
+        }
+
+        $product = Product::query()->find((int) $productId);
+
+        return $product instanceof Product ? ['edit', $product] : ['create', null];
+    }
+
+    /**
+     * Show the form for creating a new product.
+     *
+     * The form itself now lives in a modal on the index page, so the legacy
+     * products.create URL only redirects there with the modal pre-opened.
+     */
+    public function create(): RedirectResponse
+    {
+        return redirect()->route('products.index', ['open' => 'create']);
     }
 
     /**
      * Store a newly created product in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse|RedirectResponse
     {
         $data = $request->validate([
             'nama_produk' => ['required', 'string', 'max:255'],
@@ -134,23 +178,41 @@ class ProductController extends Controller
 
         $product = Product::create($data);
 
+        $message = "Produk {$product->nama_produk} berhasil ditambahkan.";
+
+        // Modal mengirim lewat fetch() (Accept: application/json) agar error
+        // validasi bisa tampil di dalam modal tanpa reload halaman.
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'redirect' => route('products.index'),
+            ]);
+        }
+
         return redirect()
             ->route('products.index')
-            ->with('success', "Produk {$product->nama_produk} berhasil ditambahkan.");
+            ->with('success', $message);
     }
 
     /**
      * Show the form for editing the specified product.
+     *
+     * Same as create(): the form is a modal on the index page, so this legacy
+     * URL redirects there with the edit modal pre-opened for the product.
      */
-    public function edit(Product $product): View
+    public function edit(Product $product): RedirectResponse
     {
-        return view('products.edit', compact('product'));
+        return redirect()->route('products.index', [
+            'open' => 'edit',
+            'product' => $product->id,
+        ]);
     }
 
     /**
      * Update the specified product in storage.
      */
-    public function update(Request $request, Product $product): RedirectResponse
+    public function update(Request $request, Product $product): JsonResponse|RedirectResponse
     {
         $data = $request->validate([
             'nama_produk' => ['required', 'string', 'max:255'],
@@ -163,9 +225,20 @@ class ProductController extends Controller
 
         $product->update($data);
 
+        $message = "Produk {$product->nama_produk} berhasil diperbarui.";
+
+        // Lihat store(): jalur JSON dipakai modal, jalur redirect untuk non-JS.
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'redirect' => route('products.index'),
+            ]);
+        }
+
         return redirect()
             ->route('products.index')
-            ->with('success', "Produk {$product->nama_produk} berhasil diperbarui.");
+            ->with('success', $message);
     }
 
     /**

@@ -15,9 +15,17 @@ class FormViewRenderTest extends AuthenticatedTestCase
 {
     public function test_product_create_view_renders(): void
     {
+        // Form Tambah kini berupa modal di halaman index: rute lama mengalihkan
+        // ke /products?open=create yang langsung membuka modalnya.
         $this->get('/products/create')
+            ->assertRedirectToRoute('products.index', ['open' => 'create']);
+
+        $this->get('/products?open=create')
             ->assertStatus(200)
-            ->assertSee('Produk Hijab');
+            ->assertSee('+ Produk Hijab')
+            ->assertSee('Tambah Produk')
+            ->assertSee('id="productModal"', false)
+            ->assertSee('Nama Produk');
     }
 
     public function test_product_edit_view_renders(): void
@@ -28,15 +36,21 @@ class FormViewRenderTest extends AuthenticatedTestCase
             'hpp' => 10000,
         ]);
 
+        // Rute edit lama mengalihkan ke modal edit produk yang bersangkutan.
         $this->get("/products/{$product->id}/edit")
+            ->assertRedirectToRoute('products.index', ['open' => 'edit', 'product' => $product->id]);
+
+        $this->get("/products?open=edit&product={$product->id}")
             ->assertStatus(200)
-            ->assertSee('Produk Edit');
+            ->assertSee('Edit Produk')
+            ->assertSee('value="Voal Test"', false)
+            ->assertSee('value="20000"', false);
     }
 
     public function test_product_form_shows_live_margin_profit_preview(): void
     {
-        // Form Tambah: belum ada isi -> preview dimulai dari nol (bukan NaN).
-        $this->get('/products/create')
+        // Form Tambah (modal): belum ada isi -> preview dimulai dari nol (bukan NaN).
+        $this->get('/products?open=create')
             ->assertStatus(200)
             ->assertSee('Margin Profit (Estimasi)')
             ->assertSee('Margin %')
@@ -53,7 +67,7 @@ class FormViewRenderTest extends AuthenticatedTestCase
             'hpp' => 20000,
         ]);
 
-        $this->get("/products/{$product->id}/edit")
+        $this->get("/products?open=edit&product={$product->id}")
             ->assertStatus(200)
             ->assertSee('id="margin-profit-preview"', false)
             ->assertSee('id="margin-percent-preview"', false)
@@ -68,7 +82,7 @@ class FormViewRenderTest extends AuthenticatedTestCase
             'hpp' => 30000,
         ]);
 
-        $this->get("/products/{$loss->id}/edit")
+        $this->get("/products?open=edit&product={$loss->id}")
             ->assertStatus(200)
             ->assertSee('margin-preview is-negative', false)
             ->assertSee('Rp -10.000')
@@ -125,12 +139,17 @@ class FormViewRenderTest extends AuthenticatedTestCase
     {
         // Post invalid payloads from the form pages so the views render again
         // with the error bags populated (the regression scenario).
-        $this->from('/products/create')->post('/products', ['nama_produk' => ''])->assertRedirectBackWithErrors(['nama_produk']);
+        $this->from('/products')->post('/products', ['nama_produk' => ''])->assertRedirectBackWithErrors(['nama_produk']);
         $this->from('/customers/create')->post('/customers', ['nama_lengkap' => ''])->assertRedirectBackWithErrors(['nama_lengkap']);
         $this->from('/expenses')->post('/expenses/marketing', ['bulan' => ''])->assertRedirectBackWithErrors(['bulan']);
         $this->from('/expenses')->post('/expenses/operational', ['nama_pengeluaran' => ''])->assertRedirectBackWithErrors(['nama_pengeluaran']);
 
-        $this->get('/products/create')->assertStatus(200);
+        // Form produk adalah modal pada halaman index: pastikan tetap dirender
+        // (bersama error bag) tanpa gagal parse.
+        $this->get('/products')
+            ->assertStatus(200)
+            ->assertSee('id="productModal"', false)
+            ->assertSee('nama_produk_error', false);
         $this->get('/customers/create')->assertStatus(200);
         $this->get('/expenses')->assertStatus(200);
     }

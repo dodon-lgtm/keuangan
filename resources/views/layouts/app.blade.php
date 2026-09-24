@@ -1203,7 +1203,7 @@
                 <a class="top-link" data-top href="{{ route('orders.index') }}">Log Order</a>
                 <a class="top-link" data-top href="{{ route('expenses.index') }}">Pengeluaran</a>
 
-                <div class="js-dropdown">
+                {{-- <div class="js-dropdown">
                     <a class="top-link" data-top="reports" href="#" aria-haspopup="true" aria-expanded="false">
                         Laporan
                         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5 8 5 M6 3 6 7" /></svg>
@@ -1212,7 +1212,7 @@
                         <li><a href="{{ route('reports.mer-roi') }}">MER &amp; ROI</a></li>
                         <li><a href="{{ route('reports.hpp-profit') }}">HPP &amp; Profit</a></li>
                     </ul>
-                </div>
+                </div> --}}
 
                 <form action="{{ route('logout') }}" method="post" class="logout-form">
                     @csrf

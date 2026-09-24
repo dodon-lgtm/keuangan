@@ -180,8 +180,11 @@ class ProductController extends Controller
 
         $message = "Produk {$product->nama_produk} berhasil ditambahkan.";
 
-        // Modal mengirim lewat fetch() (Accept: application/json) agar error
-        // validasi bisa tampil di dalam modal tanpa reload halaman.
+        // Notifikasi sukses di-flash ke session supaya tampil sebagai komponen
+        // flash (partials/flash.blade.php) di halaman daftar produk — baik pada
+        // jalur redirect (non-JS) maupun setelah modal AJAX mengarahkan halaman.
+        $request->session()->flash('success', $message);
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
@@ -190,9 +193,7 @@ class ProductController extends Controller
             ]);
         }
 
-        return redirect()
-            ->route('products.index')
-            ->with('success', $message);
+        return redirect()->route('products.index');
     }
 
     /**
@@ -227,7 +228,10 @@ class ProductController extends Controller
 
         $message = "Produk {$product->nama_produk} berhasil diperbarui.";
 
-        // Lihat store(): jalur JSON dipakai modal, jalur redirect untuk non-JS.
+        // Sama seperti store(): flash notifikasi tetap diset agar modal AJAX pun
+        // menampilkan notifikasi setelah halaman diarahkan ke daftar produk.
+        $request->session()->flash('success', $message);
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
@@ -236,9 +240,7 @@ class ProductController extends Controller
             ]);
         }
 
-        return redirect()
-            ->route('products.index')
-            ->with('success', $message);
+        return redirect()->route('products.index');
     }
 
     /**

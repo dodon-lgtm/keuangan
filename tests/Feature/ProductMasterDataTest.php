@@ -50,6 +50,9 @@ class ProductMasterDataTest extends AuthenticatedTestCase
 
         $response->assertRedirectToRoute('products.index');
 
+        // Notifikasi sukses (komponen flash) tetap diset seperti fitur lain.
+        $response->assertSessionHas('success', 'Produk Voal Test N berhasil ditambahkan.');
+
         $this->assertTrue(
             Product::query()->where('nama_produk', 'Voal Test N')->exists()
         );
@@ -142,6 +145,16 @@ class ProductMasterDataTest extends AuthenticatedTestCase
             'nama_produk' => 'Voal Modal Baru',
             'margin_profit' => 30000,
         ]);
+
+        // Notifikasi sukses harus siap tampil di halaman yang dibuka JS setelah
+        // simpan (halaman daftar produk) — sama seperti fitur lain.
+        $response->assertSessionHas('success', 'Produk Voal Modal Baru berhasil ditambahkan.');
+
+        $this->get('/products')
+            ->assertStatus(200)
+            ->assertSee('flash-success', false)
+            ->assertSee('Berhasil')
+            ->assertSee('Produk Voal Modal Baru berhasil ditambahkan.');
     }
 
     public function test_product_modal_validation_errors_are_returned_as_json(): void
@@ -179,6 +192,14 @@ class ProductMasterDataTest extends AuthenticatedTestCase
             'nama_produk' => 'Voal Modal Update Fix',
             'margin_profit' => 20000,
         ]);
+
+        // Notifikasi sukses juga harus tampil setelah modal edit disimpan.
+        $response->assertSessionHas('success', 'Produk Voal Modal Update Fix berhasil diperbarui.');
+
+        $this->get('/products')
+            ->assertStatus(200)
+            ->assertSee('flash-success', false)
+            ->assertSee('Produk Voal Modal Update Fix berhasil diperbarui.');
     }
 
     public function test_product_can_be_updated(): void
@@ -198,6 +219,7 @@ class ProductMasterDataTest extends AuthenticatedTestCase
         ]);
 
         $response->assertRedirectToRoute('products.index');
+        $response->assertSessionHas('success', 'Produk Voal Latte Premium Updated berhasil diperbarui.');
 
         $product->refresh();
 

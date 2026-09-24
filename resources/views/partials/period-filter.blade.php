@@ -1,12 +1,19 @@
 {{-- Filter Periode dengan tiga mode: Bulanan Spesifik, Full Year,
      dan Rentang Kustom (bulan mulai - bulan selesai, lintas tahun). --}}
 @php
+    // Set fallback default jika variabel tidak dikirim dari Controller
+    $year = $year ?? request('year', date('Y'));
+    $monthKey = $monthKey ?? request('month', 'all');
+    $months = $months ?? \App\Services\FinancialCalculator::MONTHS_FULL_ID;
+    $years = $years ?? range(date('Y') - 5, date('Y') + 5);
+
     $filterMode = $filterMode ?? \App\Http\Controllers\Controller::MODE_SPECIFIC;
     $monthsId = $monthsId ?? \App\Services\FinancialCalculator::MONTHS_FULL_ID;
     $startMonth = $startMonth ?? 1;
     $startYear = $startYear ?? $year;
     $endMonth = $endMonth ?? 12;
     $endYear = $endYear ?? $year;
+    
     $modes = [
         \App\Http\Controllers\Controller::MODE_SPECIFIC => 'Bulanan Spesifik',
         \App\Http\Controllers\Controller::MODE_FULL_YEAR => 'Full Year',

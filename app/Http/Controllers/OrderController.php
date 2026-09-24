@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Observers\OrderObserver;
+use App\Services\FinancialCalculator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,12 @@ use Illuminate\View\View;
 class OrderController extends Controller
 {
     /**
-     * Display a listing of the orders.
+     * Halaman tunggal "Log Order" + "Laporan HPP & Profit".
+     *
+     * Section 1 (Log Order): panel filter, KPI omset & pcs, tabel transaksi,
+     * serta grafik analisis tipe bayar / jenis order / metode bayar.
+     * Section 2 (HPP & Profit): KPI ringkasan financial, rincian HPP per
+     * produk, dan grafik omset vs HPP vs margin untuk periode terpilih.
      */
     public function index(Request $request): View
     {
@@ -71,20 +77,17 @@ class OrderController extends Controller
 
         $orders = $base->orderByDesc('id')->paginate(10)->withQueryString();
 
-        // Statistiken (filter-bewust)
-        $filteredIds = $base->clone()->select('id');
-
+        // Statistik log order (ikut filter di atas)
         $totalOmset = (int) $base->sum('nominal');
 
-        // Ambil array ID-nya terlebih dahulu menggunakan ->pluck('id')
-        $orderIds = is_object($filteredIds) ? $filteredIds->pluck('id') : $filteredIds;
+        // ID order hasil filter dipakai untuk menghitung total pcs terjual.
+        $orderIds = $base->clone()->select('id')->pluck('id');
 
-       $orderIds = is_object($filteredIds) ? $filteredIds->pluck('id') : $filteredIds;
+        $totalPcs = (int) DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->whereIn('orders.id', $orderIds)
+            ->sum('order_items.jumlah_pcs');
 
-$totalPcs = (int) DB::table('order_items')
-    ->join('orders', 'orders.id', '=', 'order_items.order_id')
-    ->whereIn('orders.id', $orderIds)
-    ->sum('order_items.jumlah_pcs');
         // Grafik: omset per tipe bayar
         $tipeTotals = [];
 
@@ -136,7 +139,96 @@ $totalPcs = (int) DB::table('order_items')
             $chartMetodeValue[] = (int) ($metodeTotals[$label] ?? 0);
         }
 
+        // ---------- Section 2: Laporan HPP & Profit (per periode) ----------
+        $period = $this->resolvePeriod($request);
+        $month = $period['month'];
+        $monthKey = $period['monthKey'];
+        $year = $period['year'];
+        $filterMode = $period['filterMode'];
+        $startMonth = $period['startMonth'];
+        $startYear = $period['startYear'];
+        $endMonth = $period['endMonth'];
+        $endYear = $period['endYear'];
+
+        $isCustom = $this->isCustomRange($period);
+
+        // Rentang kustom: batas periode dari pasangan bulan/tahun awal & akhir
+        // (lintas tahun didukung). Selebihnya memakai periode bulan/tahun.
+        [$start, $end] = $isCustom
+            ? FinancialCalculator::periodRangeCustom($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::periodRange($month, $year);
+
+        $rows = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->join('products', 'products.id', '=', 'order_items.product_id')
+            ->whereBetween('orders.tanggal', [$start, $end])
+            ->select(['products.id', 'products.nama_produk'])
+            ->selectRaw('SUM(order_items.jumlah_pcs) as total_pcs')
+            ->selectRaw('SUM(order_items.subtotal) as total_omset')
+            ->selectRaw('SUM(order_items.hpp_satuan * order_items.jumlah_pcs) as total_hpp')
+            ->groupBy('products.id', 'products.nama_produk')
+            ->orderByDesc('total_omset')
+            ->get();
+
+        $products = [];
+
+        foreach ($rows as $row) {
+            $omset = (int) ($row->total_omset ?? 0);
+            $hpp = (int) ($row->total_hpp ?? 0);
+            $margin = $omset - $hpp;
+
+            $products[] = [
+                'nama_produk' => $row->nama_produk,
+                'total_pcs' => (int) ($row->total_pcs ?? 0),
+                'total_omset' => $omset,
+                'total_hpp' => $hpp,
+                'margin' => $margin,
+                'margin_pct' => $omset > 0 ? round(($margin / $omset) * 100 * 100) / 100 : 0.0,
+            ];
+        }
+
+        // Ringkasan financial periode terpilih (omset, biaya, laba bersih).
+        $periodeOmset = $isCustom
+            ? FinancialCalculator::totalOmsetRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::totalOmset($month, $year);
+        $totalOperasional = $isCustom
+            ? FinancialCalculator::totalOperasionalRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::totalOperasional($month, $year);
+        $netProfit = $isCustom
+            ? FinancialCalculator::netProfitRange($startMonth, $startYear, $endMonth, $endYear)
+            : FinancialCalculator::netProfit($month, $year);
+
+        // Grafik: omset vs hpp vs margin per produk (top 10)
+        $chartNama = [];
+        $chartOmset = [];
+        $chartHpp = [];
+        $chartMargin = [];
+        $shareNama = [];
+        $shareValue = [];
+
+        foreach ($products as $index => $product) {
+            if ($index < 10) {
+                $chartNama[] = $product['nama_produk'];
+                $chartOmset[] = (int) $product['total_omset'];
+                $chartHpp[] = (int) $product['total_hpp'];
+                $chartMargin[] = (int) $product['margin'];
+            }
+
+            if ($index < 8 && (int) $product['margin'] > 0) {
+                $shareNama[] = $product['nama_produk'];
+                $shareValue[] = (int) $product['margin'];
+            }
+        }
+
+        $months = $this->monthFilterOptions();
+        $monthsId = FinancialCalculator::MONTHS_FULL_ID;
+        $years = $this->yearOptionsFor([$year, $startYear, $endYear]);
+        $periodLabel = $isCustom
+            ? $this->customRangeLabel($startMonth, $startYear, $endMonth, $endYear)
+            : $this->periodLabel($month, $year);
+
         return view('orders.index', compact(
+            // Section 1: Log Order
             'orders',
             'totalOmset',
             'totalPcs',
@@ -153,7 +245,31 @@ $totalPcs = (int) DB::table('order_items')
             'chartJenis',
             'chartJenisValue',
             'chartMetode',
-            'chartMetodeValue'
+            'chartMetodeValue',
+            // Section 2: Laporan HPP & Profit
+            'products',
+            'periodeOmset',
+            'totalOperasional',
+            'netProfit',
+            'chartNama',
+            'chartOmset',
+            'chartHpp',
+            'chartMargin',
+            'shareNama',
+            'shareValue',
+            // Filter periode (dipakai partials.period-filter & label periode)
+            'month',
+            'monthKey',
+            'year',
+            'filterMode',
+            'months',
+            'monthsId',
+            'years',
+            'periodLabel',
+            'startMonth',
+            'startYear',
+            'endMonth',
+            'endYear',
         ));
     }
 

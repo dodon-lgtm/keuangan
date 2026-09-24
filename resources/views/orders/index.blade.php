@@ -1,64 +1,77 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
-@section('title', 'Log Order')
+@section('title', 'Log Order & Laporan HPP & Profit')
 
 @section('content')
+    <style>
+        /* Judul KPI tetap terbaca pada kedua tema (seperti laporan HPP). */
+        .card-title.text-muted { color: var(--text) !important; }
+    </style>
+
+    {{-- ================= SECTION 1: LOG ORDER ================= --}}
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Log Order</h1>
         <a href="{{ route('orders.create') }}" class="btn btn-primary">+ Order Hijab</a>
     </div>
 
+    {{-- Panel Filter: filter log order (Section 1) + periode laporan HPP (Section 2) --}}
     <form action="{{ route('orders.index') }}" method="get" class="filter-panel">
-        <div class="filter-field">
-            <label for="q">Ketikan untuk mencari</label>
-            <input type="text" name="q" id="q" value="{{ $q }}" class="filter-input"
-                   placeholder="Pelanggan, produk, atau admin...">
+        <div class="filter-fields">
+            <div class="filter-field">
+                <label for="q">Ketikan untuk mencari</label>
+                <input type="text" name="q" id="q" value="{{ $q }}" class="filter-input"
+                       placeholder="Pelanggan, produk, atau admin...">
+            </div>
+            <div class="filter-field">
+                <label for="tipe_bayar">Tipe Bayar</label>
+                <select name="tipe_bayar" id="tipe_bayar" class="filter-select" data-searchable>
+                    <option value="">Tipe Bayar</option>
+                    @foreach (['Full Payment', 'DP', 'Pelunasan'] as $option)
+                        <option value="{{ $option }}" @selected($tipeBayar === $option)>{{ $option }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="filter-field">
+                <label for="jenis_order">Jenis Order</label>
+                <select name="jenis_order" id="jenis_order" class="filter-select" data-searchable>
+                    <option value="">Jenis Order</option>
+                    @foreach (['Custom Design', 'Ready Stock'] as $option)
+                        <option value="{{ $option }}" @selected($jenisOrder === $option)>{{ $option }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="filter-field">
+                <label for="metode_bayar">Metode Bayar</label>
+                <select name="metode_bayar" id="metode_bayar" class="filter-select" data-searchable>
+                    <option value="">Metode Bayar</option>
+                    @foreach (['Transfer Bank', 'QRIS', 'Cash'] as $option)
+                        <option value="{{ $option }}" @selected($metodeBayar === $option)>{{ $option }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="filter-field">
+                <label for="tanggal_from">Tanggal Dari</label>
+                <input type="date" name="tanggal_from" id="tanggal_from" value="{{ $tanggalFrom }}" class="filter-input">
+            </div>
+            <div class="filter-field">
+                <label for="tanggal_to">Tanggal Sampai</label>
+                <input type="date" name="tanggal_to" id="tanggal_to" value="{{ $tanggalTo }}" class="filter-input">
+            </div>
+            <div class="filter-field">
+                <label for="nominal_min">Nominal Min (Rp)</label>
+                <input type="number" name="nominal_min" id="nominal_min" value="{{ $nominalMin ?? '' }}" min="0"
+                       class="filter-input" placeholder="0">
+            </div>
+            <div class="filter-field">
+                <label for="nominal_max">Nominal Max (Rp)</label>
+                <input type="number" name="nominal_max" id="nominal_max" value="{{ $nominalMax ?? '' }}" min="0"
+                       class="filter-input" placeholder="Harga Maksimal">
+            </div>
         </div>
-        <div class="filter-field">
-            <label for="tipe_bayar">Tipe Bayar</label>
-            <select name="tipe_bayar" id="tipe_bayar" class="filter-select" data-searchable>
-                <option value="">Tipe Bayar</option>
-                @foreach (['Full Payment', 'DP', 'Pelunasan'] as $option)
-                    <option value="{{ $option }}" @selected($tipeBayar === $option)>{{ $option }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="filter-field">
-            <label for="jenis_order">Jenis Order</label>
-            <select name="jenis_order" id="jenis_order" class="filter-select" data-searchable>
-                <option value="">Jenis Order</option>
-                @foreach (['Custom Design', 'Ready Stock'] as $option)
-                    <option value="{{ $option }}" @selected($jenisOrder === $option)>{{ $option }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="filter-field">
-            <label for="metode_bayar">Metode Bayar</label>
-            <select name="metode_bayar" id="metode_bayar" class="filter-select" data-searchable>
-                <option value="">Metode Bayar</option>
-                @foreach (['Transfer Bank', 'QRIS', 'Cash'] as $option)
-                    <option value="{{ $option }}" @selected($metodeBayar === $option)>{{ $option }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="filter-field">
-            <label for="tanggal_from">Tanggal Van</label>
-            <input type="date" name="tanggal_from" id="tanggal_from" value="{{ $tanggalFrom }}" class="filter-input">
-        </div>
-        <div class="filter-field">
-            <label for="tanggal_to">Tanggal Tot</label>
-            <input type="date" name="tanggal_to" id="tanggal_to" value="{{ $tanggalTo }}" class="filter-input">
-        </div>
-        <div class="filter-field">
-            <label for="nominal_min">Nominal Min (Rp)</label>
-            <input type="number" name="nominal_min" id="nominal_min" value="{{ $nominalMin ?? '' }}" min="0"
-                   class="filter-input" placeholder="0">
-        </div>
-        <div class="filter-field">
-            <label for="nominal_max">Nominal Max (Rp)</label>
-            <input type="number" name="nominal_max" id="nominal_max" value="{{ $nominalMax ?? '' }}" min="0"
-                   class="filter-input" placeholder="Harga Maksimal">
-        </div>
+
+        {{-- Filter periode laporan HPP & Profit (Section 2) --}}
+        @include('partials.period-filter')
+
         <button type="submit" class="filter-btn">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M1.5 2.5h13l-5 5.9v4.1l-3 1.5V8.4z" />
@@ -78,11 +91,11 @@
         @endif
     </form>
 
+    {{-- Ringkasan KPI Log Order --}}
     <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <!-- Diubah menggunakan style var(--muted) agar adaptif di dark mode -->
                     <h5 class="card-title" style="color: var(--muted) !important;">Total Keseluruhan Omset</h5>
                     <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalOmset])</p>
                 </div>
@@ -91,14 +104,14 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body">
-                    <!-- Diubah menggunakan style var(--muted) agar adaptif di dark mode -->
                     <h5 class="card-title" style="color: var(--muted) !important;">Total Keseluruhan Pcs Terjual</h5>
-                    <p class="card-text fs-4">{{ $totalPcs }} pcs</p>
+                    <p class="card-text fs-4">{{ number_format($totalPcs) }} pcs</p>
                 </div>
             </div>
         </div>
     </div>
 
+    {{-- Tabel Log Order --}}
     <table class="table table-striped align-middle">
         <thead>
             <tr>
@@ -118,12 +131,12 @@
         @foreach ($orders as $order)
             <tr>
                 <td>{{ $order->id }}</td>
-                <td>{{ $order->customer->nama_lengkap }}</td>
+                <td>{{ $order->customer?->nama_lengkap ?? 'Tanpa Pelanggan' }}</td>
                 <td>
                     @if ($order->orderItems->isEmpty())
                         <span style="color: var(--muted);">—</span>
                     @else
-                        {{ $order->orderItems->map(fn ($item) => $item->product->nama_produk . ' (x' . $item->jumlah_pcs . ')')->implode(', ') }}
+                        {{ $order->orderItems->map(fn ($item) => $item->product?->nama_produk . ' (x' . $item->jumlah_pcs . ')')->implode(', ') }}
                     @endif
                 </td>
                 <td>{{ $order->tanggal?->format('d M Y') }}</td>
@@ -151,7 +164,7 @@
                 <td colspan="4">Total Keseluruhan</td>
                 <td>@include('partials.rupiah', ['value' => $totalOmset])</td>
                 <td colspan="3"></td>
-                <td>{{ $totalPcs }} pcs</td>
+                <td>{{ number_format($totalPcs) }} pcs</td>
                 <td></td>
             </tr>
         </tfoot>
@@ -162,16 +175,16 @@
     </div>
 
     @php
-        $tipeHasData = false;
-        foreach ($chartTipeValue as $v) { if ((int) $v > 0) { $tipeHasData = true; break; } }
-
-        $jenisHasData = false;
-        foreach ($chartJenisValue as $v) { if ((int) $v > 0) { $jenisHasData = true; break; } }
+        // Guard: variabel grafik bisa kosong/null saat periode tanpa data.
+        $tipeHasData = ! empty($chartTipeValue ?? []) && array_sum($chartTipeValue ?? []) > 0;
+        $jenisHasData = ! empty($chartJenisValue ?? []) && array_sum($chartJenisValue ?? []) > 0;
+        $metodeHasData = ! empty($chartMetodeValue ?? []) && array_sum($chartMetodeValue ?? []) > 0;
     @endphp
 
+    {{-- Grafik Analisis Order --}}
     <div class="chart-section">
         <span class="chart-eyebrow">Analisis</span>
-        <h2 class="chart-heading">Analisis Grafik</h2>
+        <h2 class="chart-heading">Analisis Grafik Order</h2>
         <p class="chart-sub">Rincian transaksi per tipe bayar, jenis order, dan metode bayar.</p>
 
         <div class="chart-grid">
@@ -193,7 +206,102 @@
                 'id' => 'chart-metode',
                 'title' => 'Omset per Metode Bayar',
                 'desc' => 'Transfer Bank, QRIS & Cash',
-                'empty' => ! $tipeHasData,
+                'empty' => ! $metodeHasData,
+            ])
+        </div>
+    </div>
+
+    {{-- ================= SECTION 2: LAPORAN HPP & PROFIT ================= --}}
+    <div class="chart-section" id="hpp-profit">
+        <span class="chart-eyebrow">Laporan</span>
+        <h2 class="chart-heading">Laporan HPP &amp; Profit</h2>
+        <p class="chart-sub">Rincian omset, HPP, dan margin per produk untuk {{ $periodLabel }}.</p>
+    </div>
+
+    {{-- KPI Ringkasan Financial (mengikuti filter periode di atas) --}}
+    <div class="row row-cols-1 row-cols-md-3 g-3 mb-4 mt-3">
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Total Omset</h5>
+                    <p class="card-text fs-4">@include('partials.rupiah', ['value' => $periodeOmset ?? 0])</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Total Operasional</h5>
+                    <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalOperasional ?? 0])</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Net Profit</h5>
+                    <p class="card-text fs-4">@include('partials.rupiah', ['value' => $netProfit ?? 0])</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Tabel Rincian HPP per Produk --}}
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Produk</th>
+                <th>Qty Terjual</th>
+                <th>Total Omset</th>
+                <th>Total HPP</th>
+                <th>Margin Profit</th>
+                <th>Margin %</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach ($products ?? [] as $product)
+            <tr>
+                <td>{{ $product['nama_produk'] }}</td>
+                <td>{{ $product['total_pcs'] }}</td>
+                <td>@include('partials.rupiah', ['value' => $product['total_omset']])</td>
+                <td>@include('partials.rupiah', ['value' => $product['total_hpp']])</td>
+                <td>@include('partials.rupiah', ['value' => $product['margin']])</td>
+                <td>{{ number_format((float) $product['margin_pct'], 2) }}%</td>
+            </tr>
+        @endforeach
+        @if (empty($products ?? []))
+            <tr>
+                <td colspan="6" class="text-center text-muted">Belum ada transaksi untuk periode ini.</td>
+            </tr>
+        @endif
+        </tbody>
+    </table>
+
+    @php
+        // Guard: data grafik HPP bisa kosong/null saat periode tanpa transaksi.
+        $chartHppEmpty = count($chartNama ?? []) === 0;
+        $shareHppEmpty = count($shareNama ?? []) === 0;
+    @endphp
+
+    {{-- Grafik Analisis HPP --}}
+    <div class="chart-section">
+        <span class="chart-eyebrow">Analisis</span>
+        <h2 class="chart-heading">Analisis Grafik HPP &amp; Profit</h2>
+        <p class="chart-sub">Perbandingan omset, HPP, dan margin per produk untuk {{ $periodLabel }}.</p>
+
+        <div class="chart-grid">
+            @include('partials.chart-card', [
+                'id' => 'chart-hpp-bar',
+                'title' => 'Omset vs HPP vs Margin',
+                'desc' => 'Top 10 produk (per omset)',
+                'empty' => $chartHppEmpty,
+            ])
+
+            @include('partials.chart-card', [
+                'id' => 'chart-hpp-share',
+                'title' => 'Pembagian Margin',
+                'desc' => 'Margin per produk (top 8)',
+                'empty' => $shareHppEmpty,
             ])
         </div>
     </div>
@@ -203,11 +311,12 @@
             document.addEventListener('DOMContentLoaded', function () {
                 var KC = window.KeuanganChart;
 
+                // --- Section 1: grafik log order ---
                 if (document.getElementById('chart-tipe')) {
                     new ApexCharts(document.getElementById('chart-tipe'), KC.base({
                         chart: { type: 'bar' },
-                        series: [{ name: 'Omset', data: @json($chartTipeValue) }],
-                        xaxis: { categories: @json($chartTipe) },
+                        series: [{ name: 'Omset', data: @json($chartTipeValue ?? []) }],
+                        xaxis: { categories: @json($chartTipe ?? []) },
                         colors: ['#E11D48']
                     })).render();
                 }
@@ -215,8 +324,8 @@
                 if (document.getElementById('chart-jenis')) {
                     new ApexCharts(document.getElementById('chart-jenis'), KC.base({
                         chart: { type: 'bar' },
-                        series: [{ name: 'Transaksi', data: @json($chartJenisValue) }],
-                        xaxis: { categories: @json($chartJenis) },
+                        series: [{ name: 'Transaksi', data: @json($chartJenisValue ?? []) }],
+                        xaxis: { categories: @json($chartJenis ?? []) },
                         yaxis: { labels: { style: { colors: '#9AA1AB', fontFamily: "'Inter', sans-serif" }, formatter: function (v) { return String(Math.round(v)); } } },
                         colors: ['#22D3EE']
                     })).render();
@@ -225,8 +334,36 @@
                 if (document.getElementById('chart-metode')) {
                     new ApexCharts(document.getElementById('chart-metode'), KC.base({
                         chart: { type: 'donut' },
-                        series: @json($chartMetodeValue),
-                        labels: @json($chartMetode),
+                        series: @json($chartMetodeValue ?? []),
+                        labels: @json($chartMetode ?? []),
+                        plotOptions: { pie: { donut: { size: '68%' } } },
+                        dataLabels: { enabled: true, formatter: function (val) { return KC.pct(val); } },
+                        legend: { show: true, position: 'bottom' },
+                        tooltip: { y: { formatter: function (v) { return KC.rupiah(v); } } },
+                        colors: KC.colors.slice()
+                    })).render();
+                }
+
+                // --- Section 2: grafik HPP & profit ---
+                if (document.getElementById('chart-hpp-bar')) {
+                    new ApexCharts(document.getElementById('chart-hpp-bar'), KC.base({
+                        chart: { type: 'bar' },
+                        series: [
+                            { name: 'Omset', data: @json($chartOmset ?? []) },
+                            { name: 'HPP', data: @json($chartHpp ?? []) },
+                            { name: 'Margin', data: @json($chartMargin ?? []) }
+                        ],
+                        xaxis: { categories: @json($chartNama ?? []) },
+                        legend: { show: true, position: 'bottom' },
+                        colors: ['#E11D48', '#F5B524', '#22C55E']
+                    })).render();
+                }
+
+                if (document.getElementById('chart-hpp-share')) {
+                    new ApexCharts(document.getElementById('chart-hpp-share'), KC.base({
+                        chart: { type: 'donut' },
+                        series: @json($shareValue ?? []),
+                        labels: @json($shareNama ?? []),
                         plotOptions: { pie: { donut: { size: '68%' } } },
                         dataLabels: { enabled: true, formatter: function (val) { return KC.pct(val); } },
                         legend: { show: true, position: 'bottom' },

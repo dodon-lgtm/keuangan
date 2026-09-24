@@ -62,6 +62,10 @@ Route::middleware('auth')->group(function () {
     // Laporan
     Route::get('/reports/mer-roi', [ReportController::class, 'merRoi'])
         ->name('reports.mer-roi');
-    Route::get('/reports/hpp-profit', [ReportController::class, 'hppProfit'])
+
+    // Laporan HPP & Profit menyatu dengan Log Order dalam satu halaman
+    // (OrderController@index). Route lama dipertahankan sebagai alias agar
+    // tautan/bookmark lama tetap berfungsi.
+    Route::get('/reports/hpp-profit', [OrderController::class, 'index'])
         ->name('reports.hpp-profit');
 });

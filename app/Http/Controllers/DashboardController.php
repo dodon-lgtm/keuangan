@@ -59,9 +59,16 @@ class DashboardController extends Controller
             ? FinancialCalculator::netProfitRange($startMonth, $startYear, $endMonth, $endYear)
             : FinancialCalculator::netProfit($month, $year);
 
-        // Grafik dinamis (mirip Google Analytics): harian saat bulan tertentu
-        // dipilih, bulanan saat "Semua Bulan / Full Year", tahunan saat
-        // "Semua Tahun / All Time", dan per bulan untuk rentang kustom.
+        // Grafik dinamis (mirip Google Analytics):
+        //  - "daily" : satu bulan spesifik - termasuk rentang kustom yang
+        //              menunjuk bulan yang sama (mis. Sep 2026 - Sep 2026,
+        //              dinormalkan menjadi "daily" di resolvePeriod) -
+        //              menghasilkan satu titik data per tanggal 1 s/d akhir
+        //              bulan.
+        //  - "custom": rentang kustom lebih dari satu bulan (mis. Mei - Juli),
+        //              menghasilkan satu titik data per bulan.
+        //  - "yearly": "Semua Tahun / All Time", satu titik data per tahun.
+        //  - default : "Semua Bulan / Full Year", satu titik data per bulan.
         $series = match ($chartMode) {
             'daily' => FinancialCalculator::dailySeries($year, $month),
             'yearly' => FinancialCalculator::allTimeSeries(),
@@ -133,8 +140,7 @@ class DashboardController extends Controller
     /**
      * Chart date-range pill configuration.
      *
-     * @param string $chartMode
-     * @param array<int, array<string, mixed>> $series
+     * @param  array<int, array<string, mixed>>  $series
      * @return array<int, array{label:string, value:string, mode:string, count:int|null}>
      */
     protected function chartDaterange(string $chartMode, array $series): array

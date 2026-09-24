@@ -20,7 +20,7 @@ class ReportControllerTest extends AuthenticatedTestCase
         $response->assertStatus(200);
         $response->assertSee('Dashboard');
         $response->assertSee('Total Omset');
-        $response->assertSee('Pelanggan Aktif');
+        $response->assertSee('Pelanggan Repeat');
     }
 
     public function test_dashboard_has_no_segment_cards(): void
@@ -277,6 +277,52 @@ class ReportControllerTest extends AuthenticatedTestCase
         $response->assertSee('Nov 2025', false);
         $response->assertSee('Des 2025', false);
         $response->assertSee('Jan 2026', false);
+    }
+
+    public function test_dashboard_custom_range_on_a_single_month_uses_daily_chart(): void
+    {
+        $this->prepareMonth();
+
+        $response = $this->get('/dashboard?filter_mode=custom_range&start_month=9&start_year=2026&end_month=9&end_year=2026');
+
+        $response->assertStatus(200);
+
+        // Rentang kustom yang menunjuk satu bulan yang sama (Sep - Sep) sama
+        // dengan filter "Bulanan Spesifik": grafik harian dengan label tanggal
+        // 1 s/d akhir bulan (September 2026 = 30 hari).
+        $response->assertSee('Tren Keuangan Harian');
+        $response->assertDontSee('Tren Keuangan Rentang Kustom');
+        $response->assertSee('01 Sep', false);
+        $response->assertSee('30 Sep', false);
+        $response->assertSee('05 September 2026', false);
+        $response->assertSee('var isDaily = true;', false);
+
+        // Pill "1 BLN" aktif dan memuat jumlah titik data harian (30 hari).
+        $response->assertSee('class="pill pill-active"', false);
+        $response->assertSee('(30)');
+
+        // Total & label periode tetap mengikuti bulan tersebut (2 pcs x 20.000).
+        $response->assertSee('September 2026', false);
+        $response->assertSee('Rp 40.000');
+    }
+
+    public function test_dashboard_custom_range_spanning_multiple_months_keeps_monthly_chart(): void
+    {
+        $this->prepareTwoMonths();
+
+        $response = $this->get('/dashboard?filter_mode=custom_range&start_month=9&start_year=2026&end_month=10&end_year=2026');
+
+        $response->assertStatus(200);
+
+        // Lebih dari satu bulan -> satu titik data per bulan, bukan per hari.
+        $response->assertSee('Tren Keuangan Rentang Kustom');
+        $response->assertDontSee('Tren Keuangan Harian');
+        $response->assertSee('Sep 2026', false);
+        $response->assertSee('Okt 2026', false);
+        $response->assertSee('Periode September 2026 – Oktober 2026');
+
+        // Akumulasi dua bulan (2 x Rp 40.000).
+        $response->assertSee('Rp 80.000');
     }
 
     public function test_period_filter_forms_expose_custom_range_fields(): void

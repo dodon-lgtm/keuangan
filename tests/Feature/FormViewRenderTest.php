@@ -33,6 +33,48 @@ class FormViewRenderTest extends AuthenticatedTestCase
             ->assertSee('Produk Edit');
     }
 
+    public function test_product_form_shows_live_margin_profit_preview(): void
+    {
+        // Form Tambah: belum ada isi -> preview dimulai dari nol (bukan NaN).
+        $this->get('/products/create')
+            ->assertStatus(200)
+            ->assertSee('Margin Profit (Estimasi)')
+            ->assertSee('Margin %')
+            ->assertSee('id="margin-profit-preview"', false)
+            ->assertSee('id="margin-percent-preview"', false)
+            ->assertSee('updateMarginPreview', false)
+            ->assertSee('Rp 0')
+            ->assertSee('0.00%');
+
+        // Form Edit: nilai awal preview dihitung dari harga jual & HPP produk.
+        $product = Product::create([
+            'nama_produk' => 'Voal Test',
+            'harga_jual' => 30000,
+            'hpp' => 20000,
+        ]);
+
+        $this->get("/products/{$product->id}/edit")
+            ->assertStatus(200)
+            ->assertSee('id="margin-profit-preview"', false)
+            ->assertSee('id="margin-percent-preview"', false)
+            ->assertSee('Rp 10.000')
+            ->assertSee('33.33%')
+            ->assertDontSee('margin-preview is-negative', false);
+
+        // HPP di atas harga jual: estimasi rugi tampil minus & ditandai merah.
+        $loss = Product::create([
+            'nama_produk' => 'Voal Rugi',
+            'harga_jual' => 20000,
+            'hpp' => 30000,
+        ]);
+
+        $this->get("/products/{$loss->id}/edit")
+            ->assertStatus(200)
+            ->assertSee('margin-preview is-negative', false)
+            ->assertSee('Rp -10.000')
+            ->assertSee('-50.00%');
+    }
+
     public function test_customer_create_view_renders(): void
     {
         $this->get('/customers/create')

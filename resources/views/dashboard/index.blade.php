@@ -290,6 +290,12 @@
         $chartEmptyProduct = count($productChartNama) === 0;
         $chartEmptyShare = count($productShareNama) === 0;
 
+        // Granularitas grafik: mode "daily" - termasuk rentang kustom yang
+        // menunjuk satu bulan yang sama (mis. Sep 2026 - Sep 2026) - membuat
+        // sumbu X menampilkan label tanggal ("01 Sep", "02 Sep", ...) dan
+        // kurva area yang mulus, bukan kolom bulanan.
+        $isDailyChart = $chartMode === 'daily';
+
         $chartTrendTitle = match ($chartMode) {
             'daily' => 'Tren Keuangan Harian',
             'custom' => 'Tren Keuangan Rentang Kustom',
@@ -462,7 +468,7 @@
             document.addEventListener('DOMContentLoaded', function () {
                 var KC = window.KeuanganChart;
                 var chartFullLabels = @json($chartFullLabels);
-                var isDaily = @json($chartMode === 'daily');
+                var isDaily = @json($isDailyChart);
 
                 function tipTitle(text) {
                     var bg = chartPalette.tooltipTheme === 'light' ? 'background:#FFFFFF;color:#14161A;border:1px solid #D1C9BF;border-radius:8px;padding:10px 12px;min-width:210px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.08)' : 'background:#0F172A;color:#F8FAFC;border:1px solid #334155;border-radius:8px;padding:10px 12px;min-width:210px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.5)';

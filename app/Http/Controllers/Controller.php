@@ -9,13 +9,17 @@ use Illuminate\Support\Carbon;
 abstract class Controller
 {
     public const MONTH_ALL_TIME = 'alltime';
+
     public const MONTH_ALL = 'all';
 
     protected const MIN_YEAR = 1900;
+
     protected const MAX_YEAR = 9999;
 
     public const MODE_SPECIFIC = 'specific';
+
     public const MODE_FULL_YEAR = 'full_year';
+
     public const MODE_CUSTOM_RANGE = 'custom_range';
 
     protected function periodModeOptions(): array
@@ -49,6 +53,11 @@ abstract class Controller
      *  - MODE_CUSTOM_RANGE: a custom month range across any years, resolved
      *                       from "start_month", "start_year", "end_month" and
      *                       "end_year" (e.g. Nov 2025 - Jan 2026).
+     *
+     * A custom range that points at the exact same month (e.g. Sep 2026 -
+     * Sep 2026) collapses into the "daily" mode of that month, so its chart
+     * behaves identically to a single month selection. A wider custom range
+     * keeps the "custom" chart mode (one data point per month).
      *
      * @return array{month: int|null, monthKey: string, year: int, mode: string, range: string, filterMode: string, startMonth: int, startYear: int, endMonth: int, endYear: int}
      */
@@ -99,7 +108,20 @@ abstract class Controller
             && ($startYear < $endYear || ($startYear === $endYear && $startMonth <= $endMonth));
 
         if ($filterMode === self::MODE_CUSTOM_RANGE && $customRangeValid) {
-            $mode = 'custom';
+            // Rentang kustom yang menunjuk satu bulan yang sama (mis. Sep 2026
+            // - Sep 2026) diperlakukan persis seperti filter "Bulanan
+            // Spesifik": bulan & tahunnya diselaraskan dengan rentang, lalu
+            // grafik memakai mode "daily" (satu titik data per tanggal 1 s/d
+            // akhir bulan). Rentang kustom yang mencakup lebih dari satu bulan
+            // tetap memakai mode "custom" (satu titik data per bulan).
+            if ($startMonth === $endMonth && $startYear === $endYear) {
+                $mode = 'daily';
+                $resolvedMonth = $startMonth;
+                $monthKey = (string) $startMonth;
+                $year = $startYear;
+            } else {
+                $mode = 'custom';
+            }
         } elseif ($filterMode === self::MODE_CUSTOM_RANGE) {
             $filterMode = $resolvedMonth === null ? self::MODE_FULL_YEAR : self::MODE_SPECIFIC;
         } elseif ($filterMode === self::MODE_FULL_YEAR && $month !== self::MONTH_ALL_TIME) {
@@ -170,10 +192,18 @@ abstract class Controller
     /**
      * Indonesian period label for a custom month range,
      * e.g. "Periode Mei 2026 – Juli 2026".
+     *
+     * A range that collapses into a single month (start month/year equal to
+     * the end month/year, e.g. Sep 2026 - Sep 2026) is labelled like a normal
+     * monthly period ("September 2026") because its data is monthly anyway.
      */
     protected function customRangeLabel(int $startMonth, int $startYear, int $endMonth, int $endYear): string
     {
         $months = FinancialCalculator::MONTHS_FULL_ID;
+
+        if ($startMonth === $endMonth && $startYear === $endYear) {
+            return ($months[$startMonth] ?? (string) $startMonth).' '.$startYear;
+        }
 
         return 'Periode '.($months[$startMonth] ?? '').' '.$startYear
             .' – '.($months[$endMonth] ?? '').' '.$endYear;
@@ -182,19 +212,30 @@ abstract class Controller
     protected function monthOptions(): array
     {
         $months = [];
-        for ($month = 1; $month <= 12; $month++) { $months[$month] = Carbon::createFromDate(2026, $month, 1)->format('F'); }
+        for ($month = 1; $month <= 12; $month++) {
+            $months[$month] = Carbon::createFromDate(2026, $month, 1)->format('F');
+        }
+
         return $months;
     }
 
     protected function monthFilterOptions(): array
-    { return [self::MONTH_ALL => 'Semua Bulan (Full Year)'] + $this->monthOptions(); }
+    {
+        return [self::MONTH_ALL => 'Semua Bulan (Full Year)'] + $this->monthOptions();
+    }
 
     protected function yearOptions(?int $selectedYear = null): array
     {
         $now = Carbon::today();
         $years = [];
-        for ($year = $now->year - 1; $year <= $now->year + 1; $year++) { $years[] = $year; }
-        if ($selectedYear !== null && ! in_array($selectedYear, $years, true)) { $years[] = $selectedYear; sort($years); }
+        for ($year = $now->year - 1; $year <= $now->year + 1; $year++) {
+            $years[] = $year;
+        }
+        if ($selectedYear !== null && ! in_array($selectedYear, $years, true)) {
+            $years[] = $selectedYear;
+            sort($years);
+        }
+
         return $years;
     }
 
@@ -203,7 +244,7 @@ abstract class Controller
      * that the resolved period touches (so a custom range such as
      * November 2025 - January 2026 always offers both years).
      *
-     * @param array<int, int|null> $selectedYears
+     * @param  array<int, int|null>  $selectedYears
      * @return array<int, int>
      */
     protected function yearOptionsFor(array $selectedYears): array
@@ -222,17 +263,24 @@ abstract class Controller
     }
 
     protected function periodStart(int $startMonth, int $startYear): string
-    { return Carbon::createFromDate($startYear, $startMonth, 1)->startOfMonth()->format('Y-m-d'); }
+    {
+        return Carbon::createFromDate($startYear, $startMonth, 1)->startOfMonth()->format('Y-m-d');
+    }
 
     protected function periodEnd(int $endMonth, int $endYear): string
-    { return Carbon::createFromDate($endYear, $endMonth, 1)->endOfMonth()->format('Y-m-d'); }
+    {
+        return Carbon::createFromDate($endYear, $endMonth, 1)->endOfMonth()->format('Y-m-d');
+    }
 
-    protected function periodLabel(?int $month, int $year, int $startMonth = null, int $startYear = null, int $endMonth = null, int $endYear = null): string
+    protected function periodLabel(?int $month, int $year, ?int $startMonth = null, ?int $startYear = null, ?int $endMonth = null, ?int $endYear = null): string
     {
         if ($startMonth !== null && $endMonth !== null && $startYear !== null && $endYear !== null) {
             return 'Periode '.($this->monthOptions()[$startMonth] ?? '').' '.$startYear.' – '.($this->monthOptions()[$endMonth] ?? '').' '.$endYear;
         }
-        if ($month === null) { return 'tahun '.$year.' (Jan-Des)'; }
+        if ($month === null) {
+            return 'tahun '.$year.' (Jan-Des)';
+        }
+
         return ($this->monthOptions()[$month] ?? '').' '.$year;
     }
 

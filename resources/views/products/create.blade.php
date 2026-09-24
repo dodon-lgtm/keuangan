@@ -38,6 +38,9 @@
                     @enderror
                 </div>
 
+                {{-- Kalkulasi live margin profit (harga jual - HPP) sebelum menyimpan. --}}
+                @include('partials.margin-preview', ['hargaJual' => old('harga_jual'), 'hpp' => old('hpp')])
+
                 <button type="submit" class="btn btn-primary">Save</button>
                 <a href="{{ route('products.index') }}" class="btn btn-secondary">Cancel</a>
             </form>

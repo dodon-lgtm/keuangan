@@ -93,20 +93,42 @@ html[data-theme="light"] .theme-switch:hover .ts-track {
     cursor: pointer;
 }
 
-/* ---------- DARK MODE (eksplisit) ---------- */
+/* ---------- DARK MODE (eksplisit) ----------
+   Palet premium financial SaaS: base #090A0F, surface #161922,
+   border #262B38, teks #F8FAFC / #94A3B8, aksen magenta #EC4899. */
 html[data-theme="dark"] {
-    --bg: #08090B;
-    --panel: #0D0F12;
-    --card: #101216;
-    --input: #15181D;
-    --border: #242832;
-    --text: #F5F5F5;
-    --muted: #D6DBE2;
-    --accent: #E11D48;
-    --accent-hover: #C8103F;
-    --accent-soft: rgba(225, 29, 72, 0.12);
-    --success: #22C55E;
-    --error: #F87171;
+    --bg: #090A0F;
+    --panel: #111318;
+    --card: #161922;
+    --input: #191D27;
+    --border: #262B38;
+    --border-strong: #343B4C;
+    --text: #F8FAFC;
+    --text-main: #F8FAFC;
+    --muted: #94A3B8;
+    --accent: #EC4899;
+    --accent-hover: #DB2777;
+    --accent-soft: rgba(236, 72, 153, 0.12);
+    --accent-ring: rgba(236, 72, 153, 0.34);
+    --success: #10B981;
+    --success-soft: rgba(16, 185, 129, 0.12);
+    --success-ring: rgba(16, 185, 129, 0.32);
+    --warning: #F59E0B;
+    --warning-soft: rgba(245, 158, 11, 0.12);
+    --warning-ring: rgba(245, 158, 11, 0.32);
+    --error: #EF4444;
+    --error-soft: rgba(239, 68, 68, 0.12);
+    --error-ring: rgba(239, 68, 68, 0.32);
+    --header-bg: rgba(9, 10, 15, 0.86);
+    --surface-hover: rgba(255, 255, 255, 0.045);
+    --table-head: #0F1117;
+    --table-stripe: rgba(255, 255, 255, 0.016);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --shadow-pop: 0 20px 48px rgba(0, 0, 0, 0.55);
+    --radius: 10px;
+    --radius-sm: 8px;
+    --radius-lg: 12px;
+    --font: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 /* Teks sekunder di dark mode: selalu terang & kontras */
 html[data-theme="dark"] .text-muted,
@@ -124,36 +146,55 @@ html[data-theme="dark"] .chart-note {
    WHITE MODE
    ========================================================================== */
 html[data-theme="light"] {
-    --bg: #F4F5F7;
-    --panel: #FFFFFF;
+    --bg: #F1F5F9;
+    --panel: #F8FAFC;
     --card: #FFFFFF;
     --input: #FFFFFF;
-    --border: #DDE2E9;
-    --text: #14161A;
-    --muted: #5C6675;
-    --accent: #E11D48;
-    --accent-hover: #C8103F;
-    --accent-soft: rgba(225, 29, 72, 0.08);
-    --success: #15803D;
+    --border: #E2E8F0;
+    --border-strong: #CBD5E1;
+    --text: #0F172A;
+    --text-main: #0F172A;
+    --muted: #64748B;
+    --accent: #DB2777;
+    --accent-hover: #BE185D;
+    --accent-soft: rgba(219, 39, 119, 0.09);
+    --accent-ring: rgba(219, 39, 119, 0.24);
+    --success: #059669;
+    --success-soft: rgba(5, 150, 105, 0.10);
+    --success-ring: rgba(5, 150, 105, 0.28);
+    --warning: #D97706;
+    --warning-soft: rgba(217, 119, 6, 0.10);
+    --warning-ring: rgba(217, 119, 6, 0.28);
     --error: #DC2626;
+    --error-soft: rgba(220, 38, 38, 0.10);
+    --error-ring: rgba(220, 38, 38, 0.28);
+    --header-bg: rgba(255, 255, 255, 0.92);
+    --surface-hover: rgba(15, 23, 42, 0.04);
+    --table-head: #F8FAFC;
+    --table-stripe: rgba(15, 23, 42, 0.018);
+    --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.04);
+    --shadow-pop: 0 20px 44px rgba(15, 23, 42, 0.16);
+    --radius: 10px;
+    --radius-sm: 8px;
+    --radius-lg: 12px;
+    --font: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* ---------- Body / background ---------- */
+/* ---------- Body / background ----------
+   Light mode = Slate 100 bersih (#F1F5F9) tanpa gradient magenta yang
+   membuat halaman terasa "pink" dan menyaingi angka finansial. */
 html[data-theme="light"] body {
     color: var(--text);
-    background:
-        radial-gradient(90% 60% at 18% 0%, rgba(225, 29, 72, 0.05), transparent 60%),
-        radial-gradient(60% 50% at 100% 100%, rgba(225, 29, 72, 0.035), transparent 55%),
-        linear-gradient(180deg, #FFFFFF 0%, #F7F8FA 45%, #F4F5F7 100%);
-    background-color: var(--bg);
+    background: #F1F5F9;
+    background-color: #F1F5F9;
 }
 html[data-theme="light"] .bg-grid {
-    opacity: 0.6;
+    opacity: 0.35;
     background-image:
-        linear-gradient(rgba(20, 22, 26, 0.045) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(20, 22, 26, 0.045) 1px, transparent 1px);
+        linear-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
 }
-html[data-theme="light"] .bg-grain { opacity: 0.03; }
+html[data-theme="light"] .bg-grain { opacity: 0.02; }
 
 /* ---------- Flash / alert ---------- */
 html[data-theme="light"] .flash-success,
@@ -742,3 +783,935 @@ html[data-theme="light"] .submit-btn {
     color: #FFFFFF;
     box-shadow: 0 8px 18px rgba(225, 29, 72, 0.24);
 }
+
+/* ==========================================================================
+   REDESIGN 2026 — Premium Financial SaaS Layer
+   --------------------------------------------------------------------------
+   Lapisan ini dimuat PALING AKHIR di theme.css sehingga menimpa gaya lama
+   (dark maupun light) tanpa mengubah markup, variabel Blade, query, maupun
+   logika JS. Prinsip: "Preserve functionality, redesign experience" — hanya
+   tampilan (warna, radius, jarak, tipografi) yang berubah.
+   ========================================================================== */
+
+/* ---------- 1. Top Navigation (edge-to-edge bar) ---------- */
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border);
+    box-shadow: none;
+    backdrop-filter: blur(18px) saturate(1.25);
+    -webkit-backdrop-filter: blur(18px) saturate(1.25);
+}
+/* Hairline merah lama dilepas: pemisah sekarang murni border tipis 1px. */
+.app-header::after { content: none; }
+
+/* Satu baris penuh (edge-to-edge), tiga zona fleksibel:
+   brand (kiri) - nav links (tengah) - aksi (kanan). Sengaja memakai FLEX +
+   order, bukan grid + flex-wrap, supaya tidak ada container terpisah yang
+   bisa terlempar ke baris kedua saat lebar layar berubah. */
+.app-header .inner {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: clamp(10px, 1.6vw, 24px);
+    width: 100%;
+    max-width: none;
+    min-height: 62px;
+    padding: 0 clamp(14px, 2.4vw, 32px);
+}
+
+/* Brand + badge vendor (kiri) */
+.brand { order: 1; flex: 0 0 auto; gap: 10px; min-width: 0; color: var(--text); }
+.brand-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-sm);
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-ring);
+    overflow: hidden;
+}
+.brand-mark svg { width: 18px; height: 18px; }
+.brand-text { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.brand-title {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+.brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-ring);
+    border-radius: 999px;
+}
+.brand-badge::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+}
+
+/* Nav links: deret link polos di TENGAH bar (tanpa container/dock berlatar).
+   Disebut eksplisit untuk kedua tema karena aturan lama
+   `html[data-theme="light"] .nav-menu` lebih spesifik dan masih memberi latar
+   + border di light mode. */
+.nav-menu,
+html[data-theme="dark"] .nav-menu,
+html[data-theme="light"] .nav-menu {
+    order: 2;
+    flex: 1 1 auto;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+.top-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--muted);
+    background: transparent;
+    border-radius: var(--radius-sm);
+    box-shadow: none;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+.top-link::after { content: none; }
+.top-link:hover { color: var(--text); background: var(--surface-hover); }
+.top-link.active {
+    color: var(--text);
+    background: var(--accent-soft);
+    box-shadow: inset 0 0 0 1px var(--accent-ring);
+}
+/* Indikator garis bawah halus khusus pill aktif */
+.top-link.active::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: -8px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--accent);
+}
+.top-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Kumpulan aksi kanan (pengaturan, keluar, tombol menu) */
+.header-actions {
+    order: 3;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin: 0 0 0 auto;
+    padding: 0;
+    border-left: 0;
+}
+.icon-btn,
+.settings-btn,
+.toggler {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: color 0.16s ease, background 0.16s ease, border-color 0.16s ease, transform 0.1s ease;
+}
+.icon-btn:hover,
+.settings-btn:hover,
+.toggler:hover {
+    color: var(--text);
+    background: var(--surface-hover);
+    border-color: var(--border-strong);
+}
+.icon-btn:active,
+.settings-btn:active,
+.toggler:active { transform: scale(0.96); }
+.icon-btn svg,
+.settings-btn svg,
+.toggler svg { width: 17px; height: 17px; }
+.settings-btn:focus-visible,
+.icon-btn:focus-visible,
+.toggler:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Hamburger (garis tiga) hanya untuk mobile & tablet. Di desktop tombol ini
+   disembunyikan; dinyalakan kembali di dalam media query < 992px di bawah. */
+.toggler { display: none; }
+
+/* Tombol keluar di sisi kanan header */
+.logout-form { margin: 0; }
+.logout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 36px;
+    padding: 0 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease, transform 0.1s ease;
+}
+.logout-btn svg { width: 15px; height: 15px; }
+.logout-btn:hover {
+    color: #FFFFFF;
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+}
+.logout-btn:active { transform: scale(0.97); }
+
+/* Light mode: header & nav tetap bersih tanpa hairline merah */
+html[data-theme="light"] .app-header {
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border);
+    box-shadow: none;
+}
+html[data-theme="light"] .toggler,
+html[data-theme="light"] .settings-btn,
+html[data-theme="light"] .icon-btn {
+    color: var(--muted);
+    background: transparent;
+    border-color: var(--border);
+}
+html[data-theme="light"] .toggler:hover,
+html[data-theme="light"] .settings-btn:hover,
+html[data-theme="light"] .icon-btn:hover {
+    color: var(--text);
+    background: var(--surface-hover);
+    border-color: var(--border-strong);
+}
+html[data-theme="light"] .top-link:hover { color: var(--text); background: var(--surface-hover); }
+/* Link aktif light mode: slate gelap (bukan magenta pekat) agar angka
+   finansial tetap jadi fokus utama halaman. */
+html[data-theme="light"] .top-link.active {
+    color: #0F172A;
+    background: rgba(15, 23, 42, 0.06);
+    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+html[data-theme="light"] .logout-btn {
+    color: var(--muted);
+    background: transparent;
+    border-color: var(--border);
+}
+html[data-theme="light"] .logout-btn:hover {
+    color: #FFFFFF;
+    background: var(--accent);
+    border-color: var(--accent);
+}
+/* ---------- 2. Navigasi mobile: drawer collapsible < 992px ---------- */
+@media (max-width: 991.98px) {
+    /* Baris 1: brand (kiri) + aksi (kanan). Baris 2: drawer nav (full-width). */
+    .app-header .inner {
+        flex-wrap: wrap;
+        gap: 8px;
+        min-height: 58px;
+        padding: 0 14px;
+    }
+    .brand { order: 1; flex: 0 0 auto; }
+    .header-actions { order: 2; flex: 0 0 auto; margin-left: auto; }
+    /* Hamburger dinyalakan hanya di mobile & tablet. */
+    .toggler { display: grid; }
+    /* Drawer panel: perlu spesifisitas setara aturan nav transparan di atas. */
+    .nav-menu,
+    html[data-theme="dark"] .nav-menu,
+    html[data-theme="light"] .nav-menu {
+        order: 3;
+        flex: 1 1 100%;
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 4px;
+        margin: 6px 0 14px;
+        padding: 8px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-pop);
+    }
+    .nav-menu.show,
+    html[data-theme="dark"] .nav-menu.show,
+    html[data-theme="light"] .nav-menu.show {
+        display: flex;
+        animation: menuPanel 0.22s ease both;
+    }
+    .nav-menu .top-link {
+        display: flex;
+        width: 100%;
+        padding: 11px 12px;
+        font-size: 14px;
+        border-radius: var(--radius-sm);
+    }
+    .nav-menu .top-link.active::before { content: none; }
+}
+@media (max-width: 575.98px) {
+    .brand-badge { display: none; }
+    .brand-title { font-size: 14px; }
+    .brand-mark { width: 32px; height: 32px; }
+    .logout-btn { padding: 0 10px; }
+    .logout-btn .logout-label { display: none; }
+    .header-actions { gap: 6px; }
+    .icon-btn,
+    .settings-btn,
+    .toggler,
+    .logout-btn { height: 34px; }
+    .icon-btn,
+    .settings-btn,
+    .toggler { width: 34px; }
+}
+
+/* ---------- 3. Judul halaman & panel filter ---------- */
+.dash-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px 24px;
+    width: 100%;
+    text-align: left;
+}
+.dash-eyebrow,
+.chart-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    width: fit-content;
+    padding: 4px 10px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-ring);
+    border-radius: 999px;
+}
+.dash-eyebrow::before,
+.chart-eyebrow::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: none;
+}
+/* Light mode: aturan lama memberi chip putih pada .dash-eyebrow saja sehingga
+   tampil beda dari .chart-eyebrow. Disamakan memakai tint aksen lembut. */
+html[data-theme="light"] .dash-eyebrow,
+html[data-theme="light"] .chart-eyebrow {
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-ring);
+}
+.dash-title {
+    margin: 0;
+    font-size: clamp(22px, 2.6vw, 28px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+.dash-sub {
+    margin: 4px 0 0;
+    font-size: 13.5px;
+    color: var(--muted);
+}
+
+.filter-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 26px;
+    padding: 14px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+}
+.filter-panel .filter-fields { gap: 12px; align-items: center; }
+/* Light mode: kartu filter putih dengan border #E2E8F0 + shadow halus
+   (aturan lama masih memakai border abu tua rgba(0,0,0,.08)). */
+html[data-theme="light"] .filter-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+}
+.filter-panel .filter-field { gap: 6px; min-width: 0; }
+.filter-panel .filter-field label,
+.filter-field label {
+    margin-bottom: 0;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+/* Kontrol filter: permukaan gelap bersih, sudut 8px (menimpa gaya partial) */
+html[data-theme="dark"] .filter-panel .filter-select,
+html[data-theme="dark"] .filter-panel .filter-input,
+html[data-theme="dark"] .filter-panel .ss-btn,
+html[data-theme="light"] .filter-panel .filter-select,
+html[data-theme="light"] .filter-panel .filter-input,
+html[data-theme="light"] .filter-panel .ss-btn {
+    padding: 9px 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    font-family: inherit;
+    line-height: 1.35;
+    min-width: 148px;
+    color: var(--text);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+html[data-theme="dark"] .filter-panel .filter-select:hover,
+html[data-theme="dark"] .filter-panel .filter-input:hover,
+html[data-theme="light"] .filter-panel .filter-select:hover,
+html[data-theme="light"] .filter-panel .filter-input:hover {
+    border-color: var(--border-strong);
+}
+html[data-theme="dark"] .filter-panel .filter-select:focus,
+html[data-theme="dark"] .filter-panel .filter-input:focus,
+html[data-theme="light"] .filter-panel .filter-select:focus,
+html[data-theme="light"] .filter-panel .filter-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+}
+html[data-theme="dark"] .filter-panel .filter-select option { background: var(--panel); color: var(--text); }
+html[data-theme="light"] .filter-panel .filter-select option { background: #FFFFFF; color: var(--text); }
+html[data-theme="dark"] .filter-panel .filter-input::placeholder { color: #6B7484; }
+html[data-theme="light"] .filter-panel .filter-input::placeholder { color: #94A3B8; }
+@media (max-width: 576px) {
+    .filter-panel .filter-fields { flex-direction: column; align-items: stretch; gap: 10px; }
+    .filter-panel .filter-field { width: 100%; }
+    html[data-theme="dark"] .filter-panel .filter-select,
+    html[data-theme="dark"] .filter-panel .filter-input,
+    html[data-theme="light"] .filter-panel .filter-select,
+    html[data-theme="light"] .filter-panel .filter-input { width: 100%; min-width: 0; }
+}
+/* ---------- 4. Stat / KPI cards ---------- */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 0;
+}
+@media (max-width: 1199.98px) {
+    .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 575.98px) {
+    .kpi-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+}
+.kpi,
+html[data-theme="light"] .kpi {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 18px;
+    background: var(--card);
+    background-image: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+/* Glow radial + tekstur noise lama dilepas agar kartu terlihat bersih. */
+.kpi::before,
+.kpi::after { content: none; }
+.kpi:hover,
+html[data-theme="light"] .kpi:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-ring);
+    box-shadow: var(--shadow-pop);
+}
+.kpi-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+.kpi-icon {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-sm);
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-ring);
+}
+.kpi-icon svg { width: 16px; height: 16px; }
+.kpi-label {
+    margin: 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--muted) !important;
+}
+html[data-theme="light"] .kpi-label { color: var(--muted) !important; }
+.kpi-value {
+    font-size: clamp(21px, 1.9vw, 27px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+.kpi-unit { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.kpi-foot {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 22px;
+}
+.kpi-note { font-size: 12px; color: var(--muted); }
+/* Tag tren / status: hijau = profit, merah = biaya/rugi, amber = perhatian */
+.kpi-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    border-radius: 999px;
+    border: 1px solid transparent;
+}
+.kpi-trend.is-up { color: var(--success); background: var(--success-soft); border-color: var(--success-ring); }
+.kpi-trend.is-down { color: var(--error); background: var(--error-soft); border-color: var(--error-ring); }
+.kpi-trend.is-warn { color: var(--warning); background: var(--warning-soft); border-color: var(--warning-ring); }
+.kpi-trend.is-neutral { color: var(--muted); background: var(--surface-hover); border-color: var(--border); }
+.kpi-trend svg { width: 12px; height: 12px; }
+
+/* ---------- 5. Surface card & seksi analitik ---------- */
+.card,
+html[data-theme="light"] .card {
+    background: var(--card);
+    background-image: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    box-shadow: var(--shadow-card);
+}
+.card-body { padding: 18px; }
+.card-header {
+    padding: 14px 18px;
+    background: transparent;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-weight: 700;
+}
+.card-footer {
+    background: transparent;
+    border-top: 1px solid var(--border);
+}
+.chart-section { margin-top: 34px; padding-top: 0; }
+.chart-heading {
+    margin: 10px 0 4px;
+    font-size: clamp(17px, 2vw, 20px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+.chart-sub { margin: 0; font-size: 13px; color: var(--muted); }
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+.chart-card,
+html[data-theme="light"] .chart-card {
+    position: relative;
+    padding: 18px;
+    background: var(--card);
+    background-image: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+}
+.chart-card::before { content: none; }
+.chart-head,
+html[data-theme="light"] .chart-head {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin: 0 0 4px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--border);
+}
+.chart-title,
+html[data-theme="light"] .chart-title {
+    margin: 0;
+    font-size: 14.5px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+}
+.chart-desc,
+html[data-theme="light"] .chart-desc {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--muted);
+}
+.chart-canvas { min-height: 300px; margin-top: 14px; }
+.chart-empty,
+html[data-theme="light"] .chart-empty {
+    margin-top: 14px;
+    padding: 26px 18px;
+    font-size: 13px;
+    text-align: center;
+    color: var(--muted);
+    background: var(--panel);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-sm);
+}
+.chart-note,
+html[data-theme="light"] .chart-note { margin-top: 12px; font-size: 12px; color: var(--muted); }
+/* ---------- 6. Quick period tabs (1 BLN / 1 TH / Maks) ---------- */
+html[data-theme="dark"] .daterange-pills,
+html[data-theme="light"] .daterange-pills {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-left: auto;
+    padding: 0;
+}
+html[data-theme="dark"] .daterange-pills .pill,
+html[data-theme="light"] .daterange-pills .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.1;
+    text-decoration: none;
+    color: var(--muted);
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: none;
+    transition: color 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+}
+html[data-theme="dark"] .daterange-pills .pill:hover,
+html[data-theme="light"] .daterange-pills .pill:hover {
+    color: var(--text);
+    background: var(--surface-hover);
+    border-color: var(--border-strong);
+}
+html[data-theme="dark"] .daterange-pills .pill-active {
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-color: var(--accent-ring);
+    box-shadow: inset 0 0 0 1px var(--accent-ring);
+}
+html[data-theme="light"] .daterange-pills .pill-active {
+    /* Slate gelap (bg-slate-900 + teks putih), bukan magenta pekat: tab aktif
+       tidak lagi menyaingi angka finansial di kartu KPI. */
+    color: #FFFFFF;
+    background: #0F172A;
+    border-color: #0F172A;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.16);
+}
+html[data-theme="dark"] .pill-count { color: var(--muted); font-size: 11.5px; font-weight: 500; }
+html[data-theme="light"] .pill-count { color: currentColor; opacity: 0.7; font-size: 11.5px; font-weight: 500; }
+html[data-theme="light"] .daterange-pills .pill-active .pill-count { color: #FFFFFF; opacity: 0.75; }
+
+/* ---------- 7. Data tables (breakdown & produk) ---------- */
+html[data-theme="dark"] table.table,
+html[data-theme="light"] table.table {
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--text);
+    --bs-table-color-state: var(--text);
+    --bs-table-color-type: var(--text);
+    --bs-table-striped-color: var(--text);
+    --bs-table-hover-color: var(--text);
+    --bs-table-active-color: var(--text);
+    --bs-table-border-color: var(--border);
+    --bs-table-accent-bg: transparent;
+    color: var(--text);
+    border-color: var(--border);
+    margin-bottom: 0;
+    font-variant-numeric: tabular-nums;
+}
+html[data-theme="dark"] .table > :not(caption) > * > *,
+html[data-theme="light"] .table > :not(caption) > * > * {
+    padding: 12px 16px;
+    border-color: var(--border);
+}
+html[data-theme="dark"] .table thead th,
+html[data-theme="light"] .table thead th {
+    background: var(--table-head);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border-top: 0;
+    border-bottom: 1px solid var(--border);
+}
+html[data-theme="dark"] .table tbody td,
+html[data-theme="dark"] .table tbody th,
+html[data-theme="light"] .table tbody td,
+html[data-theme="light"] .table tbody th {
+    color: var(--text);
+    font-size: 13.5px;
+    vertical-align: middle;
+}
+html[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd),
+html[data-theme="light"] .table-striped > tbody > tr:nth-of-type(odd) {
+    --bs-table-accent-bg: transparent;
+    background-color: transparent;
+}
+html[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > *,
+html[data-theme="light"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+    --bs-table-accent-bg: transparent;
+    background-color: var(--table-stripe);
+    box-shadow: none;
+}
+html[data-theme="dark"] .table tbody tr:hover > *,
+html[data-theme="light"] .table tbody tr:hover > * {
+    background-color: var(--surface-hover);
+    box-shadow: none;
+}
+html[data-theme="dark"] .table tbody tr:last-child > *,
+html[data-theme="light"] .table tbody tr:last-child > * { border-bottom: 0; }
+/* Baris ringkasan: total operasional (merah/amber) & net profit (hijau) */
+html[data-theme="dark"] .table tr.total-row > td,
+html[data-theme="dark"] .table tr.total-row > th,
+html[data-theme="light"] .table tr.total-row > td,
+html[data-theme="light"] .table tr.total-row > th {
+    background: var(--error-soft);
+    color: var(--text);
+    font-weight: 700;
+    border-top: 1px solid var(--error-ring);
+    border-bottom: 1px solid var(--error-ring);
+}
+html[data-theme="dark"] .table tr.net-row > td,
+html[data-theme="dark"] .table tr.net-row > th,
+html[data-theme="light"] .table tr.net-row > td,
+html[data-theme="light"] .table tr.net-row > th {
+    background: var(--success-soft);
+    color: var(--text);
+    font-weight: 700;
+    border-top: 1px solid var(--success-ring);
+    border-bottom: 1px solid var(--success-ring);
+}
+.table .num,
+.table td.num,
+.table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+/* Scrollbar tipis untuk tabel yang bisa digeser di layar kecil */
+@media (max-width: 767.98px) {
+    .table::-webkit-scrollbar { height: 6px; }
+    .table::-webkit-scrollbar-track { background: var(--panel); }
+    .table::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+    .table::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+}
+/* ---------- 8. Form, tombol, badge (sisa permukaan lama) ---------- */
+.form-control,
+.form-select,
+html[data-theme="light"] .form-control,
+html[data-theme="light"] .form-select {
+    padding: 9px 12px;
+    font-size: 13.5px;
+    color: var(--text);
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+}
+html[data-theme="dark"] .form-control::placeholder,
+html[data-theme="dark"] .form-select::placeholder { color: #6B7484; }
+html[data-theme="dark"] .form-control:disabled,
+html[data-theme="dark"] .form-select:disabled {
+    background: var(--panel);
+    color: #6B7484;
+    border-color: var(--border);
+}
+.form-label,
+html[data-theme="dark"] .form-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--muted);
+}
+.btn {
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+}
+.btn-primary,
+html[data-theme="light"] .btn-primary {
+    color: #FFFFFF;
+    background: var(--accent);
+    border-color: var(--accent);
+}
+.btn-primary:hover,
+.btn-primary:focus-visible,
+html[data-theme="light"] .btn-primary:hover {
+    color: #FFFFFF;
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+}
+.btn-outline-primary { color: var(--accent); border-color: var(--accent-ring); background: transparent; }
+.btn-outline-primary:hover { color: #FFFFFF; background: var(--accent); border-color: var(--accent); }
+.filter-reset,
+html[data-theme="light"] .filter-reset {
+    padding: 10px 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+.filter-reset:hover,
+html[data-theme="light"] .filter-reset:hover {
+    color: var(--text);
+    background: var(--surface-hover);
+    border-color: var(--border-strong);
+}
+.filter-active {
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-ring);
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.filter-active::before { background: var(--accent); box-shadow: none; }
+/* Light mode: badge "Filter aktif" pakai tint slate lembut (bukan magenta)
+   supaya konsisten dengan tab periode aktif. */
+html[data-theme="light"] .filter-active {
+    color: #0F172A;
+    background: rgba(15, 23, 42, 0.06);
+    border-color: rgba(15, 23, 42, 0.12);
+}
+html[data-theme="light"] .filter-active::before { background: #0F172A; }
+.badge {
+    padding: 4px 9px;
+    font-size: 11.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    border-radius: 6px;
+}
+.badge.bg-success { color: #052E1C; }
+html[data-theme="dark"] .badge.bg-success { color: #052E1C; }
+.pagination-wrap nav a {
+    border-radius: var(--radius-sm);
+    font-variant-numeric: tabular-nums;
+}
+.flash { border-radius: var(--radius); }
+.settings-modal .modal-content { border-radius: var(--radius-lg); }
+.app-toast { border-radius: var(--radius); }
+.ss-menu { border-radius: var(--radius); }
+.ss-btn { border-radius: var(--radius-sm); }
+.ss-search { border-radius: var(--radius-sm); }
+.settings-item { border-radius: var(--radius-sm); }
+
+/* ---------- 9. Kerangka halaman ---------- */
+.app-main {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 24px clamp(14px, 2.4vw, 32px) 48px;
+    /* Cegah scroll horizontal liar di mobile tanpa mematikan sticky header. */
+    overflow-x: clip;
+}
+@media (max-width: 767.98px) {
+    .app-main { padding: 18px 14px 40px; }
+}
+@media (max-width: 575.98px) {
+    .app-main { padding: 16px 12px 36px; }
+}
+/* Angka finansial selalu rata kolom (tabular figures) */
+body {
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font);
+}
+/* Scrollbar horizontal tipis untuk area yang memang bisa digeser */
+.overflow-x-scroll { overflow-x: auto; }
+.overflow-x-scroll::-webkit-scrollbar { height: 8px; }
+.overflow-x-scroll::-webkit-scrollbar-track { background: var(--panel); border-radius: 999px; }
+.overflow-x-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+.overflow-x-scroll::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ---------- 10. Penyesuaian mobile: form keluar ikut baris header ---------- */
+/* Aturan lama menyetel .logout-form selebar drawer; sekarang tombol keluar
+   berada di cluster kanan header, jadi lebarnya dikembalikan otomatis. */
+@media (max-width: 991.98px) {
+    .header-actions .logout-form {
+        width: auto;
+        margin: 0;
+        padding: 0;
+        border-top: 0;
+    }
+    .header-actions .logout-btn { width: auto; justify-content: center; }
+}
+
+/* ---------- 11. Kerapatan navbar pada layar sedang (992px - 1199px) ---------- */
+/* Baris nav masih satu baris penuh; jarak dan ukuran ditekan sedikit agar
+   brand + 5 link + 4 aksi tidak saling berdesakan sebelum drawer muncul. */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .app-header .inner { gap: 12px; padding: 0 18px; }
+    .brand-title { font-size: 14px; }
+    .brand-badge { font-size: 9px; padding: 2px 6px; }
+    .top-link { padding: 8px 9px; font-size: 13px; }
+    .header-actions { gap: 6px; }
+    .logout-btn { padding: 0 10px; }
+}
+@media (max-width: 767.98px) {
+    .brand-badge { display: none; }
+}
+
+
+

@@ -397,8 +397,10 @@
 
     <div class="dash-head">
         <div class="dash-head-main">
+            <span class="dash-eyebrow">Ringkasan</span>
             <div>
                 <h1 class="dash-title">Dashboard</h1>
+                <p class="dash-sub">Pantau performans bisnis hijab Anda dalam satu platform secara real-time.</p>
             </div>
         </div>
 
@@ -534,7 +536,9 @@
     <div class="card breakdown-card mt-4">
         <div class="breakdown-head">
             <div>
+                <span class="chart-eyebrow">Biaya</span>
                 <h2 class="breakdown-title">Rincian Total Operasional</h2>
+                <p class="breakdown-sub">Akumulasi seluruh komponen biaya untuk {{ $periodLabel }}, termasuk biaya marketing.</p>
             </div>
             <div class="metric-strip">
                 <div class="metric is-cost">
@@ -651,8 +655,10 @@
     <div class="chart-section">
         <div class="section-head">
             <div class="section-head-main">
+                <span class="chart-eyebrow">Analisis</span>
                 <div>
                     <h2 class="chart-heading">Analisis Grafik</h2>
+                    <p class="chart-sub">Tren performans keuangan dan efisiensi marketing untuk {{ $periodLabel }}.</p>
                 </div>
             </div>
             <span class="section-note"><i></i>{{ $periodLabel }}</span>
@@ -679,8 +685,10 @@
     <div class="chart-section">
         <div class="section-head">
             <div class="section-head-main">
+                <span class="chart-eyebrow">Efisiensi Marketing</span>
                 <div>
                     <h2 class="chart-heading">MER &amp; ROI</h2>
+                    <p class="chart-sub">Seberapa efektif budget iklan menghasilkan omset dan profit untuk {{ $periodLabel }}.</p>
                 </div>
             </div>
             <span class="section-note"><i></i>Spend @include('partials.rupiah', ['value' => $marketingSpend])</span>
@@ -781,8 +789,10 @@
     <div class="chart-section">
         <div class="section-head">
             <div class="section-head-main">
+                <span class="chart-eyebrow">HPP &amp; Profit</span>
                 <div>
                     <h2 class="chart-heading">HPP &amp; Profit per Produk</h2>
+                    <p class="chart-sub">Rincian omset, HPP, dan margin tiap produk untuk {{ $periodLabel }}.</p>
                 </div>
             </div>
             <span class="section-note"><i></i>{{ number_format($products ? count($products) : 0) }} produk terjual</span>

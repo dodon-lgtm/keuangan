@@ -58,8 +58,8 @@
 
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
-                        <label for="domisili" class="form-label">Domisili (optional)</label>
-                        <input type="text" name="domisili" id="domisili" value="{{ old('domisili', $customer->domisili) }}"
+                        <label for="domisili" class="form-label">Domisili / Kota</label>
+                        <input type="text" name="domisili" id="domisili" value="{{ old('domisili', $customer->domisili) }}" placeholder="Contoh: Bandung"
                                class="form-control @error('domisili') is-invalid @enderror">
                         @error('domisili')
                             <div class="invalid-feedback">{{ $message }}</div>

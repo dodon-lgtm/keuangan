@@ -77,7 +77,7 @@
                 <label for="tanggal_to">Tanggal Sampai</label>
                 <input type="date" name="tanggal_to" id="tanggal_to" value="{{ $tanggalTo }}" class="filter-input">
             </div>
-            <div class="filter-field">
+            {{-- <div class="filter-field">
                 <label for="nominal_min">Nominal Min (Rp)</label>
                 <input type="number" name="nominal_min" id="nominal_min" value="{{ $nominalMin ?? '' }}" min="0"
                        class="filter-input" placeholder="0">
@@ -86,7 +86,7 @@
                 <label for="nominal_max">Nominal Max (Rp)</label>
                 <input type="number" name="nominal_max" id="nominal_max" value="{{ $nominalMax ?? '' }}" min="0"
                        class="filter-input" placeholder="Harga Maksimal">
-            </div>
+            </div> --}}
         </div>
 
         {{-- Filter periode laporan HPP & Profit (Section 2) --}}

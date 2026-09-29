@@ -61,6 +61,7 @@
                 <th>Nama Lengkap</th>
                 <th>Nama Brand</th>
                 <th>No. WhatsApp</th>
+                <th>Domisili</th>
                 <th>Sumber</th>
                 <th>Tanggal Masuk Chat</th>
                 <th>Jumlah Order</th>
@@ -75,6 +76,7 @@
                 <td><strong>{{ $customer->nama_lengkap }}</strong></td>
                 <td>{{ $customer->nama_brand }}</td>
                 <td>{{ $customer->no_whatsapp }}</td>
+                <td>{{ $customer->domisili ?? '—' }}</td>
                 <td>{{ $customer->sumber }}</td>
                 <td>{{ $customer->tanggal_masuk_chat?->format('d M Y') }}</td>
                 <td>{{ $customer->orders_count }}</td>

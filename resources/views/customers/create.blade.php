@@ -41,8 +41,8 @@
                         @enderror
                     </div>
                     <div class="col-md-6">
-                        <label for="domisili" class="form-label">Domisili</label>
-                        <input type="text" name="domisili" id="domisili" value="{{ old('domisili') }}"
+                        <label for="domisili" class="form-label">Domisili / Kota</label>
+                        <input type="text" name="domisili" id="domisili" value="{{ old('domisili') }}" placeholder="Contoh: Bandung"
                                class="form-control @error('domisili') is-invalid @enderror">
                         @error('domisili')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -67,17 +67,6 @@
                         <input type="date" name="tanggal_masuk_chat" id="tanggal_masuk_chat" value="{{ old('tanggal_masuk_chat') }}"
                                class="form-control @error('tanggal_masuk_chat') is-invalid @enderror">
                         @error('tanggal_masuk_chat')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3">
-                                    <div class="col-md-12">
-                        <label for="domisili" class="form-label">Domisili (optional)</label>
-                        <input type="text" name="domisili" id="domisili" value="{{ old('domisili') }}"
-                               class="form-control @error('domisili') is-invalid @enderror">
-                        @error('domisili')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>

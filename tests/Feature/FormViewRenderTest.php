@@ -91,6 +91,30 @@ class FormViewRenderTest extends AuthenticatedTestCase
             ->assertSee('Pelanggan Edit');
     }
 
+    public function test_customer_create_form_renders_a_single_domisili_field(): void
+    {
+        $response = $this->get('/customers/create');
+
+        $response->assertStatus(200)
+            ->assertSee('Domisili / Kota')
+            ->assertSee('placeholder="Contoh: Bandung"', false);
+
+        // Field Domisili pernah ter-render dua kali (id duplikat) di form ini.
+        $this->assertSame(1, substr_count($response->getContent(), 'name="domisili"'));
+    }
+
+    public function test_customer_edit_form_prefills_domisili(): void
+    {
+        $customer = $this->customer();
+
+        $customer->update(['domisili' => 'Bandung']);
+
+        $this->get("/customers/{$customer->id}/edit")
+            ->assertStatus(200)
+            ->assertSee('Domisili / Kota')
+            ->assertSee('value="Bandung"', false);
+    }
+
     public function test_order_create_view_renders_with_multi_product_form(): void
     {
         $this->prepareOrderFixtures();

@@ -106,4 +106,56 @@ class CustomerMasterDataTest extends AuthenticatedTestCase
 
         $this->assertFalse(Customer::query()->whereKey($customer->id)->exists());
     }
+
+    public function test_customer_domisili_can_be_saved_and_updated(): void
+    {
+        $response = $this->from('/customers/create')->post('/customers', [
+            'nama_lengkap' => 'Siti Hajar',
+            'nama_brand' => 'Hijab Co',
+            'no_whatsapp' => '081211112222',
+            'domisili' => 'Bandung',
+            'sumber' => Customer::SUMBER_INSTAGRAM_ORGANIK,
+            'tanggal_masuk_chat' => '2026-09-04',
+        ]);
+
+        $response->assertRedirectToRoute('customers.index');
+
+        $customer = Customer::query()->where('nama_lengkap', 'Siti Hajar')->sole();
+
+        $this->assertSame('Bandung', $customer->domisili);
+
+        $this->from("/customers/{$customer->id}/edit")->put("/customers/{$customer->id}", [
+            'nama_lengkap' => 'Siti Hajar',
+            'nama_brand' => 'Hijab Co',
+            'no_whatsapp' => '081211112222',
+            'domisili' => 'Surabaya',
+            'sumber' => Customer::SUMBER_INSTAGRAM_ORGANIK,
+            'tanggal_masuk_chat' => '2026-09-04',
+        ])->assertRedirectToRoute('customers.index');
+
+        $this->assertSame('Surabaya', $customer->refresh()->domisili);
+    }
+
+    public function test_customer_index_lists_domisili_with_placeholder_when_empty(): void
+    {
+        $customer = Customer::query()->create([
+            'nama_lengkap' => 'Maryam Yusuf',
+            'nama_brand' => 'Hijab Co',
+            'no_whatsapp' => '081233334444',
+            'domisili' => 'Soreang',
+            'sumber' => Customer::SUMBER_META_ADS,
+            'tanggal_masuk_chat' => '2026-09-05',
+        ]);
+
+        $this->get('/customers')
+            ->assertStatus(200)
+            ->assertSee('<th>Domisili</th>', false)
+            ->assertSee('<td>Soreang</td>', false);
+
+        $customer->update(['domisili' => null]);
+
+        $this->get('/customers')
+            ->assertStatus(200)
+            ->assertSee('<td>—</td>', false);
+    }
 }

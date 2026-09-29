@@ -238,33 +238,8 @@
         <p class="chart-sub">Rincian omset, HPP, dan margin per produk untuk {{ $periodLabel }}.</p>
     </div>
 
-    {{-- KPI Ringkasan Financial (mengikuti filter periode di atas) --}}
-    <div class="row row-cols-1 row-cols-md-3 g-3 mb-4 mt-3">
-        <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title text-muted">Total Omset</h5>
-                    <p class="card-text fs-4">@include('partials.rupiah', ['value' => $periodeOmset ?? 0])</p>
-                </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title text-muted">Total Operasional</h5>
-                    <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalOperasional ?? 0])</p>
-                </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title text-muted">Net Profit</h5>
-                    <p class="card-text fs-4">@include('partials.rupiah', ['value' => $netProfit ?? 0])</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    {{-- Kartu ringkasan financial (Total Omset / Total Operasional / Net Profit)
+         dipindah ke halaman Dashboard agar tidak tampil ganda. --}}
 
     {{-- Tabel Rincian HPP per Produk --}}
     <table class="table table-striped align-middle">

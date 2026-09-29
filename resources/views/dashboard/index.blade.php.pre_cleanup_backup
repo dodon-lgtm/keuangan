@@ -379,27 +379,6 @@
         }
         .chart-heading { font-weight: 800; }
 
-        /* ---------- Kartu ringkasan HPP & Profit (dipindah dari Log Order) ---------- */
-        /* Aturan disalin apa adanya dari halaman asal kartu supaya judul & nilai
-           kartu tetap tampil persis sama (ukuran, ketebalan, dan warna tema). */
-        .card-title {
-            font-size: 20px !important;
-            font-weight: 800 !important;
-            color: var(--text-main, #000000) !important;
-            letter-spacing: 0.25px;
-        }
-
-        html[data-theme="light"] .card-title {
-            color: #000000 !important;
-        }
-        html[data-theme="dark"] .card-title {
-            color: #FFFFFF !important;
-        }
-
-        .card-text {
-            font-weight: 400 !important;
-        }
-
     </style>
 
 
@@ -418,8 +397,10 @@
 
     <div class="dash-head">
         <div class="dash-head-main">
+            <span class="dash-eyebrow">Ringkasan</span>
             <div>
                 <h1 class="dash-title">Dashboard</h1>
+                <p class="dash-sub">Pantau performans bisnis hijab Anda dalam satu platform secara real-time.</p>
             </div>
         </div>
 
@@ -555,7 +536,9 @@
     <div class="card breakdown-card mt-4">
         <div class="breakdown-head">
             <div>
+                <span class="chart-eyebrow">Biaya</span>
                 <h2 class="breakdown-title">Rincian Total Operasional</h2>
+                <p class="breakdown-sub">Akumulasi seluruh komponen biaya untuk {{ $periodLabel }}, termasuk biaya marketing.</p>
             </div>
             <div class="metric-strip">
                 <div class="metric is-cost">
@@ -672,15 +655,16 @@
     <div class="chart-section">
         <div class="section-head">
             <div class="section-head-main">
+                <span class="chart-eyebrow">Analisis</span>
                 <div>
                     <h2 class="chart-heading">Analisis Grafik</h2>
+                    <p class="chart-sub">Tren performans keuangan dan efisiensi marketing untuk {{ $periodLabel }}.</p>
                 </div>
             </div>
             <span class="section-note"><i></i>{{ $periodLabel }}</span>
         </div>
 
-        {{-- Pasangan grafik: 2 kolom di desktop, carousel swipe di mobile. --}}
-        <div class="chart-grid" data-chart-carousel>
+        <div class="chart-grid">
             @include('partials.chart-card', [
                 'id' => 'chart-trend',
                 'title' => $chartTrendTitle,
@@ -701,8 +685,10 @@
     <div class="chart-section">
         <div class="section-head">
             <div class="section-head-main">
+                <span class="chart-eyebrow">Efisiensi Marketing</span>
                 <div>
                     <h2 class="chart-heading">MER &amp; ROI</h2>
+                    <p class="chart-sub">Seberapa efektif budget iklan menghasilkan omset dan profit untuk {{ $periodLabel }}.</p>
                 </div>
             </div>
             <span class="section-note"><i></i>Spend @include('partials.rupiah', ['value' => $marketingSpend])</span>
@@ -782,7 +768,7 @@
             </div>
         </div>
 
-        <div class="chart-grid" data-chart-carousel>
+        <div class="chart-grid">
             @include('partials.chart-card', [
                 'id' => 'chart-mer-spend',
                 'title' => 'Budget Iklan vs Omset & MER%',
@@ -803,40 +789,13 @@
     <div class="chart-section">
         <div class="section-head">
             <div class="section-head-main">
+                <span class="chart-eyebrow">HPP &amp; Profit</span>
                 <div>
                     <h2 class="chart-heading">HPP &amp; Profit per Produk</h2>
+                    <p class="chart-sub">Rincian omset, HPP, dan margin tiap produk untuk {{ $periodLabel }}.</p>
                 </div>
             </div>
             <span class="section-note"><i></i>{{ number_format($products ? count($products) : 0) }} produk terjual</span>
-        </div>
-
-        {{-- KPI Ringkasan Financial (dipindah dari halaman Log Order, memakai
-             variabel periode yang sama dengan controller Dashboard) --}}
-        <div class="row row-cols-1 row-cols-md-3 g-3 mb-4 mt-3">
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title text-muted">Total Omset</h5>
-                        <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalOmset])</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title text-muted">Total Operasional</h5>
-                        <p class="card-text fs-4">@include('partials.rupiah', ['value' => $totalOperasional])</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title text-muted">Net Profit</h5>
-                        <p class="card-text fs-4">@include('partials.rupiah', ['value' => $netProfit])</p>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="table-wrap mt-3">
@@ -878,7 +837,7 @@
             </table>
         </div>
 
-        <div class="chart-grid" data-chart-carousel>
+        <div class="chart-grid">
             @include('partials.chart-card', [
                 'id' => 'chart-hpp-bar',
                 'title' => 'Omset vs HPP vs Margin',
@@ -894,179 +853,6 @@
             ])
         </div>
     </div>
-
-    {{-- ================= Responsive mobile (<= 767.98px) =================
-         Blok ini diletakkan paling akhir (setelah partial filter & chart yang
-         ikut menulis <style> di dalam <body>) supaya aturan mobile menang pada
-         urutan cascade tanpa perlu !important. Semua aturan dibungkus media
-         query sehingga tampilan desktop tidak berubah sama sekali. --}}
-    <style>
-        /* ---------- 1. Filter periode: grid 2 kolom agar tidak memanjang ---------- */
-        @media (max-width: 575.98px) {
-            html[data-theme] .filter-panel .filter-fields {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 10px;
-                align-items: end;
-                flex: 1 1 100%;
-                width: 100%;
-            }
-            html[data-theme] .filter-panel .filter-field {
-                gap: 4px;
-                width: 100%;
-                min-width: 0;
-            }
-            /* Mode periode & pilihan bulan (teks panjang) tetap lebar penuh
-               supaya label terpanjang tidak terpotong. */
-            html[data-theme] .filter-panel .filter-field--mode,
-            html[data-theme] .filter-panel .filter-field--wide {
-                grid-column: 1 / -1;
-            }
-            /* Kontrol mengisi sel grid-nya (min-width 148px bawaan dilepas agar
-               tidak meluber dari kartu filter). */
-            html[data-theme] .filter-panel .filter-select,
-            html[data-theme] .filter-panel .filter-input,
-            html[data-theme] .filter-panel .ss-btn {
-                width: 100%;
-                min-width: 0;
-            }
-        }
-        @media (max-width: 575.98px) {
-            /* Bulanan spesifik / Full Year: mode periode cukup sebaris dengan
-               tahun memakai rasio 1.9 : 0.9 supaya label mode terpanjang
-               ("Bulanan Spesifik") tetap utuh, lalu bulan (teks terpanjang)
-               mengisi baris berikutnya. */
-            html[data-theme] .filter-panel .filter-fields:has(> [data-period-mode="specific"]:not([hidden])) {
-                grid-template-columns: minmax(0, 1.9fr) minmax(0, 0.9fr);
-            }
-            html[data-theme] .filter-panel .filter-fields:has(> [data-period-mode="specific"]:not([hidden])) .filter-field--mode {
-                grid-column: auto;
-            }
-            html[data-theme] .filter-panel .filter-fields:has(> [data-period-mode="specific"]:not([hidden])) .filter-field--wide {
-                order: 2;
-            }
-        }
-
-        /* ---------- 2. Pasangan grafik: carousel swipe (hanya mobile) ---------- */
-        @media (max-width: 767.98px) {
-            html[data-theme] .chart-grid[data-chart-carousel] {
-                display: flex;
-                flex-wrap: nowrap;
-                gap: 0;
-                padding: 2px 0;
-                overflow-x: auto;
-                overflow-y: hidden;
-                overscroll-behavior-x: contain;
-                scroll-snap-type: x mandatory;
-                scroll-behavior: smooth;
-                -webkit-overflow-scrolling: touch;
-                scrollbar-width: none;
-            }
-            html[data-theme] .chart-grid[data-chart-carousel]::-webkit-scrollbar {
-                width: 0;
-                height: 0;
-                display: none;
-            }
-            html[data-theme] .chart-grid[data-chart-carousel] > .chart-card {
-                flex: 0 0 100%;
-                width: 100%;
-                min-width: 0;
-                max-width: 100%;
-                scroll-snap-align: center;
-                scroll-snap-stop: always;
-            }
-        }
-
-        /* Indikator carousel: hanya tampil saat carousel aktif (mobile). */
-        .chart-carousel-nav { display: none; }
-        @media (max-width: 767.98px) {
-            html[data-theme] .chart-carousel-nav {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 10px;
-                margin-top: 10px;
-            }
-            html[data-theme] .chart-carousel-btn {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                width: 34px;
-                height: 34px;
-                padding: 0;
-                font-size: 15px;
-                font-weight: 700;
-                line-height: 1;
-                color: var(--muted);
-                background: var(--panel);
-                border: 1px solid var(--border);
-                border-radius: 999px;
-                cursor: pointer;
-                -webkit-tap-highlight-color: transparent;
-            }
-            html[data-theme] .chart-carousel-btn:active {
-                color: var(--text);
-                border-color: var(--accent);
-            }
-            html[data-theme] .chart-carousel-btn:disabled { opacity: 0.4; cursor: default; }
-            html[data-theme] .chart-carousel-dots {
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-            }
-            html[data-theme] .chart-carousel-dot {
-                width: 9px;
-                height: 9px;
-                padding: 0;
-                background: transparent;
-                border: 1px solid var(--border-strong);
-                border-radius: 50%;
-                cursor: pointer;
-                -webkit-tap-highlight-color: transparent;
-            }
-            html[data-theme] .chart-carousel-dot.is-active {
-                background: var(--accent);
-                border-color: var(--accent);
-            }
-            html[data-theme] .chart-carousel-count {
-                min-width: 34px;
-                font-size: 11.5px;
-                font-weight: 600;
-                color: var(--muted);
-                text-align: center;
-                font-variant-numeric: tabular-nums;
-            }
-        }
-
-        /* ---------- 3. Tabel: scroll horizontal hanya di area tabel ---------- */
-        @media (max-width: 767.98px) {
-            /* Kartu tabel menjadi area scroll; halaman tetap tidak melebar. */
-            html[data-theme] .table-wrap {
-                overflow-x: auto;
-                overflow-y: hidden;
-                -webkit-overflow-scrolling: touch;
-                overscroll-behavior-x: contain;
-            }
-            /* Tabel selebar isinya (kolom tidak dipotong / tidak dipecah),
-               minimal selebar kartu agar baris striped tetap penuh. */
-            html[data-theme] .table-wrap > .table {
-                display: table;
-                width: max-content;
-                min-width: 100%;
-                margin-bottom: 0;
-            }
-            /* Scrollbar tipis sebagai petunjuk area bisa digeser. */
-            html[data-theme] .table-wrap::-webkit-scrollbar { height: 6px; }
-            html[data-theme] .table-wrap::-webkit-scrollbar-track {
-                background: var(--panel);
-                border-radius: 999px;
-            }
-            html[data-theme] .table-wrap::-webkit-scrollbar-thumb {
-                background: var(--border-strong);
-                border-radius: 999px;
-            }
-        }
-    </style>
 
    @push('scripts')
         <script>
@@ -1419,189 +1205,6 @@
                     }))).render();
                 }
             });
-        </script>
-
-        {{-- Carousel grafik mobile: scroll-snap + indikator, tanpa library baru.
-             Di desktop CSS carousel tidak aktif sehingga grid dua kolom tetap
-             seperti semula (nav hanya disembunyikan lewat display:none). --}}
-        <script>
-            (function () {
-                var MOBILE = '(max-width: 767.98px)';
-                var mq = window.matchMedia ? window.matchMedia(MOBILE) : null;
-
-                function isMobile() {
-                    return mq ? mq.matches : window.innerWidth <= 767.98;
-                }
-
-                function slidesOf(track) {
-                    return Array.prototype.filter.call(track.children, function (el) {
-                        return el.nodeType === 1;
-                    });
-                }
-
-                function leftOffset(track, slide) {
-                    return slide.getBoundingClientRect().left - track.getBoundingClientRect().left;
-                }
-
-                /* Indeks grafik yang sedang terlihat (bukan asumsi urutan). */
-                function activeIndex(track, slides) {
-                    var best = 0;
-                    var bestDistance = Infinity;
-
-                    slides.forEach(function (slide, index) {
-                        var distance = Math.abs(leftOffset(track, slide));
-
-                        if (distance < bestDistance) {
-                            bestDistance = distance;
-                            best = index;
-                        }
-                    });
-
-                    return best;
-                }
-
-                function goTo(track, slides, index, smooth) {
-                    var target = Math.max(0, Math.min(index, slides.length - 1));
-                    var left = track.scrollLeft + leftOffset(track, slides[target]);
-
-                    if (typeof track.scrollTo === 'function') {
-                        track.scrollTo({ left: left, behavior: smooth ? 'smooth' : 'auto' });
-                    } else {
-                        track.scrollLeft = left;
-                    }
-                }
-                function build(track) {
-                    var slides = slidesOf(track);
-
-                    if (slides.length < 2) {
-                        return;
-                    }
-
-                    var nav = document.createElement('div');
-                    var dots = document.createElement('div');
-                    var counter = document.createElement('span');
-                    var prev = document.createElement('button');
-                    var next = document.createElement('button');
-                    var current = 0;
-
-                    nav.className = 'chart-carousel-nav';
-                    dots.className = 'chart-carousel-dots';
-                    counter.className = 'chart-carousel-count';
-
-                    prev.type = 'button';
-                    prev.className = 'chart-carousel-btn';
-                    prev.setAttribute('aria-label', 'Grafik sebelumnya');
-                    prev.textContent = '\u2039';
-
-                    next.type = 'button';
-                    next.className = 'chart-carousel-btn';
-                    next.setAttribute('aria-label', 'Grafik berikutnya');
-                    next.textContent = '\u203A';
-
-                    var dotButtons = slides.map(function (slide, index) {
-                        var dot = document.createElement('button');
-
-                        dot.type = 'button';
-                        dot.className = 'chart-carousel-dot';
-                        dot.setAttribute('aria-label', 'Tampilkan grafik ' + (index + 1) + ' dari ' + slides.length);
-                        dot.addEventListener('click', function () {
-                            goTo(track, slides, index, true);
-                        });
-                        dots.appendChild(dot);
-
-                        return dot;
-                    });
-
-                    var lastRendered = -1;
-
-                    function render() {
-                        current = activeIndex(track, slides);
-
-                        // Hindari penulisan DOM berulang saat event scroll di
-                        // posisi grafik yang sama.
-                        if (current === lastRendered) {
-                            return;
-                        }
-
-                        lastRendered = current;
-
-                        dotButtons.forEach(function (dot, index) {
-                            dot.className = 'chart-carousel-dot' + (index === current ? ' is-active' : '');
-                        });
-
-                        counter.textContent = (current + 1) + ' / ' + slides.length;
-                        prev.disabled = current === 0;
-                        next.disabled = current === slides.length - 1;
-                    }
-
-                    prev.addEventListener('click', function () {
-                        goTo(track, slides, current - 1, true);
-                    });
-                    next.addEventListener('click', function () {
-                        goTo(track, slides, current + 1, true);
-                    });
-
-                    track.addEventListener('scroll', render, { passive: true });
-
-                    nav.appendChild(prev);
-                    nav.appendChild(dots);
-                    nav.appendChild(counter);
-                    nav.appendChild(next);
-                    track.parentNode.insertBefore(nav, track.nextSibling);
-                    /* Atribut a11y hanya saat carousel benar-benar aktif. */
-                    function syncA11y() {
-                        if (isMobile()) {
-                            track.setAttribute('tabindex', '0');
-                            track.setAttribute('role', 'group');
-                            track.setAttribute('aria-label', 'Carousel grafik');
-                        } else {
-                            track.removeAttribute('tabindex');
-                            track.removeAttribute('role');
-                            track.removeAttribute('aria-label');
-                        }
-                    }
-
-                    /* Setelah resize / rotasi layar, posisi dikembalikan ke grafik
-                       yang sedang aktif karena lebar slide ikut berubah. */
-                    var resizeTimer = null;
-                    function syncPosition() {
-                        if (resizeTimer) {
-                            window.clearTimeout(resizeTimer);
-                        }
-
-                        resizeTimer = window.setTimeout(function () {
-                            if (!isMobile()) {
-                                return;
-                            }
-
-                            goTo(track, slides, current, false);
-                            render();
-                        }, 150);
-                    }
-
-                    syncA11y();
-                    render();
-
-                    if (mq && mq.addEventListener) {
-                        mq.addEventListener('change', syncA11y);
-                    }
-
-                    window.addEventListener('resize', syncPosition);
-                }
-
-                function init() {
-                    Array.prototype.forEach.call(
-                        document.querySelectorAll('.chart-grid[data-chart-carousel]'),
-                        build
-                    );
-                }
-
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', init);
-                } else {
-                    init();
-                }
-            })();
         </script>
     @endpush
 @endsection

@@ -33,15 +33,20 @@ class OrderHppPageTest extends AuthenticatedTestCase
         $response->assertSee('Ready Stock');
         $response->assertSee('Rp 40.000'); // omset log order & rincian HPP
 
-        // Section 2: Laporan HPP & Profit (KPI financial, tabel, grafik).
+        // Section 2: Laporan HPP & Profit (tabel rincian + grafik).
         $response->assertSee('Laporan HPP');
         $response->assertSee('Margin Profit');
         $response->assertSee('Voal Test');
-        $response->assertSee('Total Operasional');
-        $response->assertSee('Net Profit');
         $response->assertSee('50.00%'); // margin % per produk
         $response->assertSee('Analisis Grafik HPP');
         $response->assertSee('September 2026'); // label periode laporan
+
+        // Kartu ringkasan financial (Total Omset / Total Operasional / Net
+        // Profit) sudah dipindah ke Dashboard, jadi halaman ini tidak lagi
+        // menampilkannya agar informasinya tidak duplikat.
+        $response->assertDontSee('class="card-title text-muted"', false);
+        $response->assertDontSee('Total Operasional');
+        $response->assertDontSee('Net Profit');
     }
 
     public function test_log_order_filter_and_period_filter_live_on_one_page(): void

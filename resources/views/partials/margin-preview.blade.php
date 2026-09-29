@@ -52,27 +52,31 @@
 </div>
 
 <style>
-    /* ---- Margin Profit (Estimasi): kotak kecil gelap transparan ---- */
+    /* ---- Margin Profit (Estimasi): mengikuti tema terang/gelap aplikasi ----
+       Light mode : kotak terang (#f8fafc) + teks gelap (#0f172a)
+       Dark mode  : kotak gelap (#0f172a) + teks terang (#f8fafc)
+       Variabel --card-bg/--border-color/--text-main dipakai bila tersedia;
+       bila belum didefinisikan, jatuh ke variabel resmi aplikasi
+       (--card/--border/--text/--muted dari theme.css). */
     .margin-preview {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 10px 26px;
-        margin-bottom: 20px;
-        padding: 12px 16px;
-        background: rgba(16, 18, 22, 0.72);
-        border: 1px solid rgba(255, 255, 255, 0.12);
+        gap: 10px 22px;
+        margin-bottom: 18px;
+        padding: 10px 14px;
+        background: var(--card-bg, var(--card, #0F172A));
+        border: 1px solid var(--border-color, var(--border, #1E293B));
         border-radius: 12px;
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        color: var(--text-main, var(--text, #F8FAFC));
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
 
     .margin-preview-item {
         display: flex;
         flex-direction: column;
         gap: 2px;
-        min-width: 148px;
+        min-width: 140px;
     }
 
     .margin-preview-label {
@@ -80,20 +84,42 @@
         font-weight: 700;
         letter-spacing: 0.4px;
         text-transform: uppercase;
-        color: rgba(214, 219, 226, 0.72);
+        color: var(--muted, #94A3B8);
     }
 
     .margin-preview-value {
-        font-size: 17px;
+        font-size: 16px;
         font-weight: 700;
         line-height: 1.3;
         font-variant-numeric: tabular-nums;
-        color: #FFFFFF;
+        color: var(--text-main, var(--text, #F8FAFC));
         transition: color 0.15s ease;
     }
 
-    /* HPP lebih besar dari harga jual: estimasi rugi ditandai merah. */
+    /* ---- Mode Terang: box terang, teks gelap (tidak lagi hitam pekat) ---- */
+    html[data-theme="light"] .margin-preview {
+        background: #F8FAFC;
+        border-color: #E2E8F0;
+        color: #0F172A;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+    html[data-theme="light"] .margin-preview .margin-preview-label { color: #64748B; }
+    html[data-theme="light"] .margin-preview .margin-preview-value { color: #0F172A; }
+
+    /* ---- Mode Gelap: box gelap, teks terang ---- */
+    html[data-theme="dark"] .margin-preview {
+        background: #0F172A;
+        border-color: #1E293B;
+        color: #F8FAFC;
+    }
+    html[data-theme="dark"] .margin-preview .margin-preview-label { color: #94A3B8; }
+    html[data-theme="dark"] .margin-preview .margin-preview-value { color: #F8FAFC; }
+
+    /* HPP lebih besar dari harga jual: estimasi rugi ditandai merah.
+       Selector spesifik per tema agar tidak kalah dari aturan warna di atas. */
     .margin-preview.is-negative .margin-preview-value { color: var(--error); }
+    html[data-theme="light"] .margin-preview.is-negative .margin-preview-value { color: #DC2626; }
+    html[data-theme="dark"] .margin-preview.is-negative .margin-preview-value { color: #F87171; }
 
     @media (max-width: 575.98px) {
         .margin-preview { gap: 10px; }

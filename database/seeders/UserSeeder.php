@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Admin Vendor Hijab Bandung',
                 'email_verified_at' => now(),
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('password1234'),
             ]
         );
     }

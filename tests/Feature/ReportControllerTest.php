@@ -167,6 +167,16 @@ class ReportControllerTest extends AuthenticatedTestCase
         $response->assertSee('Margin Profit');
         $response->assertSee('50.00%'); // margin pct
 
+        // Kartu ringkasan financial (Total Omset / Total Operasional / Net
+        // Profit) yang semula hanya ada di halaman Log Order sekarang tampil di
+        // Dashboard dengan angka periode yang sama.
+        $response->assertSee('<h5 class="card-title text-muted">Total Omset</h5>', false);
+        $response->assertSee('<h5 class="card-title text-muted">Total Operasional</h5>', false);
+        $response->assertSee('<h5 class="card-title text-muted">Net Profit</h5>', false);
+        $response->assertSee('Rp 40.000');  // total omset periode
+        $response->assertSee('Rp 135.000'); // total operasional periode
+        $response->assertSee('Rp -95.000'); // net profit periode
+
         // Grafik lama tetap ada dan grafik gabungan ikut dirender.
         foreach ([
             'chart-trend',

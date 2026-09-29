@@ -23,7 +23,9 @@
 @endphp
 
 <div class="filter-fields">
-    <div class="filter-field">
+    {{-- filter-field--mode / filter-field--wide hanya dipakai oleh CSS mobile
+         Dashboard (grid 2 kolom) agar kontrol dengan teks panjang tetap utuh. --}}
+    <div class="filter-field filter-field--mode">
     <label for="filter-mode">Mode Periode</label>
     <select name="filter_mode" id="filter-mode" class="filter-select" onchange="this.form.submit()">
         @foreach ($modes as $modeValue => $modeLabel)
@@ -32,7 +34,7 @@
     </select>
 </div>
 
-<div class="filter-field" data-period-mode="specific" @if ($filterMode !== \App\Http\Controllers\Controller::MODE_SPECIFIC) hidden @endif>
+<div class="filter-field filter-field--wide" data-period-mode="specific" @if ($filterMode !== \App\Http\Controllers\Controller::MODE_SPECIFIC) hidden @endif>
     <label for="filter-month">Bulan</label>
     <select name="month" id="filter-month" class="filter-select" onchange="this.form.submit()">
         <option value="all">Semua Bulan (Full Year)</option>

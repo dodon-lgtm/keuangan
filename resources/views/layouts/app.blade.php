@@ -6,24 +6,44 @@
     <title>@yield('title', 'Keuangan Hijab')</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
 :root {
-            --bg: #08090B;
-            --panel: #0D0F12;
-            --card: #101216;
-            --input: #15181D;
-            --border: #242832;
-            --text: #F5F5F5;
-            --muted: #D6DBE2;
-            --accent: #E11D48;
-            --accent-hover: #C8103F;
-            --accent-soft: rgba(225, 29, 72, 0.12);
-            --success: #22C55E;
-            --error: #F87171;
-            --radius: 20px;
-            --font: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            /* Palet premium: base #090A0F, surface #161922, border #262B38,
+               teks #F8FAFC / #94A3B8, aksen magenta #EC4899. */
+            --bg: #090A0F;
+            --panel: #111318;
+            --card: #161922;
+            --input: #191D27;
+            --border: #262B38;
+            --border-strong: #343B4C;
+            --text: #F8FAFC;
+            --text-main: #F8FAFC;
+            --muted: #94A3B8;
+            --accent: #EC4899;
+            --accent-hover: #DB2777;
+            --accent-soft: rgba(236, 72, 153, 0.12);
+            --accent-ring: rgba(236, 72, 153, 0.34);
+            --success: #10B981;
+            --success-soft: rgba(16, 185, 129, 0.12);
+            --success-ring: rgba(16, 185, 129, 0.32);
+            --warning: #F59E0B;
+            --warning-soft: rgba(245, 158, 11, 0.12);
+            --warning-ring: rgba(245, 158, 11, 0.32);
+            --error: #EF4444;
+            --error-soft: rgba(239, 68, 68, 0.12);
+            --error-ring: rgba(239, 68, 68, 0.32);
+            --header-bg: rgba(9, 10, 15, 0.86);
+            --surface-hover: rgba(255, 255, 255, 0.045);
+            --table-head: #0F1117;
+            --table-stripe: rgba(255, 255, 255, 0.016);
+            --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.45);
+            --shadow-pop: 0 20px 48px rgba(0, 0, 0, 0.55);
+            --radius: 10px;
+            --radius-sm: 8px;
+            --radius-lg: 12px;
+            --font: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
 
         * { box-sizing: border-box; }
@@ -33,9 +53,9 @@
             margin: 0;
             color: var(--text);
             background:
-                radial-gradient(90% 60% at 18% 0%, rgba(225, 29, 72, 0.06), transparent 60%),
-                radial-gradient(60% 50% at 100% 100%, rgba(225, 29, 72, 0.045), transparent 55%),
-                linear-gradient(180deg, #0B0C10 0%, #090A0D 45%, #08090B 100%);
+                radial-gradient(80% 55% at 12% -8%, rgba(236, 72, 153, 0.07), transparent 62%),
+                radial-gradient(55% 45% at 100% 0%, rgba(236, 72, 153, 0.05), transparent 58%),
+                linear-gradient(180deg, #0C0D13 0%, #0A0B10 45%, #090A0F 100%);
             background-color: var(--bg);
             background-attachment: scroll;
             font-family: var(--font);
@@ -201,79 +221,14 @@
         .confirm-actions .btn-danger { background: #DC2626; border-color: #DC2626; color: #fff; font-weight: 600; }
         .confirm-actions .btn-danger:hover { background: #B91C1C; border-color: #B91C1C; }
 
-        .app-header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background: rgba(9, 10, 13, 0.88);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 16px 32px rgba(0, 0, 0, 0.32);
-            backdrop-filter: blur(14px) saturate(1.15);
-            -webkit-backdrop-filter: blur(14px) saturate(1.15);
-        }
-        /* Hairline merah halus di bawah header â€” identitas brand */
-        .app-header::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: -1px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(225, 29, 72, 0.35) 18%, rgba(225, 29, 72, 0.10) 55%, transparent);
-            pointer-events: none;
-        }
-        .app-header .inner {
-            max-width: none;
-            margin: 0;
-            padding: 0 clamp(16px, 3vw, 40px);
-            min-height: 64px;
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            justify-content: flex-start;
-            flex-wrap: wrap;
-        }
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            order: 2;
-            margin-left: 8px;
-            padding-left: 16px;
-            border-left: 1px solid rgba(255, 255, 255, 0.08);
-            flex: 0 0 auto;
-        }
-        /* Nav sebagai floating pill dock di sisi kanan */
-        .nav-menu {
-            order: 1;
-            margin-left: auto;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex-wrap: wrap;
-            padding: 5px;
-            background: rgba(255, 255, 255, 0.035);
-            border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 999px;
-        }
+        /* ---- Header / top navbar ----
+           Gaya header sekarang HANYA didefinisikan di public/css/theme.css
+           (blok "1. Top Navigation") agar tidak ada dua aturan yang saling
+           bertabrakan - inilah penyebab nav pernah tampil sebagai kartu
+           melayang di baris kedua. Yang tersisa di sini hanya aturan brand
+           (logo) di bawah karena dipakai lintas halaman. */
 
-        /* ---- Settings (gear): modal Bootstrap di tengah layar ---- */
-        .settings-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 999px;
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            background: transparent;
-            color: var(--text);
-            display: grid;
-            place-items: center;
-            cursor: pointer;
-            transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.1s ease;
-        }
-        .settings-btn:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.28); }
-        .settings-btn:active { transform: scale(0.95); }
-        .settings-btn svg { width: 18px; height: 18px; }
-        .settings-btn:focus-visible { outline: 2px solid rgba(225, 29, 72, 0.6); outline-offset: 2px; }
+        /* Hamburger + nav link + tombol pengaturan: lihat theme.css. */
 
         /* Backdrop lebih gelap + blur */
         .modal-backdrop.show { opacity: 1; background: rgba(8, 9, 11, 0.72); backdrop-filter: blur(3px); }
@@ -490,52 +445,7 @@
             text-transform: uppercase;
         }
 
-        .toggler {
-            display: none;
-            width: 40px;
-            height: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            border-radius: 999px;
-            background: transparent;
-            cursor: pointer;
-            color: var(--text);
-            place-items: center;
-            transition: background 0.18s ease, border-color 0.18s ease;
-        }
-        .toggler:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.28); }
-        .toggler svg { width: 19px; height: 19px; }
-
-        .top-link {
-            color: var(--muted);
-            text-decoration: none;
-            font-size: 13.5px;
-            font-weight: 600;
-            line-height: 1;
-            padding: 9px 15px;
-            border-radius: 999px;
-            position: relative;
-            white-space: nowrap;
-            transition: color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
-        }
-        .top-link:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); }
-        .top-link.active {
-            color: #fff;
-            background: linear-gradient(135deg, rgba(225, 29, 72, 0.24), rgba(225, 29, 72, 0.10));
-            box-shadow: inset 0 0 0 1px rgba(225, 29, 72, 0.38), 0 4px 12px rgba(225, 29, 72, 0.15);
-        }
-        .top-link.active::after {
-            content: '';
-            position: absolute;
-            left: 50%;
-            bottom: 3px;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: var(--accent);
-            transform: translateX(-50%);
-            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.18);
-        }
-        .top-link:focus-visible { outline: 2px solid rgba(225, 29, 72, 0.6); outline-offset: 2px; }
+        /* Tombol hamburger (.toggler) & nav link (.top-link): lihat theme.css. */
 
         .js-dropdown { position: relative; }
         .js-dropdown .menu {
@@ -778,27 +688,7 @@
         .dropdown-item.active { background: rgba(225, 29, 72, 0.14); color: #fff; }
 
         @media (max-width: 991.98px) {
-            .toggler { display: grid; }
-            .app-header .inner { gap: 12px; padding: 0 16px; min-height: 58px; }
-            .header-actions { margin-left: auto; padding-left: 0; border-left: none; }
-            /* Panel menu slide-down */
-            .nav-menu {
-                order: 3;
-                position: static;
-                display: none;
-                width: 100%;
-                flex-direction: column;
-                align-items: stretch;
-                gap: 3px;
-                margin: 2px 0 12px;
-                padding: 8px;
-                background: rgba(255, 255, 255, 0.03);
-                border: 1px solid rgba(255, 255, 255, 0.07);
-                border-radius: 16px;
-            }
-            .nav-menu.show { display: flex; animation: menuPanel 0.22s ease both; }
-            .nav-menu .top-link { display: flex; width: 100%; padding: 12px 14px; border-radius: 11px; font-size: 14px; }
-            .nav-menu .top-link.active::after { display: none; }
+            /* Hamburger & drawer nav: lihat blok "2. Navigasi mobile" theme.css. */
             .js-dropdown { width: 100%; }
             .js-dropdown .menu {
                 position: static;
@@ -1182,20 +1072,15 @@
                 <span class="brand-mark">
                     <img src="{{ asset('images/logohijab.png') }}" alt="Logo Vendor Hijab Bandung">
                 </span>
-                <span class="brand-name">Keuangan Hijab<span>Vendor Hijab Bandung</span></span>
+                <span class="brand-text">
+                    <span class="brand-title">Keuangan Hijab</span>
+                    <span class="brand-badge">Vendor Hijab Bandung</span>
+                </span>
             </a>
 
-            <div class="header-actions">
-                <button type="button" class="settings-btn" data-bs-toggle="modal" data-bs-target="#settingsModal" aria-label="Pengaturan" title="Pengaturan">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                </button>
-                <button class="toggler" type="button" aria-controls="navMenu" aria-expanded="false" aria-label="Open/sluit navigatie">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                        <path d="M4 7 20 7 M4 12 20 12 M4 17 20 17" />
-                    </svg>
-                </button>
-            </div>
-
+            {{-- Nav links berada DI DALAM header, tepat setelah logo.
+                 Urutan DOM: brand -> nav -> aksi. Posisi visual (kiri/tengah/
+                 kanan) diatur oleh flex + order di theme.css. --}}
             <nav id="navMenu" class="nav-menu">
                 <a class="top-link" data-top href="{{ route('dashboard') }}">Dashboard</a>
                 <a class="top-link" data-top href="{{ route('products.index') }}">Produk</a>
@@ -1203,6 +1088,8 @@
                 <a class="top-link" data-top href="{{ route('orders.index') }}">Log Order</a>
                 <a class="top-link" data-top href="{{ route('expenses.index') }}">Pengeluaran</a>
 
+                {{-- Sub-menu Laporan (dropdown lama, disimpan untuk referensi
+                     karena layout JS masih menangani .js-dropdown). --}}
                 {{-- <div class="js-dropdown">
                     <a class="top-link" data-top="reports" href="#" aria-haspopup="true" aria-expanded="false">
                         Laporan
@@ -1213,15 +1100,26 @@
                         <li><a href="{{ route('reports.hpp-profit') }}">HPP &amp; Profit</a></li>
                     </ul>
                 </div> --}}
+            </nav>
 
+            <div class="header-actions">
+                {{-- Mode gelap/terang ditangani di dalam modal Pengaturan (Mode Gelap). --}}
+                <button type="button" class="settings-btn" data-bs-toggle="modal" data-bs-target="#settingsModal" aria-label="Pengaturan" title="Pengaturan">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </button>
                 <form action="{{ route('logout') }}" method="post" class="logout-form">
                     @csrf
-                    <button type="submit" class="logout-btn">
+                    <button type="submit" class="logout-btn" title="Keluar dari akun">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                        Keluar
+                        <span class="logout-label">Keluar</span>
                     </button>
                 </form>
-            </nav>
+                <button class="toggler" type="button" aria-controls="navMenu" aria-expanded="false" aria-label="Buka menu navigasi" title="Menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M4 7 20 7 M4 12 20 12 M4 17 20 17" />
+                    </svg>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -1296,7 +1194,7 @@
     <script>
         /* Shared chart theme + formatters, matching the dark rose template. */
         window.KeuanganChart = {
-            colors: ['#E11D48', '#22C55E', '#F5B524', '#22D3EE', '#8B5CF6', '#F47171', '#38BDF8', '#F97316', '#A3E635', '#EC4899'],
+            colors: ['#EC4899', '#10B981', '#F59E0B', '#06B6D4', '#8B5CF6', '#F472B6', '#38BDF8', '#FB7185', '#A3E635', '#14B8A6'],
             rupiah: function (val) {
                 var neg = val < 0 ? '-' : '';
                 var str = String(Math.round(Math.abs(val)));
